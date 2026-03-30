@@ -71,7 +71,6 @@ input {
     background: var(--paper-soft);
     border: 1px solid var(--line);
     box-shadow: var(--shadow-md);
-    backdrop-filter: blur(10px);
 }
 
 .hero {
@@ -388,7 +387,7 @@ input {
     position: absolute;
     top: calc(100% + 8px);
     inset-inline: 0;
-    z-index: 30;
+    z-index: 9999;
     display: none;
     gap: 10px;
     padding: 12px;
@@ -567,6 +566,7 @@ input {
 .filter-card {
     display: grid;
     gap: 14px;
+    overflow: visible;
 }
 
 .chips-row {
