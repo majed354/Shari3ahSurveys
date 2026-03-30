@@ -47,7 +47,7 @@
             </div>
 
             <div class="hero-search">
-                <input id="globalSearchInput" type="search" class="hero-search-input" placeholder="ابحث في جميع الاستطلاعات...">
+                <input id="globalSearchInput" type="search" class="hero-search-input" placeholder="ابحث في جميع الاستطلاعات..." aria-label="بحث عام في الاستطلاعات">
             </div>
 
             <div id="summaryGrid" class="summary-grid"></div>
@@ -55,9 +55,9 @@
 
         <section class="panel nav-panel">
             <nav id="navTabs" class="nav-tabs" aria-label="الأقسام الأساسية">
-                <button class="nav-btn is-active" type="button" data-view="overview">لوحة المتابعة</button>
-                <button class="nav-btn" type="button" data-view="explore">استكشاف البرامج</button>
-                <button class="nav-btn" type="button" data-view="insights">التحليل والمقارنة</button>
+                <button class="nav-btn is-active" type="button" data-view="overview" aria-current="page">لوحة المتابعة</button>
+                <button class="nav-btn" type="button" data-view="explore" aria-current="false">استكشاف البرامج</button>
+                <button class="nav-btn" type="button" data-view="insights" aria-current="false">التحليل والمقارنة</button>
             </nav>
         </section>
 
@@ -271,6 +271,8 @@
                 <div class="sub-tabs">
                     <button class="sub-tab is-active" type="button" data-subtab="analysis">الرؤى والتحليل</button>
                     <button class="sub-tab" type="button" data-subtab="compare">المقارنة</button>
+                    <button class="sub-tab" type="button" data-subtab="trend">التطور الزمني</button>
+                    <button class="sub-tab" type="button" data-subtab="gaps">تقرير الفجوات</button>
                 </div>
 
                 <div id="analysisSubView" class="sub-view">
@@ -465,6 +467,85 @@
                         <div id="compareEmpty" class="empty-state hidden">ابدأ بتحديد برنامج وسنة في خانتين على الأقل للمقارنة.</div>
                     </article>
                 </div>
+
+                <!-- التطور الزمني -->
+                <div id="trendSubView" class="sub-view hidden">
+                    <article class="card filter-card">
+                        <div class="filters-grid filters-grid-2">
+                            <div class="field-group">
+                                <label for="trendProgramSelect">البرنامج</label>
+                                <select id="trendProgramSelect"></select>
+                            </div>
+                            <div class="field-group">
+                                <label for="trendStakeholderSelect">الجهة</label>
+                                <select id="trendStakeholderSelect"></select>
+                            </div>
+                        </div>
+                    </article>
+                    <div id="trendIndicators" class="kpi-grid"></div>
+                    <article class="card chart-card">
+                        <h3>تطور المتوسط العام حسب المحور</h3>
+                        <canvas id="trendLineChart"></canvas>
+                        <div class="chart-empty hidden">لا توجد بيانات كافية لعرض المخطط.</div>
+                    </article>
+                    <article class="card">
+                        <h3>ملخص التغيّرات</h3>
+                        <div id="trendChangeSummary" class="trend-change-list"></div>
+                        <div id="trendEmpty" class="empty-state hidden">اختر برنامجاً لعرض تطور الأداء عبر السنوات.</div>
+                    </article>
+                </div>
+
+                <!-- تقرير الفجوات -->
+                <div id="gapsSubView" class="sub-view hidden">
+                    <article class="card filter-card">
+                        <div class="filters-grid filters-grid-3">
+                            <div class="field-group">
+                                <label for="gapsProgramSelect">البرنامج</label>
+                                <select id="gapsProgramSelect"></select>
+                            </div>
+                            <div class="field-group">
+                                <label for="gapsYearSelect">السنة</label>
+                                <select id="gapsYearSelect"></select>
+                            </div>
+                            <div class="field-group">
+                                <label for="gapsTargetInput">المعيار المستهدف</label>
+                                <input id="gapsTargetInput" type="number" min="1" max="5" step="0.1" value="3.5" class="gaps-target-input">
+                            </div>
+                        </div>
+                    </article>
+                    <div id="gapsIndicators" class="kpi-grid"></div>
+                    <article class="card chart-card">
+                        <h3>الفجوات حسب المحور</h3>
+                        <canvas id="gapsBarChart"></canvas>
+                        <div class="chart-empty hidden">لا توجد بيانات لعرض الفجوات.</div>
+                    </article>
+                    <article class="card">
+                        <div class="card-head">
+                            <h3>تفصيل الفجوات</h3>
+                            <button id="gapsCopyBtn" class="btn btn-primary" type="button">نسخ للدراسة الذاتية</button>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">المحور</th>
+                                        <th scope="col">الاستطلاع</th>
+                                        <th scope="col">المتوسط</th>
+                                        <th scope="col">المستهدف</th>
+                                        <th scope="col">الفجوة</th>
+                                        <th scope="col">الحالة</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="gapsTableBody"></tbody>
+                            </table>
+                        </div>
+                        <div id="gapsEmpty" class="empty-state hidden">اختر برنامجاً وسنة لعرض تقرير الفجوات.</div>
+                    </article>
+                    <article id="gapsNarrativeCard" class="card hidden">
+                        <h3>فقرة جاهزة للدراسة الذاتية</h3>
+                        <div id="gapsNarrativeText" class="narrative-text"></div>
+                    </article>
+                </div>
             </section>
         </main>
 
@@ -473,15 +554,15 @@
         </footer>
     </div>
 
-    <button id="customFab" class="fab" type="button" title="استطلاع مخصص">
+    <button id="customFab" class="fab" type="button" title="استطلاع مخصص" aria-label="استطلاع مخصص">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
     </button>
 
-    <aside id="customDrawer" class="drawer hidden">
+    <aside id="customDrawer" class="drawer hidden" role="dialog" aria-modal="true" aria-labelledby="customDrawerTitle">
         <div class="drawer-backdrop"></div>
         <div class="drawer-panel">
             <div class="drawer-head">
-                <h2>استطلاع مخصص</h2>
+                <h2 id="customDrawerTitle">استطلاع مخصص</h2>
                 <button id="customDrawerClose" class="drawer-close" type="button">&times;</button>
             </div>
             <div class="drawer-body">
@@ -546,12 +627,12 @@
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>المحور</th>
-                                        <th>الاستطلاع</th>
-                                        <th>العبارة</th>
-                                        <th>الجنس</th>
-                                        <th>عدد الطلاب</th>
-                                        <th>المتوسط</th>
+                                        <th scope="col">المحور</th>
+                                        <th scope="col">الاستطلاع</th>
+                                        <th scope="col">العبارة</th>
+                                        <th scope="col">الجنس</th>
+                                        <th scope="col">عدد الطلاب</th>
+                                        <th scope="col">المتوسط</th>
                                     </tr>
                                 </thead>
                                 <tbody id="customSelectedTableBody"></tbody>
@@ -564,7 +645,7 @@
         </div>
     </aside>
 
-    <div id="bottomSheet" class="bottom-sheet hidden">
+    <div id="bottomSheet" class="bottom-sheet hidden" role="dialog" aria-modal="true" aria-labelledby="bottomSheetTitle">
         <div class="bottom-sheet-backdrop"></div>
         <div class="bottom-sheet-panel">
             <div class="bottom-sheet-handle"></div>

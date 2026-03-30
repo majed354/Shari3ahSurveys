@@ -112,6 +112,8 @@ const state = {
     },
     customFilters: createSingleFilterState(),
     customSelected: new Set(),
+    trendFilters: { program: "all", stakeholder: DEFAULT_STAKEHOLDER },
+    gapsFilters: { program: "all", year: DEFAULT_YEAR, target: 3.5 },
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -261,6 +263,28 @@ function cacheRefs() {
     refs.analysisTableBody = document.getElementById("analysisTableBody");
     refs.analysisEmpty = document.getElementById("analysisEmpty");
 
+    // Trend sub-view
+    refs.trendSubView = document.getElementById("trendSubView");
+    refs.trendProgramSelect = document.getElementById("trendProgramSelect");
+    refs.trendStakeholderSelect = document.getElementById("trendStakeholderSelect");
+    refs.trendIndicators = document.getElementById("trendIndicators");
+    refs.trendLineChart = document.getElementById("trendLineChart");
+    refs.trendChangeSummary = document.getElementById("trendChangeSummary");
+    refs.trendEmpty = document.getElementById("trendEmpty");
+
+    // Gaps sub-view
+    refs.gapsSubView = document.getElementById("gapsSubView");
+    refs.gapsProgramSelect = document.getElementById("gapsProgramSelect");
+    refs.gapsYearSelect = document.getElementById("gapsYearSelect");
+    refs.gapsTargetInput = document.getElementById("gapsTargetInput");
+    refs.gapsIndicators = document.getElementById("gapsIndicators");
+    refs.gapsBarChart = document.getElementById("gapsBarChart");
+    refs.gapsTableBody = document.getElementById("gapsTableBody");
+    refs.gapsCopyBtn = document.getElementById("gapsCopyBtn");
+    refs.gapsEmpty = document.getElementById("gapsEmpty");
+    refs.gapsNarrativeCard = document.getElementById("gapsNarrativeCard");
+    refs.gapsNarrativeText = document.getElementById("gapsNarrativeText");
+
     // Custom section - kept elements
     refs.customMeta = document.getElementById("customMeta");
     refs.customProgramFilter = document.getElementById("customProgramFilter");
@@ -280,7 +304,7 @@ function cacheRefs() {
 function bindEvents() {
     bindFilterableDropdownGlobalEvents();
 
-    refs.navTabs.addEventListener("click", (event) => {
+    if (refs.navTabs) refs.navTabs.addEventListener("click", (event) => {
         const button = event.target.closest("[data-view]");
         if (!button) return;
         state.view = button.dataset.view;
@@ -297,10 +321,9 @@ function bindEvents() {
             refs.insightsSection.querySelectorAll("[data-subtab]").forEach((btn) => {
                 btn.classList.toggle("is-active", btn.dataset.subtab === state.insightsSubTab);
             });
-            if (refs.analysisSubView && refs.compareSubView) {
-                refs.analysisSubView.classList.toggle("hidden", state.insightsSubTab !== "analysis");
-                refs.compareSubView.classList.toggle("hidden", state.insightsSubTab !== "compare");
-            }
+            ["analysisSubView", "compareSubView", "trendSubView", "gapsSubView"].forEach((key) => {
+                if (refs[key]) refs[key].classList.toggle("hidden", state.insightsSubTab !== key.replace("SubView", ""));
+            });
             renderCurrentView();
         });
     }
@@ -603,6 +626,9 @@ function bindEvents() {
     if (refs.exportExploreCsv) refs.exportExploreCsv.addEventListener("click", () => exportExploreData("csv"));
     if (refs.exportExplorePdf) refs.exportExplorePdf.addEventListener("click", () => exportSectionAsPdf("exploreTableMeta", "استكشاف-البرامج.pdf"));
 
+    bindTrendEvents();
+    bindGapsEvents();
+
     if (refs.exportInsightsExcel) refs.exportInsightsExcel.addEventListener("click", () => {
         if (state.insightsSubTab === "compare") exportComparisonData("xlsx");
     });
@@ -612,6 +638,45 @@ function bindEvents() {
     if (refs.exportInsightsPdf) refs.exportInsightsPdf.addEventListener("click", () => {
         if (state.insightsSubTab === "compare") exportSectionAsPdf("compareTableMeta", "مقارنة-الاستطلاعات.pdf");
         else exportSectionAsPdf("analysisTableTitle", "تحليل-الاستطلاعات.pdf");
+    });
+}
+
+function bindTrendEvents() {
+    if (refs.trendProgramSelect) refs.trendProgramSelect.addEventListener("change", (e) => {
+        state.trendFilters.program = e.target.value;
+        renderTrendSection();
+    });
+    if (refs.trendStakeholderSelect) refs.trendStakeholderSelect.addEventListener("change", (e) => {
+        state.trendFilters.stakeholder = e.target.value;
+        renderTrendSection();
+    });
+}
+
+function bindGapsEvents() {
+    if (refs.gapsProgramSelect) refs.gapsProgramSelect.addEventListener("change", (e) => {
+        state.gapsFilters.program = e.target.value;
+        renderGapsControls();
+        renderGapsSection();
+    });
+    if (refs.gapsYearSelect) refs.gapsYearSelect.addEventListener("change", (e) => {
+        state.gapsFilters.year = e.target.value;
+        renderGapsSection();
+    });
+    if (refs.gapsTargetInput) refs.gapsTargetInput.addEventListener("input", (e) => {
+        const v = parseFloat(e.target.value);
+        if (!isNaN(v) && v >= 1 && v <= 5) {
+            state.gapsFilters.target = v;
+            renderGapsSection();
+        }
+    });
+    if (refs.gapsCopyBtn) refs.gapsCopyBtn.addEventListener("click", () => {
+        const text = refs.gapsNarrativeText ? refs.gapsNarrativeText.textContent : "";
+        if (text && navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                refs.gapsCopyBtn.textContent = "تم النسخ ✓";
+                setTimeout(() => { refs.gapsCopyBtn.textContent = "نسخ للدراسة الذاتية"; }, 2000);
+            });
+        }
     });
 }
 
@@ -693,17 +758,20 @@ function refreshAllControls() {
     renderExploreControls();
     renderCompareControls();
     renderAnalysisControls();
+    renderTrendControls();
+    renderGapsControls();
     // Don't render custom controls here - they render when drawer opens
 }
 
 function renderViewState() {
-    refs.navTabs.querySelectorAll("[data-view]").forEach((button) => {
+    if (refs.navTabs) refs.navTabs.querySelectorAll("[data-view]").forEach((button) => {
         button.classList.toggle("is-active", button.dataset.view === state.view);
+        button.setAttribute("aria-current", button.dataset.view === state.view ? "page" : "false");
     });
 
-    refs.overviewSection.classList.toggle("hidden", state.view !== "overview");
-    refs.exploreSection.classList.toggle("hidden", state.view !== "explore");
-    refs.insightsSection.classList.toggle("hidden", state.view !== "insights");
+    if (refs.overviewSection) refs.overviewSection.classList.toggle("hidden", state.view !== "overview");
+    if (refs.exploreSection) refs.exploreSection.classList.toggle("hidden", state.view !== "explore");
+    if (refs.insightsSection) refs.insightsSection.classList.toggle("hidden", state.view !== "insights");
 }
 
 function renderCurrentView() {
@@ -712,6 +780,8 @@ function renderCurrentView() {
     if (state.view === "insights") {
         if (state.insightsSubTab === "analysis") renderAnalysisSection();
         if (state.insightsSubTab === "compare") renderCompareSection();
+        if (state.insightsSubTab === "trend") renderTrendSection();
+        if (state.insightsSubTab === "gaps") renderGapsSection();
     }
 }
 
@@ -722,18 +792,18 @@ function renderChipOptions(containerEl, options, activeValue, onChange) {
         `<button class="chip-option${opt.value === activeValue ? ' is-active' : ''}" type="button" data-value="${escapeHtml(opt.value)}">${escapeHtml(opt.label)}</button>`
     ).join("");
 
-    const newContainer = containerEl.cloneNode(true);
-    if (containerEl.parentNode) {
-        containerEl.parentNode.replaceChild(newContainer, containerEl);
+    /* Use a stored handler key to avoid duplicate listeners */
+    if (containerEl._chipHandler) {
+        containerEl.removeEventListener("click", containerEl._chipHandler);
     }
-
-    newContainer.addEventListener("click", (event) => {
+    containerEl._chipHandler = function (event) {
         const btn = event.target.closest("[data-value]");
         if (!btn) return;
         onChange(btn.dataset.value);
-    });
+    };
+    containerEl.addEventListener("click", containerEl._chipHandler);
 
-    return newContainer;
+    return containerEl;
 }
 
 function renderSummaryCards() {
@@ -744,6 +814,7 @@ function renderSummaryCards() {
         { label: "مصدر الاستطلاعات", value: SOURCE_LABEL, note: "يمكن إضافة مصادر أخرى لاحقًا" },
     ];
 
+    if (!refs.summaryGrid) return;
     refs.summaryGrid.innerHTML = summaryCards.map((card) => `
         <article class="summary-card">
             <div class="summary-label">${escapeHtml(card.label)}</div>
@@ -752,7 +823,7 @@ function renderSummaryCards() {
         </article>
     `).join("");
 
-    refs.footerSource.textContent = `المصدر الحالي: ${SOURCE_LABEL}`;
+    if (refs.footerSource) refs.footerSource.textContent = `المصدر الحالي: ${SOURCE_LABEL}`;
 }
 
 function renderExploreControls() {
@@ -1140,6 +1211,7 @@ function renderSubjectOptions(selectRef, baseRecords, targetState, key) {
 }
 
 function renderSelfStudyOptions(selectRef, searchRef, baseRecords, targetState) {
+    if (!selectRef) return;
     const allOptions = collectSelfStudyOptions(baseRecords);
     const allowedValues = new Set(["all", ...allOptions.map((option) => option.value)]);
     if (!allowedValues.has(targetState.selfStudyTarget)) {
@@ -2584,6 +2656,233 @@ function buildScoreScales(axis) {
     }
 
     return scales;
+}
+
+/* ===== TREND SECTION — التطور الزمني ===== */
+function renderTrendControls() {
+    if (!refs.trendProgramSelect) return;
+    renderProgramOptionsFor(refs.trendProgramSelect, state.trendFilters.program, false);
+    if (refs.trendStakeholderSelect) {
+        const stakeholders = [{ value: "all", label: "كل الجهات" }, ...Object.entries(STAKEHOLDER_LABELS).map(([k, v]) => ({ value: k, label: v }))];
+        refs.trendStakeholderSelect.innerHTML = stakeholders.map(s =>
+            `<option value="${s.value}"${s.value === state.trendFilters.stakeholder ? " selected" : ""}>${escapeHtml(s.label)}</option>`
+        ).join("");
+    }
+}
+
+function renderTrendSection() {
+    renderTrendControls();
+    const programId = state.trendFilters.program;
+    if (!programId || programId === "all") {
+        if (refs.trendEmpty) { refs.trendEmpty.classList.remove("hidden"); }
+        if (refs.trendChangeSummary) refs.trendChangeSummary.innerHTML = "";
+        if (refs.trendIndicators) refs.trendIndicators.innerHTML = "";
+        return;
+    }
+    if (refs.trendEmpty) refs.trendEmpty.classList.add("hidden");
+
+    const years = sortYears(getAvailableYears(programId));
+    const stakeholder = state.trendFilters.stakeholder;
+
+    /* Build data per year per section */
+    const sectionYearData = {};
+    SECTION_META.forEach(sec => { sectionYearData[sec.id] = {}; });
+
+    years.forEach(year => {
+        const records = ITEM_RECORDS.filter(r =>
+            r.programId === programId && r.year === year &&
+            (stakeholder === "all" || r.stakeholder === stakeholder)
+        );
+        const surveys = aggregateSurveyRows(records);
+        SECTION_META.forEach(sec => {
+            const secSurveys = surveys.filter(s => s.sectionId === sec.id);
+            if (secSurveys.length) {
+                const avg = roundNumber(secSurveys.reduce((s, r) => s + r.average, 0) / secSurveys.length);
+                sectionYearData[sec.id][year] = avg;
+            }
+        });
+    });
+
+    /* Overall average per year */
+    const overallByYear = {};
+    years.forEach(year => {
+        const vals = SECTION_META.map(sec => sectionYearData[sec.id][year]).filter(v => v !== undefined);
+        if (vals.length) overallByYear[year] = roundNumber(vals.reduce((a, b) => a + b, 0) / vals.length);
+    });
+
+    /* KPI cards */
+    const latestYear = years[0];
+    const prevYear = years[1];
+    const latestAvg = overallByYear[latestYear];
+    const prevAvg = prevYear ? overallByYear[prevYear] : null;
+    const delta = prevAvg != null && latestAvg != null ? roundNumber(latestAvg - prevAvg) : null;
+
+    renderMetricCards(refs.trendIndicators, [
+        { label: `المتوسط ${latestYear || ""}هـ`, value: latestAvg != null ? formatScore(latestAvg) : "—", note: "المتوسط العام للبرنامج" },
+        { label: prevYear ? `المتوسط ${prevYear}هـ` : "السنة السابقة", value: prevAvg != null ? formatScore(prevAvg) : "—", note: "المتوسط العام السابق" },
+        { label: "التغيّر", value: delta != null ? (delta >= 0 ? `+${formatScore(delta)}` : formatScore(delta)) : "—", note: delta != null ? (delta > 0 ? "تحسّن" : delta < 0 ? "تراجع" : "مستقر") : "لا توجد بيانات مقارنة" },
+    ]);
+
+    /* Line chart */
+    if (refs.trendLineChart && window.Chart) {
+        const datasets = SECTION_META.map((sec, i) => ({
+            label: sec.shortLabel,
+            data: years.map(y => sectionYearData[sec.id][y] || null),
+            borderColor: CHART_COLORS[i % CHART_COLORS.length],
+            backgroundColor: CHART_COLORS[i % CHART_COLORS.length] + "22",
+            tension: 0.3,
+            fill: false,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+        }));
+        drawChart(refs.trendLineChart, "trendLine", {
+            type: "line",
+            data: { labels: years.map(y => `${y}هـ`), datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: "top", rtl: true, labels: { font: { family: "inherit" } } } },
+                scales: { y: { min: 1, max: 5, ticks: { stepSize: 0.5 } } },
+            },
+        });
+    }
+
+    /* Change summary */
+    if (refs.trendChangeSummary && years.length >= 2) {
+        const changes = SECTION_META.map(sec => {
+            const latest = sectionYearData[sec.id][latestYear];
+            const prev = sectionYearData[sec.id][prevYear];
+            if (latest == null || prev == null) return null;
+            const d = roundNumber(latest - prev);
+            return { label: sec.label, latest, prev, delta: d };
+        }).filter(Boolean).sort((a, b) => b.delta - a.delta);
+
+        refs.trendChangeSummary.innerHTML = changes.map(c => {
+            const cls = c.delta > 0.05 ? "positive" : c.delta < -0.05 ? "negative" : "neutral";
+            const icon = c.delta > 0.05 ? "📈" : c.delta < -0.05 ? "📉" : "➡️";
+            return `<div class="trend-change-item">
+                <span class="change-icon">${icon}</span>
+                <span class="change-label">${escapeHtml(c.label)}</span>
+                <span class="change-values">${formatScore(c.prev)} → ${formatScore(c.latest)}</span>
+                <span class="change-delta ${cls}">${c.delta >= 0 ? "+" : ""}${formatScore(c.delta)}</span>
+            </div>`;
+        }).join("") || '<div class="empty-state">لا توجد بيانات كافية للمقارنة.</div>';
+    }
+}
+
+/* ===== GAPS SECTION — تقرير الفجوات ===== */
+function renderGapsControls() {
+    if (refs.gapsProgramSelect) renderProgramOptionsFor(refs.gapsProgramSelect, state.gapsFilters.program, false);
+    if (refs.gapsYearSelect) {
+        const prog = state.gapsFilters.program;
+        const years = prog !== "all" ? getAvailableYears(prog) : ALL_AVAILABLE_YEARS;
+        refs.gapsYearSelect.innerHTML = years.map(y =>
+            `<option value="${y}"${y === state.gapsFilters.year ? " selected" : ""}>${y}هـ</option>`
+        ).join("");
+        if (!years.includes(state.gapsFilters.year) && years.length) {
+            state.gapsFilters.year = years[0];
+        }
+    }
+}
+
+function renderGapsSection() {
+    renderGapsControls();
+    const { program, year, target } = state.gapsFilters;
+    if (!program || program === "all") {
+        if (refs.gapsEmpty) refs.gapsEmpty.classList.remove("hidden");
+        if (refs.gapsTableBody) refs.gapsTableBody.innerHTML = "";
+        if (refs.gapsIndicators) refs.gapsIndicators.innerHTML = "";
+        if (refs.gapsNarrativeCard) refs.gapsNarrativeCard.classList.add("hidden");
+        return;
+    }
+    if (refs.gapsEmpty) refs.gapsEmpty.classList.add("hidden");
+
+    const records = ITEM_RECORDS.filter(r => r.programId === program && r.year === year && r.stakeholder === "students");
+    const surveys = aggregateSurveyRows(records);
+
+    const gapRows = surveys.map(s => {
+        const gap = roundNumber(s.average - target);
+        const status = gap >= 0 ? "achieved" : gap >= -0.3 ? "close" : "below";
+        const statusLabel = gap >= 0 ? "محقق" : gap >= -0.3 ? "قريب" : "دون المستهدف";
+        return { ...s, gap, status, statusLabel };
+    }).sort((a, b) => a.gap - b.gap);
+
+    /* KPI */
+    const achieved = gapRows.filter(r => r.status === "achieved").length;
+    const close = gapRows.filter(r => r.status === "close").length;
+    const below = gapRows.filter(r => r.status === "below").length;
+    const overallAvg = gapRows.length ? roundNumber(gapRows.reduce((s, r) => s + r.average, 0) / gapRows.length) : 0;
+
+    renderMetricCards(refs.gapsIndicators, [
+        { label: "المتوسط العام", value: formatScore(overallAvg), note: `المستهدف: ${formatScore(target)}` },
+        { label: "محقق", value: toArabicNumber(achieved), note: `من ${toArabicNumber(gapRows.length)} استطلاع` },
+        { label: "قريب من المستهدف", value: toArabicNumber(close), note: "فجوة أقل من 0.3" },
+        { label: "دون المستهدف", value: toArabicNumber(below), note: "يحتاج تحسين" },
+    ]);
+
+    /* Bar chart */
+    if (refs.gapsBarChart && window.Chart) {
+        const sectionGaps = SECTION_META.map(sec => {
+            const secRows = gapRows.filter(r => r.sectionId === sec.id);
+            if (!secRows.length) return null;
+            const avg = roundNumber(secRows.reduce((s, r) => s + r.average, 0) / secRows.length);
+            return { label: sec.shortLabel, avg, gap: roundNumber(avg - target) };
+        }).filter(Boolean);
+
+        drawChart(refs.gapsBarChart, "gapsBar", {
+            type: "bar",
+            data: {
+                labels: sectionGaps.map(s => s.label),
+                datasets: [
+                    { label: "المتوسط", data: sectionGaps.map(s => s.avg), backgroundColor: sectionGaps.map(s => s.gap >= 0 ? "#16a34a88" : "#dc262688"), borderRadius: 6 },
+                    { label: "المستهدف", data: sectionGaps.map(() => target), type: "line", borderColor: "#c79e54", borderDash: [6, 3], pointRadius: 0, fill: false },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: "top", rtl: true, labels: { font: { family: "inherit" } } } },
+                scales: { y: { min: 1, max: 5, ticks: { stepSize: 0.5 } } },
+            },
+        });
+    }
+
+    /* Table */
+    if (refs.gapsTableBody) {
+        refs.gapsTableBody.innerHTML = gapRows.map(r =>
+            `<tr>
+                <td>${escapeHtml(r.sectionLabel)}</td>
+                <td>${escapeHtml(r.title)}</td>
+                <td>${formatScore(r.average)}</td>
+                <td>${formatScore(target)}</td>
+                <td>${r.gap >= 0 ? "+" : ""}${formatScore(r.gap)}</td>
+                <td><span class="gap-status ${r.status}">${r.statusLabel}</span></td>
+            </tr>`
+        ).join("");
+    }
+
+    /* Narrative for self-study */
+    if (refs.gapsNarrativeCard && refs.gapsNarrativeText && gapRows.length) {
+        refs.gapsNarrativeCard.classList.remove("hidden");
+        const prog = getProgramById(program);
+        const strengths = gapRows.filter(r => r.status === "achieved").slice(-3);
+        const weaknesses = gapRows.filter(r => r.status === "below").slice(0, 3);
+
+        let text = `بلغ المتوسط العام لاستطلاعات برنامج ${prog.name} (${prog.degree}) للعام ${year}هـ (${formatScore(overallAvg)} من 5)، `;
+        text += overallAvg >= target
+            ? `وهو أعلى من المعيار المستهدف (${formatScore(target)}).\n`
+            : `وهو أقل من المعيار المستهدف (${formatScore(target)}) بفجوة (${formatScore(Math.abs(roundNumber(overallAvg - target)))}).\n`;
+
+        if (strengths.length) {
+            text += `\nمن جوانب القوة: ${strengths.map(s => `"${s.title}" بمتوسط (${formatScore(s.average)})`).join("، ")}.\n`;
+        }
+        if (weaknesses.length) {
+            text += `\nومن جوانب التحسين: ${weaknesses.map(s => `"${s.title}" بمتوسط (${formatScore(s.average)}) بفجوة (${formatScore(Math.abs(s.gap))})`).join("، ")}.\n`;
+        }
+        text += `\nبلغت نسبة الاستطلاعات المحققة للمستهدف ${toArabicNumber(achieved)} من ${toArabicNumber(gapRows.length)} (${toArabicNumber(Math.round(achieved / gapRows.length * 100))}%).`;
+
+        refs.gapsNarrativeText.textContent = text;
+    }
 }
 
 function exportExploreData(type) {
