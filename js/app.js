@@ -112,8 +112,8 @@ const state = {
     },
     customFilters: createSingleFilterState(),
     customSelected: new Set(),
-    trendFilters: { program: "all", stakeholder: DEFAULT_STAKEHOLDER },
-    gapsFilters: { program: "all", year: DEFAULT_YEAR, target: 3.5 },
+    trendFilters: { program: "all", stakeholder: DEFAULT_STAKEHOLDER, topicMode: DEFAULT_TOPIC_MODE, selfStudyTarget: "all" },
+    gapsFilters: { program: "all", year: DEFAULT_YEAR, target: 3.5, topicMode: DEFAULT_TOPIC_MODE, selfStudyTarget: "all" },
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -271,6 +271,9 @@ function cacheRefs() {
     refs.trendLineChart = document.getElementById("trendLineChart");
     refs.trendChangeSummary = document.getElementById("trendChangeSummary");
     refs.trendEmpty = document.getElementById("trendEmpty");
+    refs.trendTopicModeChips = document.getElementById("trendTopicModeChips");
+    refs.trendSelfStudyPanel = document.getElementById("trendSelfStudyPanel");
+    refs.trendSelfStudyFilter = document.getElementById("trendSelfStudyFilter");
 
     // Gaps sub-view
     refs.gapsSubView = document.getElementById("gapsSubView");
@@ -284,6 +287,9 @@ function cacheRefs() {
     refs.gapsEmpty = document.getElementById("gapsEmpty");
     refs.gapsNarrativeCard = document.getElementById("gapsNarrativeCard");
     refs.gapsNarrativeText = document.getElementById("gapsNarrativeText");
+    refs.gapsTopicModeChips = document.getElementById("gapsTopicModeChips");
+    refs.gapsSelfStudyPanel = document.getElementById("gapsSelfStudyPanel");
+    refs.gapsSelfStudyFilter = document.getElementById("gapsSelfStudyFilter");
 
     // Custom section - kept elements
     refs.customMeta = document.getElementById("customMeta");
@@ -631,13 +637,21 @@ function bindEvents() {
 
     if (refs.exportInsightsExcel) refs.exportInsightsExcel.addEventListener("click", () => {
         if (state.insightsSubTab === "compare") exportComparisonData("xlsx");
+        else if (state.insightsSubTab === "analysis") exportAnalysisData("xlsx");
+        else if (state.insightsSubTab === "trend") exportTrendData("xlsx");
+        else if (state.insightsSubTab === "gaps") exportGapsData("xlsx");
     });
     if (refs.exportInsightsCsv) refs.exportInsightsCsv.addEventListener("click", () => {
         if (state.insightsSubTab === "compare") exportComparisonData("csv");
+        else if (state.insightsSubTab === "analysis") exportAnalysisData("csv");
+        else if (state.insightsSubTab === "trend") exportTrendData("csv");
+        else if (state.insightsSubTab === "gaps") exportGapsData("csv");
     });
     if (refs.exportInsightsPdf) refs.exportInsightsPdf.addEventListener("click", () => {
-        if (state.insightsSubTab === "compare") exportSectionAsPdf("compareTableMeta", "مقارنة-الاستطلاعات.pdf");
-        else exportSectionAsPdf("analysisTableTitle", "تحليل-الاستطلاعات.pdf");
+        if (state.insightsSubTab === "compare") exportSectionAsPdf("compareSubView", "مقارنة-الاستطلاعات.pdf");
+        else if (state.insightsSubTab === "analysis") exportSectionAsPdf("analysisSubView", "تحليل-الاستطلاعات.pdf");
+        else if (state.insightsSubTab === "trend") exportSectionAsPdf("trendSubView", "التطور-الزمني.pdf");
+        else if (state.insightsSubTab === "gaps") exportSectionAsPdf("gapsSubView", "تقرير-الفجوات.pdf");
     });
 }
 
@@ -648,6 +662,10 @@ function bindTrendEvents() {
     });
     if (refs.trendStakeholderSelect) refs.trendStakeholderSelect.addEventListener("change", (e) => {
         state.trendFilters.stakeholder = e.target.value;
+        renderTrendSection();
+    });
+    if (refs.trendSelfStudyFilter) refs.trendSelfStudyFilter.addEventListener("change", (e) => {
+        state.trendFilters.selfStudyTarget = e.target.value;
         renderTrendSection();
     });
 }
@@ -668,6 +686,10 @@ function bindGapsEvents() {
             state.gapsFilters.target = v;
             renderGapsSection();
         }
+    });
+    if (refs.gapsSelfStudyFilter) refs.gapsSelfStudyFilter.addEventListener("change", (e) => {
+        state.gapsFilters.selfStudyTarget = e.target.value;
+        renderGapsSection();
     });
     if (refs.gapsCopyBtn) refs.gapsCopyBtn.addEventListener("click", () => {
         const text = refs.gapsNarrativeText ? refs.gapsNarrativeText.textContent : "";
@@ -2668,6 +2690,19 @@ function renderTrendControls() {
             `<option value="${s.value}"${s.value === state.trendFilters.stakeholder ? " selected" : ""}>${escapeHtml(s.label)}</option>`
         ).join("");
     }
+    renderChipOptions(refs.trendTopicModeChips, [
+        { value: "general", label: "موضوعات عامة" },
+        { value: "selfstudy", label: "محكات الدراسة الذاتية" },
+    ], state.trendFilters.topicMode, (val) => {
+        state.trendFilters.topicMode = val;
+        renderTrendControls();
+        renderTrendSection();
+    });
+    if (refs.trendSelfStudyPanel) refs.trendSelfStudyPanel.classList.toggle("hidden", state.trendFilters.topicMode !== "selfstudy");
+    if (state.trendFilters.topicMode === "selfstudy") {
+        const baseRecords = ITEM_RECORDS.filter(r => state.trendFilters.program === "all" || r.programId === state.trendFilters.program);
+        renderSelfStudyOptions(refs.trendSelfStudyFilter, null, baseRecords, state.trendFilters);
+    }
 }
 
 function renderTrendSection() {
@@ -2691,7 +2726,8 @@ function renderTrendSection() {
     years.forEach(year => {
         const records = ITEM_RECORDS.filter(r =>
             r.programId === programId && r.year === year &&
-            (stakeholder === "all" || r.stakeholder === stakeholder)
+            (stakeholder === "all" || r.stakeholder === stakeholder) &&
+            matchesTopicFilter(r, state.trendFilters)
         );
         const surveys = aggregateSurveyRows(records);
         SECTION_META.forEach(sec => {
@@ -2783,6 +2819,22 @@ function renderGapsControls() {
             state.gapsFilters.year = years[0];
         }
     }
+    renderChipOptions(refs.gapsTopicModeChips, [
+        { value: "general", label: "موضوعات عامة" },
+        { value: "selfstudy", label: "محكات الدراسة الذاتية" },
+    ], state.gapsFilters.topicMode, (val) => {
+        state.gapsFilters.topicMode = val;
+        renderGapsControls();
+        renderGapsSection();
+    });
+    if (refs.gapsSelfStudyPanel) refs.gapsSelfStudyPanel.classList.toggle("hidden", state.gapsFilters.topicMode !== "selfstudy");
+    if (state.gapsFilters.topicMode === "selfstudy") {
+        const baseRecords = ITEM_RECORDS.filter(r =>
+            (state.gapsFilters.program === "all" || r.programId === state.gapsFilters.program) &&
+            (state.gapsFilters.year === "all" || r.year === state.gapsFilters.year)
+        );
+        renderSelfStudyOptions(refs.gapsSelfStudyFilter, null, baseRecords, state.gapsFilters);
+    }
 }
 
 function renderGapsSection() {
@@ -2797,7 +2849,10 @@ function renderGapsSection() {
     }
     if (refs.gapsEmpty) refs.gapsEmpty.classList.add("hidden");
 
-    const records = ITEM_RECORDS.filter(r => r.programId === program && r.year === year && r.stakeholder === "students");
+    const records = ITEM_RECORDS.filter(r =>
+        r.programId === program && r.year === year && r.stakeholder === "students" &&
+        matchesTopicFilter(r, state.gapsFilters)
+    );
     const surveys = aggregateSurveyRows(records);
 
     const gapRows = surveys.map(s => {
@@ -2945,6 +3000,102 @@ function exportComparisonData(type) {
     }
 
     exportExcel("مقارنة-الاستطلاعات.xlsx", "المقارنة", headers, data);
+}
+
+function exportAnalysisData(type) {
+    const records = ITEM_RECORDS.filter((record) => {
+        if (!state.analysisFilters.programs.has(record.programId)) return false;
+        if (state.analysisFilters.year !== "all" && record.year !== state.analysisFilters.year) return false;
+        if (state.analysisFilters.stakeholder !== "all" && record.stakeholder !== state.analysisFilters.stakeholder) return false;
+        return true;
+    });
+    const surveyRows = aggregateSurveyRows(records);
+
+    if (!surveyRows.length) {
+        window.alert("لا توجد بيانات قابلة للتصدير في هذا النطاق.");
+        return;
+    }
+
+    const headers = ["المحور", "الاستطلاع", "عدد الطلاب", "المتوسط"];
+    const data = surveyRows.map((row) => [
+        row.sectionLabel,
+        row.title,
+        row.respondentCount,
+        formatScore(row.average),
+    ]);
+
+    if (type === "csv") {
+        exportCsv("تحليل-الاستطلاعات.csv", headers, data);
+        return;
+    }
+    exportExcel("تحليل-الاستطلاعات.xlsx", "التحليل", headers, data);
+}
+
+function exportTrendData(type) {
+    const programId = state.trendFilters.program;
+    if (!programId || programId === "all") {
+        window.alert("اختر برنامجاً أولاً.");
+        return;
+    }
+    const prog = getProgramById(programId);
+    const years = sortYears(getAvailableYears(programId));
+    const stakeholder = state.trendFilters.stakeholder;
+
+    const headers = ["المحور", ...years.map(y => `${y}هـ`), "التغيّر"];
+    const data = SECTION_META.map(sec => {
+        const vals = years.map(year => {
+            const records = ITEM_RECORDS.filter(r =>
+                r.programId === programId && r.year === year &&
+                (stakeholder === "all" || r.stakeholder === stakeholder) &&
+                matchesTopicFilter(r, state.trendFilters)
+            );
+            const surveys = aggregateSurveyRows(records).filter(s => s.sectionId === sec.id);
+            if (!surveys.length) return null;
+            return roundNumber(surveys.reduce((s, r) => s + r.average, 0) / surveys.length);
+        });
+        const delta = vals.length >= 2 && vals[0] != null && vals[1] != null ? roundNumber(vals[0] - vals[1]) : null;
+        return [sec.label, ...vals.map(v => v != null ? formatScore(v) : "—"), delta != null ? formatScore(delta) : "—"];
+    });
+
+    const filename = `التطور-الزمني-${sanitizeFileName(prog.name)}`;
+    if (type === "csv") {
+        exportCsv(`${filename}.csv`, headers, data);
+        return;
+    }
+    exportExcel(`${filename}.xlsx`, "التطور الزمني", headers, data);
+}
+
+function exportGapsData(type) {
+    const { program, year, target } = state.gapsFilters;
+    if (!program || program === "all") {
+        window.alert("اختر برنامجاً أولاً.");
+        return;
+    }
+    const prog = getProgramById(program);
+    const records = ITEM_RECORDS.filter(r =>
+        r.programId === program && r.year === year && r.stakeholder === "students" &&
+        matchesTopicFilter(r, state.gapsFilters)
+    );
+    const surveys = aggregateSurveyRows(records);
+
+    if (!surveys.length) {
+        window.alert("لا توجد بيانات قابلة للتصدير.");
+        return;
+    }
+
+    const headers = ["المحور", "الاستطلاع", "المتوسط", "المستهدف", "الفجوة", "الحالة"];
+    const data = surveys.map(s => {
+        const gap = roundNumber(s.average - target);
+        const status = gap >= 0 ? "محقق" : gap >= -0.3 ? "قريب" : "دون المستهدف";
+        return [s.sectionLabel, s.title, formatScore(s.average), formatScore(target), formatScore(gap), status];
+    }).sort((a, b) => parseFloat(a[4]) - parseFloat(b[4]));
+
+    const filename = `تقرير-الفجوات-${sanitizeFileName(prog.name)}-${year}`;
+    if (type === "csv") {
+        exportCsv(`${filename}.csv`, headers, data);
+        return;
+    }
+    exportExcel(`${filename}.xlsx`, "تقرير الفجوات", headers, data);
 }
 
 function exportExcel(filename, sheetName, headers, data) {
