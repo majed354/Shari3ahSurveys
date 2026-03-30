@@ -1360,6 +1360,19 @@ function renderFilterableSelect(selectRef, config = {}) {
         if (!nextValue) return;
 
         selectRef.value = nextValue;
+
+        /* Update trigger label to reflect the new selection */
+        const selectedItem = items.find((item) => item.value === nextValue);
+        if (selectedItem) {
+            const triggerLabelEl = wrapper.querySelector(".filterable-select__trigger-label");
+            if (triggerLabelEl) triggerLabelEl.textContent = selectedItem.triggerLabel || selectedItem.title;
+        }
+
+        /* Mark selected option visually */
+        wrapper.querySelectorAll(".filterable-select__option").forEach((btn) => {
+            btn.classList.toggle("is-selected", btn.dataset.value === nextValue);
+        });
+
         selectRef.dispatchEvent(new Event("change", { bubbles: true }));
         wrapper.classList.remove("is-open");
     });
@@ -2234,7 +2247,7 @@ function getCustomRows() {
 }
 
 function matchesSubjectFilter(record, subjectFilter) {
-    if (subjectFilter === "all") return true;
+    if (!subjectFilter || subjectFilter === "all") return true;
     if (subjectFilter.startsWith("section:")) {
         return record.sectionId === subjectFilter.replace("section:", "");
     }
