@@ -410,6 +410,7 @@ function bindEvents() {
     if (refs.exploreSubject) {
         refs.exploreSubject.addEventListener("change", (event) => {
             state.exploreFilters.subject = event.target.value;
+            renderFilterChips(refs.exploreActiveFilters, buildExploreFilterChips());
             renderExploreSection();
         });
     }
@@ -417,6 +418,7 @@ function bindEvents() {
     if (refs.exploreSelfStudyFilter) {
         refs.exploreSelfStudyFilter.addEventListener("change", (event) => {
             state.exploreFilters.selfStudyTarget = event.target.value;
+            renderFilterChips(refs.exploreActiveFilters, buildExploreFilterChips());
             renderExploreSection();
         });
     }
@@ -441,6 +443,15 @@ function bindEvents() {
     if (refs.compareSubjectFilter) {
         refs.compareSubjectFilter.addEventListener("change", (event) => {
             state.compareFilters.subject = event.target.value;
+            renderCompareControls();
+            renderCompareSection();
+        });
+    }
+
+    if (refs.compareSelfStudyFilter) {
+        refs.compareSelfStudyFilter.addEventListener("change", (event) => {
+            state.compareFilters.selfStudyTarget = event.target.value;
+            renderCompareControls();
             renderCompareSection();
         });
     }
@@ -558,6 +569,7 @@ function bindEvents() {
     if (refs.analysisSubjectFilter) {
         refs.analysisSubjectFilter.addEventListener("change", (event) => {
             state.analysisFilters.subject = event.target.value;
+            renderAnalysisControls();
             renderAnalysisSection();
         });
     }
