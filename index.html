@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="لوحة متابعة مركزة لاستطلاعات كلية الشريعة والأنظمة - جامعة الطائف">
+    <meta name="theme-color" content="#123936">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <meta property="og:title" content="ساحة الاستطلاعات والآراء | كلية الشريعة والأنظمة">
+    <meta property="og:description" content="لوحة متابعة مركزة لاستطلاعات الطلاب">
+    <title>ساحة الاستطلاعات والآراء | كلية الشريعة والأنظمة</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">جارٍ تحميل البيانات...</p>
+        </div>
+    </div>
+
+    <div class="page-shell">
+        <header class="hero">
+            <div class="hero-top">
+                <div class="hero-copy">
+                    <p class="hero-kicker">كلية الشريعة والأنظمة</p>
+                    <h1>ساحة الاستطلاعات والآراء</h1>
+                    <p class="hero-text">لوحة متابعة مركزة لاستطلاعات الطلاب تعرض النظرة العامة والاستطلاعات التفصيلية والمقارنة والتحليل والاستعراض المخصص.</p>
+                </div>
+                <div class="hero-mark" aria-hidden="true">
+                    <svg viewBox="0 0 96 96" fill="none">
+                        <rect x="8" y="8" width="80" height="80" rx="24" stroke="currentColor" stroke-width="2"></rect>
+                        <path d="M26 58c0-18 14-32 31-32 11 0 19 5 24 14" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+                        <path d="M28 66c7 8 13 12 21 12 17 0 31-14 31-31" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+                        <circle cx="30" cy="64" r="5" fill="currentColor"></circle>
+                        <circle cx="73" cy="40" r="6" fill="currentColor"></circle>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="hero-search">
+                <input id="globalSearchInput" type="search" class="hero-search-input" placeholder="ابحث في جميع الاستطلاعات...">
+            </div>
+
+            <div id="summaryGrid" class="summary-grid"></div>
+        </header>
+
+        <section class="panel nav-panel">
+            <nav id="navTabs" class="nav-tabs" aria-label="الأقسام الأساسية">
+                <button class="nav-btn is-active" type="button" data-view="overview">لوحة المتابعة</button>
+                <button class="nav-btn" type="button" data-view="explore">استكشاف البرامج</button>
+                <button class="nav-btn" type="button" data-view="insights">التحليل والمقارنة</button>
+            </nav>
+        </section>
+
+        <main class="main-grid">
+            <section id="overviewSection" class="view-section">
+                <div class="section-head">
+                    <div>
+                        <h2>نظرة عامة</h2>
+                        <p id="overviewMeta" class="meta-text"></p>
+                    </div>
+                </div>
+
+                <div id="overviewIndicators" class="kpi-grid"></div>
+
+                <div class="charts-grid">
+                    <article class="card chart-card">
+                        <div class="card-head">
+                            <h3>متوسطات البرامج</h3>
+                        </div>
+                        <div class="chart-wrap chart-tall">
+                            <canvas id="overviewProgramChart"></canvas>
+                        </div>
+                    </article>
+
+                    <article class="card chart-card">
+                        <div class="card-head">
+                            <h3>متوسط المحاور</h3>
+                        </div>
+                        <div class="chart-wrap chart-tall">
+                            <canvas id="overviewSectionChart"></canvas>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="charts-grid">
+                    <article class="card chart-card">
+                        <div class="card-head">
+                            <h3>الاتجاه الزمني</h3>
+                        </div>
+                        <div class="chart-wrap chart-medium">
+                            <canvas id="overviewTrendChart"></canvas>
+                        </div>
+                    </article>
+
+                    <article class="card chart-card">
+                        <div class="card-head">
+                            <h3>توزيع المستويات</h3>
+                        </div>
+                        <div class="chart-wrap chart-medium">
+                            <canvas id="overviewBandChart"></canvas>
+                        </div>
+                    </article>
+                </div>
+
+                <article class="card">
+                    <div class="card-head">
+                        <h3>ترتيب البرامج</h3>
+                        <span id="overviewTableMeta" class="meta-text"></span>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>الترتيب</th>
+                                    <th>البرنامج</th>
+                                    <th>الدرجة</th>
+                                    <th>عدد العناصر</th>
+                                    <th>المتوسط العام</th>
+                                    <th>أفضل محور</th>
+                                </tr>
+                            </thead>
+                            <tbody id="overviewTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div id="overviewEmpty" class="empty-state hidden">لا توجد بيانات كافية في النظرة العامة.</div>
+                </article>
+            </section>
+
+            <section id="exploreSection" class="view-section hidden">
+                <div class="section-head">
+                    <div>
+                        <h2>استكشاف البرامج</h2>
+                        <p id="exploreMeta" class="meta-text"></p>
+                    </div>
+                    <div class="action-group">
+                        <button id="exploreResetBtn" class="btn btn-ghost" type="button">إعادة الضبط</button>
+                        <button id="exportExploreExcel" class="btn" type="button">Excel</button>
+                        <button id="exportExploreCsv" class="btn" type="button">CSV</button>
+                        <button id="exportExplorePdf" class="btn btn-primary" type="button">PDF</button>
+                    </div>
+                </div>
+
+                <article class="card filter-card">
+                    <div class="filters-grid filters-grid-single">
+                        <div class="field-group">
+                            <label for="exploreSearchInput">بحث نصي</label>
+                            <input id="exploreSearchInput" type="search" placeholder="ابحث في البرنامج أو الاستطلاع أو الموضوع أو نص العبارة...">
+                        </div>
+                    </div>
+
+                    <div class="filters-grid filters-grid-single">
+                        <div class="field-group">
+                            <label for="exploreProgram">البرنامج</label>
+                            <select id="exploreProgram"></select>
+                        </div>
+                    </div>
+
+                    <div class="chip-filter-group">
+                        <div class="chip-filter">
+                            <span class="chip-filter-label">السنة</span>
+                            <div id="exploreYearChips" class="chip-filter-options" data-filter="year"></div>
+                        </div>
+                        <div class="chip-filter">
+                            <span class="chip-filter-label">الجهة</span>
+                            <div id="exploreStakeholderChips" class="chip-filter-options" data-filter="stakeholder"></div>
+                        </div>
+                        <div class="chip-filter">
+                            <span class="chip-filter-label">الجنس</span>
+                            <div id="exploreGenderChips" class="chip-filter-options" data-filter="gender"></div>
+                            <small id="exploreGenderHint" class="field-hint hidden">الجنس غير مفكك في الملف الشامل الحالي.</small>
+                        </div>
+                    </div>
+
+                    <div class="chip-filter-group">
+                        <div class="chip-filter">
+                            <span class="chip-filter-label">نوع الموضوع</span>
+                            <div id="exploreTopicModeChips" class="chip-filter-options" data-filter="topicMode"></div>
+                        </div>
+                    </div>
+
+                    <div id="exploreGeneralTopicPanel" class="filters-grid filters-grid-single">
+                        <div class="field-group">
+                            <label for="exploreSubject">الموضوع العام</label>
+                            <select id="exploreSubject"></select>
+                        </div>
+                    </div>
+                    <div id="exploreSelfStudyPanel" class="filters-grid filters-grid-single hidden">
+                        <div class="field-group">
+                            <label for="exploreSelfStudyFilter">المحك / الجانب المدعوم / نص العبارة</label>
+                            <select id="exploreSelfStudyFilter"></select>
+                        </div>
+                    </div>
+
+                    <div id="exploreActiveFilters" class="chips-row"></div>
+                </article>
+
+                <div id="exploreIndicators" class="kpi-grid"></div>
+
+                <div class="charts-grid">
+                    <article class="card chart-card">
+                        <div class="card-head">
+                            <h3>متوسط المحاور</h3>
+                        </div>
+                        <div class="chart-wrap chart-medium">
+                            <canvas id="exploreSectionChart"></canvas>
+                        </div>
+                    </article>
+
+                    <article class="card chart-card">
+                        <div class="card-head">
+                            <h3>أعلى البنود</h3>
+                        </div>
+                        <div class="chart-wrap chart-tall">
+                            <canvas id="exploreItemChart"></canvas>
+                        </div>
+                    </article>
+                </div>
+
+                <article id="exploreExportArea" class="card">
+                    <div class="card-head">
+                        <h3>البيانات التفصيلية</h3>
+                        <span id="exploreTableMeta" class="meta-text"></span>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data-table" id="exploreTable">
+                            <thead>
+                                <tr>
+                                    <th>البرنامج</th>
+                                    <th>السنة</th>
+                                    <th>المحور</th>
+                                    <th>الاستطلاع</th>
+                                    <th>العنوان/العبارة</th>
+                                    <th>النوع</th>
+                                    <th>الجنس</th>
+                                    <th>عدد الطلاب</th>
+                                    <th>المتوسط</th>
+                                    <th>الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="exploreTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div id="exploreEmpty" class="empty-state hidden">لا توجد بيانات مطابقة للفلاتر الحالية.</div>
+                </article>
+            </section>
+
+            <section id="insightsSection" class="view-section hidden">
+                <div class="section-head">
+                    <div>
+                        <h2>التحليل والمقارنة</h2>
+                        <p id="insightsMeta" class="meta-text"></p>
+                    </div>
+                    <div class="action-group">
+                        <button id="insightsResetBtn" class="btn btn-ghost" type="button">إعادة الضبط</button>
+                        <button id="exportInsightsExcel" class="btn" type="button">Excel</button>
+                        <button id="exportInsightsCsv" class="btn" type="button">CSV</button>
+                        <button id="exportInsightsPdf" class="btn btn-primary" type="button">PDF</button>
+                    </div>
+                </div>
+
+                <div class="sub-tabs">
+                    <button class="sub-tab is-active" type="button" data-subtab="analysis">الرؤى والتحليل</button>
+                    <button class="sub-tab" type="button" data-subtab="compare">المقارنة</button>
+                </div>
+
+                <div id="analysisSubView" class="sub-view">
+                    <article class="card filter-card">
+                        <div class="chip-filter-group">
+                            <div class="chip-filter">
+                                <span class="chip-filter-label">السنة</span>
+                                <div id="analysisYearChips" class="chip-filter-options" data-filter="year"></div>
+                            </div>
+                            <div class="chip-filter">
+                                <span class="chip-filter-label">الجهة</span>
+                                <div id="analysisStakeholderChips" class="chip-filter-options" data-filter="stakeholder"></div>
+                            </div>
+                            <div class="chip-filter">
+                                <span class="chip-filter-label">نوع الموضوع</span>
+                                <div id="analysisTopicModeChips" class="chip-filter-options" data-filter="topicMode"></div>
+                            </div>
+                        </div>
+
+                        <div id="analysisGeneralTopicPanel" class="filters-grid filters-grid-single">
+                            <div class="field-group">
+                                <label for="analysisSubjectFilter">الموضوع العام</label>
+                                <select id="analysisSubjectFilter"></select>
+                            </div>
+                        </div>
+                        <div id="analysisSelfStudyPanel" class="filters-grid filters-grid-single hidden">
+                            <div class="field-group">
+                                <label for="analysisSelfStudyFilter">المحك / الجانب المدعوم / نص العبارة</label>
+                                <select id="analysisSelfStudyFilter"></select>
+                            </div>
+                        </div>
+
+                        <div class="filter-subhead">
+                            <div>
+                                <h3>اختيار البرامج</h3>
+                                <p>يمكن تحديد برنامج واحد أو عدة برامج في الوقت نفسه.</p>
+                            </div>
+                            <div class="action-group">
+                                <button id="analysisSelectAllProgramsBtn" class="btn btn-ghost" type="button">تحديد الكل</button>
+                                <button id="analysisClearProgramsBtn" class="btn btn-ghost" type="button">مسح</button>
+                            </div>
+                        </div>
+
+                        <div id="analysisProgramsList" class="program-checklist"></div>
+                        <div id="analysisActiveFilters" class="chips-row"></div>
+                    </article>
+
+                    <div id="analysisIndicators" class="kpi-grid"></div>
+
+                    <div class="insights-grid">
+                        <article class="card">
+                            <div class="card-head">
+                                <h3>نقاط القوة</h3>
+                            </div>
+                            <div id="analysisStrengths" class="insight-list"></div>
+                        </article>
+
+                        <article class="card">
+                            <div class="card-head">
+                                <h3>فرص التحسين</h3>
+                            </div>
+                            <div id="analysisWatchlist" class="insight-list"></div>
+                        </article>
+                    </div>
+
+                    <div class="charts-grid charts-grid-single">
+                        <article class="card chart-card">
+                            <div class="card-head">
+                                <h3>متوسط المحاور</h3>
+                            </div>
+                            <div class="chart-wrap chart-medium">
+                                <canvas id="analysisSectionChart"></canvas>
+                            </div>
+                        </article>
+                    </div>
+
+                    <article class="card">
+                        <div class="card-head">
+                            <h3 id="analysisTableTitle">مصفوفة التحليل</h3>
+                            <span id="analysisTableMeta" class="meta-text"></span>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="data-table">
+                                <thead id="analysisTableHead"></thead>
+                                <tbody id="analysisTableBody"></tbody>
+                            </table>
+                        </div>
+                        <div id="analysisEmpty" class="empty-state hidden">لا توجد بيانات تحليلية في النطاق الحالي.</div>
+                    </article>
+                </div>
+
+                <div id="compareSubView" class="sub-view hidden">
+                    <article class="card filter-card">
+                        <div class="chip-filter-group">
+                            <div class="chip-filter">
+                                <span class="chip-filter-label">الجهة</span>
+                                <div id="compareStakeholderChips" class="chip-filter-options" data-filter="stakeholder"></div>
+                            </div>
+                            <div class="chip-filter">
+                                <span class="chip-filter-label">نوع الموضوع</span>
+                                <div id="compareTopicModeChips" class="chip-filter-options" data-filter="topicMode"></div>
+                            </div>
+                        </div>
+
+                        <div id="compareGeneralTopicPanel" class="filters-grid filters-grid-single">
+                            <div class="field-group">
+                                <label for="compareSubjectFilter">الموضوع العام</label>
+                                <select id="compareSubjectFilter"></select>
+                            </div>
+                        </div>
+                        <div id="compareSelfStudyPanel" class="filters-grid filters-grid-single hidden">
+                            <div class="field-group">
+                                <label for="compareSelfStudyFilter">المحك / الجانب المدعوم / نص العبارة</label>
+                                <select id="compareSelfStudyFilter"></select>
+                            </div>
+                        </div>
+
+                        <div id="compareActiveFilters" class="chips-row"></div>
+                    </article>
+
+                    <div class="compare-grid">
+                        <article class="compare-slot">
+                            <h3>الخانة الأولى</h3>
+                            <div class="field-group">
+                                <label for="compareProgramA">البرنامج</label>
+                                <select id="compareProgramA"></select>
+                            </div>
+                            <div class="field-group">
+                                <label for="compareYearA">السنة</label>
+                                <select id="compareYearA"></select>
+                            </div>
+                        </article>
+
+                        <article class="compare-slot">
+                            <h3>الخانة الثانية</h3>
+                            <div class="field-group">
+                                <label for="compareProgramB">البرنامج</label>
+                                <select id="compareProgramB"></select>
+                            </div>
+                            <div class="field-group">
+                                <label for="compareYearB">السنة</label>
+                                <select id="compareYearB"></select>
+                            </div>
+                        </article>
+
+                        <article class="compare-slot">
+                            <h3>الخانة الثالثة</h3>
+                            <div class="field-group">
+                                <label for="compareProgramC">البرنامج</label>
+                                <select id="compareProgramC"></select>
+                            </div>
+                            <div class="field-group">
+                                <label for="compareYearC">السنة</label>
+                                <select id="compareYearC"></select>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div id="compareIndicators" class="kpi-grid kpi-grid-3"></div>
+
+                    <div class="charts-grid">
+                        <article class="card chart-card">
+                            <div class="card-head">
+                                <h3>مقارنة المحاور</h3>
+                            </div>
+                            <div class="chart-wrap chart-tall">
+                                <canvas id="compareSectionChart"></canvas>
+                            </div>
+                        </article>
+
+                        <article class="card chart-card">
+                            <div class="card-head">
+                                <h3>المتوسط العام للخانات المحددة</h3>
+                            </div>
+                            <div class="chart-wrap chart-medium">
+                                <canvas id="compareAverageChart"></canvas>
+                            </div>
+                        </article>
+                    </div>
+
+                    <article id="compareExportArea" class="card">
+                        <div class="card-head">
+                            <h3>جدول المقارنة</h3>
+                            <span id="compareTableMeta" class="meta-text"></span>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="data-table">
+                                <thead id="compareTableHead"></thead>
+                                <tbody id="compareTableBody"></tbody>
+                            </table>
+                        </div>
+                        <div id="compareEmpty" class="empty-state hidden">ابدأ بتحديد برنامج وسنة في خانتين على الأقل للمقارنة.</div>
+                    </article>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <span id="footerSource"></span>
+        </footer>
+    </div>
+
+    <button id="customFab" class="fab" type="button" title="استطلاع مخصص">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+
+    <aside id="customDrawer" class="drawer hidden">
+        <div class="drawer-backdrop"></div>
+        <div class="drawer-panel">
+            <div class="drawer-head">
+                <h2>استطلاع مخصص</h2>
+                <button id="customDrawerClose" class="drawer-close" type="button">&times;</button>
+            </div>
+            <div class="drawer-body">
+                <p id="customMeta" class="meta-text"></p>
+
+                <article class="card filter-card">
+                    <div class="chip-filter-group">
+                        <div class="chip-filter">
+                            <span class="chip-filter-label">السنة</span>
+                            <div id="customYearChips" class="chip-filter-options" data-filter="year"></div>
+                        </div>
+                        <div class="chip-filter">
+                            <span class="chip-filter-label">الجهة</span>
+                            <div id="customStakeholderChips" class="chip-filter-options" data-filter="stakeholder"></div>
+                        </div>
+                        <div class="chip-filter">
+                            <span class="chip-filter-label">الجنس</span>
+                            <div id="customGenderChips" class="chip-filter-options" data-filter="gender"></div>
+                            <small id="customGenderHint" class="field-hint hidden">الجنس غير مفكك في الملف الشامل الحالي.</small>
+                        </div>
+                    </div>
+                    <div class="filters-grid filters-grid-single">
+                        <div class="field-group">
+                            <label for="customProgramFilter">البرنامج</label>
+                            <select id="customProgramFilter"></select>
+                        </div>
+                    </div>
+                    <div class="filters-grid filters-grid-single">
+                        <div class="field-group">
+                            <label for="customSubjectFilter">الموضوع</label>
+                            <select id="customSubjectFilter"></select>
+                        </div>
+                    </div>
+                    <div id="customActiveFilters" class="chips-row"></div>
+                </article>
+
+                <div id="customIndicators" class="kpi-grid"></div>
+
+                <div class="selector-layout-stacked">
+                    <article class="card">
+                        <div class="card-head">
+                            <div>
+                                <h3>جميع البنود المتاحة</h3>
+                                <p id="customAvailableMeta" class="meta-text"></p>
+                            </div>
+                            <div class="action-group">
+                                <button id="customSelectAllBtn" class="btn btn-ghost" type="button">تحديد الكل</button>
+                                <button id="customClearSelectionBtn" class="btn btn-ghost" type="button">مسح التحديد</button>
+                            </div>
+                        </div>
+                        <div id="customOptionsList" class="option-list"></div>
+                    </article>
+
+                    <article class="card">
+                        <div class="card-head">
+                            <div>
+                                <h3>العناصر المحددة</h3>
+                                <p id="customSelectedMeta" class="meta-text"></p>
+                            </div>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>المحور</th>
+                                        <th>الاستطلاع</th>
+                                        <th>العبارة</th>
+                                        <th>الجنس</th>
+                                        <th>عدد الطلاب</th>
+                                        <th>المتوسط</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customSelectedTableBody"></tbody>
+                            </table>
+                        </div>
+                        <div id="customEmpty" class="empty-state hidden">اختر البنود التي تريدها من القائمة المقابلة لتظهر درجاتها هنا.</div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div id="bottomSheet" class="bottom-sheet hidden">
+        <div class="bottom-sheet-backdrop"></div>
+        <div class="bottom-sheet-panel">
+            <div class="bottom-sheet-handle"></div>
+            <div class="bottom-sheet-head">
+                <h3 id="bottomSheetTitle"></h3>
+            </div>
+            <div class="bottom-sheet-search">
+                <input id="bottomSheetSearch" type="search" placeholder="بحث...">
+            </div>
+            <div id="bottomSheetOptions" class="bottom-sheet-options"></div>
+        </div>
+    </div>
+
+    <script src="js/surveys-data.js"></script>
+    <script src="js/self-study-data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
