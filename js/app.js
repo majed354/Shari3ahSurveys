@@ -639,7 +639,7 @@ function bindEvents() {
 
     if (refs.exportExploreExcel) refs.exportExploreExcel.addEventListener("click", () => exportExploreData("xlsx"));
     if (refs.exportExploreCsv) refs.exportExploreCsv.addEventListener("click", () => exportExploreData("csv"));
-    if (refs.exportExplorePdf) refs.exportExplorePdf.addEventListener("click", () => exportSectionAsPdf("exploreTableMeta", "استكشاف-البرامج.pdf"));
+    if (refs.exportExplorePdf) refs.exportExplorePdf.addEventListener("click", () => exportSectionAsPdf("exploreExportArea", "استكشاف-البرامج.pdf"));
 
     bindTrendEvents();
     bindGapsEvents();
@@ -1839,7 +1839,7 @@ function renderExploreSection() {
     const programRows = buildExploreItemRows(records);
     const sectionAverage = surveyRows.length ? averageScore(surveyRows) : null;
 
-    refs.exploreMeta.textContent = `${toArabicNumber(surveyRows.length)} استطلاع · ${toArabicNumber(records.length)} عبارة`;
+    refs.exploreMeta.textContent = `${toArabicNumber(surveyRows.length)} استطلاع · ${toArabicNumber(programRows.length)} عبارة`;
 
     renderMetricCards(refs.exploreIndicators, [
         {
@@ -1899,14 +1899,16 @@ function renderExploreSection() {
                 <td>${escapeHtml(row.program.name)}</td>
                 <td>${escapeHtml(row.year)}</td>
                 <td>${escapeHtml(row.sectionLabel)}</td>
+                <td>${escapeHtml(row.surveyTitle)}</td>
                 <td>
                     <span class="cell-title">${escapeHtml(row.title)}</span>
-                    ${row.subtitle ? `<span class="cell-subtitle">${row.subtitle}</span>` : ""}
+                    ${row.subtitle ? `<span class="cell-subtitle">${escapeHtml(row.subtitle)}</span>` : ""}
                 </td>
                 <td>${escapeHtml(row.type)}</td>
-                <td>${escapeHtml(getGenderFilterLabel(state.exploreFilters.gender))}</td>
+                <td>${escapeHtml(row.genderLabel)}</td>
                 <td>${toArabicNumber(row.respondentCount)}</td>
                 <td>${renderScorePill(row.average)}</td>
+                <td>${renderStatusPill(row.average)}</td>
             </tr>
         `).join("");
         refs.exploreEmpty.classList.add("hidden");
@@ -1922,27 +1924,24 @@ function getItemRecordsForExploreFilters() {
 }
 
 function buildExploreItemRows(records) {
-    const rows = [];
-    const seen = new Set();
-    records.forEach((record) => {
-        const key = `${record.programId}||${record.year}||${record.sectionId}||${normalizeText(record.surveyTitle)}||${record.itemNumber}||${normalizeText(record.itemLabel)}`;
-        if (seen.has(key)) return;
-        seen.add(key);
-        rows.push({
-            uid: record.uid,
-            program: getProgramById(record.programId),
-            year: record.year,
-            sectionId: record.sectionId,
-            sectionLabel: record.sectionLabel,
-            surveyTitle: record.surveyTitle,
-            title: record.itemLabel,
-            subtitle: record.topicLabel ? `<span>${escapeHtml(record.topicLabel)}</span>` : "",
-            type: "عبارة",
-            respondentCount: record.responses,
-            average: record.average,
-        });
-    });
-    return rows;
+    const genderLabel = state.exploreFilters.gender === "all"
+        ? "كل الاستجابات"
+        : getGenderFilterLabel(state.exploreFilters.gender);
+
+    return aggregateItemRows(records).map((row) => ({
+        uid: row.uid,
+        program: getProgramById(row.programId),
+        year: row.year,
+        sectionId: row.sectionId,
+        sectionLabel: row.sectionLabel,
+        surveyTitle: row.surveyTitle,
+        title: row.title,
+        subtitle: row.parentTitle || "",
+        type: row.rowKind,
+        genderLabel,
+        respondentCount: row.respondentCount,
+        average: row.average,
+    }));
 }
 
 // renderProgramSection removed — replaced by renderExploreSection
