@@ -387,7 +387,7 @@ input {
 .filterable-select__menu {
     position: absolute;
     top: calc(100% + 8px);
-    inset-inline-end: 0;
+    inset-inline-start: 0;
     z-index: 9999;
     display: none;
     gap: 10px;
@@ -396,8 +396,8 @@ input {
     border: 1px solid var(--line-strong);
     background: #fff;
     box-shadow: 0 20px 40px rgba(17, 24, 39, 0.14);
-    width: clamp(360px, 60vw, 640px);
-    max-width: 92vw;
+    width: 100%;
+    max-width: 100%;
 }
 
 .filterable-select.is-open .filterable-select__menu {
