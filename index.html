@@ -54,6 +54,7 @@
                 <button class="nav-btn is-active" type="button" data-view="overview" aria-current="page">لوحة المتابعة</button>
                 <button class="nav-btn" type="button" data-view="explore" aria-current="false">استكشاف البرامج</button>
                 <button class="nav-btn" type="button" data-view="insights" aria-current="false">التحليل والمقارنة</button>
+                <button class="nav-btn" type="button" data-view="custom" aria-current="false">استطلاع مخصص</button>
                 <button class="nav-btn" type="button" data-view="search" aria-current="false">البحث</button>
             </nav>
         </section>
@@ -562,6 +563,98 @@
                 </div>
             </section>
 
+            <section id="customSection" class="view-section hidden">
+                <div class="section-head">
+                    <div>
+                        <h2>استطلاع مخصص</h2>
+                        <p id="customMeta" class="meta-text"></p>
+                    </div>
+                    <div class="action-group">
+                        <button id="exportCustomExcel" class="btn" type="button">Excel</button>
+                        <button id="exportCustomCsv" class="btn" type="button">CSV</button>
+                        <button id="exportCustomPdf" class="btn btn-primary" type="button">PDF</button>
+                    </div>
+                </div>
+
+                <article class="card filter-card">
+                    <div class="chip-filter-group">
+                        <div class="chip-filter">
+                            <span class="chip-filter-label">السنة</span>
+                            <div id="customYearChips" class="chip-filter-options" data-filter="year"></div>
+                        </div>
+                        <div class="chip-filter">
+                            <span class="chip-filter-label">الجهة</span>
+                            <div id="customStakeholderChips" class="chip-filter-options" data-filter="stakeholder"></div>
+                        </div>
+                        <div class="chip-filter">
+                            <span class="chip-filter-label">الجنس</span>
+                            <div id="customGenderChips" class="chip-filter-options" data-filter="gender"></div>
+                            <small id="customGenderHint" class="field-hint hidden">الجنس غير مفكك في الملف الشامل الحالي.</small>
+                        </div>
+                    </div>
+                    <div class="filters-grid filters-grid-single">
+                        <div class="field-group">
+                            <label for="customProgramFilter">البرنامج</label>
+                            <select id="customProgramFilter"></select>
+                        </div>
+                    </div>
+                    <div class="filters-grid filters-grid-single">
+                        <div class="field-group">
+                            <label for="customSubjectFilter">الموضوع</label>
+                            <select id="customSubjectFilter"></select>
+                        </div>
+                    </div>
+                    <div class="filters-grid filters-grid-single">
+                        <div class="field-group">
+                            <label for="customSearchInput">بحث في العبارات</label>
+                            <input id="customSearchInput" type="search" placeholder="ابحث في العبارات لتصفيتها...">
+                        </div>
+                    </div>
+                    <div id="customActiveFilters" class="chips-row"></div>
+                </article>
+
+                <div id="customIndicators" class="kpi-grid"></div>
+
+                <article class="card">
+                    <div class="card-head">
+                        <div>
+                            <h3>العبارات المتاحة</h3>
+                            <p id="customAvailableMeta" class="meta-text"></p>
+                        </div>
+                        <div class="action-group">
+                            <button id="customSelectAllBtn" class="btn btn-ghost" type="button">تحديد الكل</button>
+                            <button id="customClearSelectionBtn" class="btn btn-ghost" type="button">مسح التحديد</button>
+                        </div>
+                    </div>
+                    <div id="customOptionsList" class="option-list"></div>
+                </article>
+
+                <article class="card">
+                    <div class="card-head">
+                        <div>
+                            <h3>العناصر المحددة</h3>
+                            <p id="customSelectedMeta" class="meta-text"></p>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">المحور</th>
+                                    <th scope="col">الاستطلاع</th>
+                                    <th scope="col">العبارة</th>
+                                    <th scope="col">الجنس</th>
+                                    <th scope="col">عدد الطلاب</th>
+                                    <th scope="col">المتوسط</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customSelectedTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div id="customEmpty" class="empty-state hidden">اختر البنود التي تريدها من القائمة أعلاه لتظهر درجاتها هنا.</div>
+                </article>
+            </section>
+
             <section id="searchSection" class="view-section hidden">
                 <div class="section-head">
                     <div>
@@ -601,96 +694,7 @@
         </footer>
     </div>
 
-    <button id="customFab" class="fab" type="button" title="استطلاع مخصص" aria-label="استطلاع مخصص">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-    </button>
-
-    <aside id="customDrawer" class="drawer hidden" role="dialog" aria-modal="true" aria-labelledby="customDrawerTitle">
-        <div class="drawer-backdrop"></div>
-        <div class="drawer-panel">
-            <div class="drawer-head">
-                <h2 id="customDrawerTitle">استطلاع مخصص</h2>
-                <button id="customDrawerClose" class="drawer-close" type="button">&times;</button>
-            </div>
-            <div class="drawer-body">
-                <p id="customMeta" class="meta-text"></p>
-
-                <article class="card filter-card">
-                    <div class="chip-filter-group">
-                        <div class="chip-filter">
-                            <span class="chip-filter-label">السنة</span>
-                            <div id="customYearChips" class="chip-filter-options" data-filter="year"></div>
-                        </div>
-                        <div class="chip-filter">
-                            <span class="chip-filter-label">الجهة</span>
-                            <div id="customStakeholderChips" class="chip-filter-options" data-filter="stakeholder"></div>
-                        </div>
-                        <div class="chip-filter">
-                            <span class="chip-filter-label">الجنس</span>
-                            <div id="customGenderChips" class="chip-filter-options" data-filter="gender"></div>
-                            <small id="customGenderHint" class="field-hint hidden">الجنس غير مفكك في الملف الشامل الحالي.</small>
-                        </div>
-                    </div>
-                    <div class="filters-grid filters-grid-single">
-                        <div class="field-group">
-                            <label for="customProgramFilter">البرنامج</label>
-                            <select id="customProgramFilter"></select>
-                        </div>
-                    </div>
-                    <div class="filters-grid filters-grid-single">
-                        <div class="field-group">
-                            <label for="customSubjectFilter">الموضوع</label>
-                            <select id="customSubjectFilter"></select>
-                        </div>
-                    </div>
-                    <div id="customActiveFilters" class="chips-row"></div>
-                </article>
-
-                <div id="customIndicators" class="kpi-grid"></div>
-
-                <div class="selector-layout-stacked">
-                    <article class="card">
-                        <div class="card-head">
-                            <div>
-                                <h3>جميع البنود المتاحة</h3>
-                                <p id="customAvailableMeta" class="meta-text"></p>
-                            </div>
-                            <div class="action-group">
-                                <button id="customSelectAllBtn" class="btn btn-ghost" type="button">تحديد الكل</button>
-                                <button id="customClearSelectionBtn" class="btn btn-ghost" type="button">مسح التحديد</button>
-                            </div>
-                        </div>
-                        <div id="customOptionsList" class="option-list"></div>
-                    </article>
-
-                    <article class="card">
-                        <div class="card-head">
-                            <div>
-                                <h3>العناصر المحددة</h3>
-                                <p id="customSelectedMeta" class="meta-text"></p>
-                            </div>
-                        </div>
-                        <div class="table-wrap">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">المحور</th>
-                                        <th scope="col">الاستطلاع</th>
-                                        <th scope="col">العبارة</th>
-                                        <th scope="col">الجنس</th>
-                                        <th scope="col">عدد الطلاب</th>
-                                        <th scope="col">المتوسط</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="customSelectedTableBody"></tbody>
-                            </table>
-                        </div>
-                        <div id="customEmpty" class="empty-state hidden">اختر البنود التي تريدها من القائمة المقابلة لتظهر درجاتها هنا.</div>
-                    </article>
-                </div>
-            </div>
-        </div>
-    </aside>
+    <!-- FAB and drawer removed — custom survey is now a tab -->
 
     <div id="bottomSheet" class="bottom-sheet hidden" role="dialog" aria-modal="true" aria-labelledby="bottomSheetTitle">
         <div class="bottom-sheet-backdrop"></div>

@@ -223,9 +223,11 @@ function cacheRefs() {
     refs.exportInsightsPdf = document.getElementById("exportInsightsPdf");
 
     // Custom drawer
-    refs.customFab = document.getElementById("customFab");
-    refs.customDrawer = document.getElementById("customDrawer");
-    refs.customDrawerClose = document.getElementById("customDrawerClose");
+    refs.customSection = document.getElementById("customSection");
+    refs.customSearchInput = document.getElementById("customSearchInput");
+    refs.exportCustomExcel = document.getElementById("exportCustomExcel");
+    refs.exportCustomCsv = document.getElementById("exportCustomCsv");
+    refs.exportCustomPdf = document.getElementById("exportCustomPdf");
     refs.customYearChips = document.getElementById("customYearChips");
     refs.customStakeholderChips = document.getElementById("customStakeholderChips");
     refs.customGenderChips = document.getElementById("customGenderChips");
@@ -342,28 +344,17 @@ function bindEvents() {
         });
     }
 
-    // Drawer FAB and close
-    if (refs.customFab) {
-        refs.customFab.addEventListener("click", () => {
-            if (refs.customDrawer) {
-                refs.customDrawer.classList.remove("hidden");
-                document.body.style.overflow = "hidden";
-                renderCustomControls();
-                renderCustomSection();
-            }
+    /* Custom tab: search input for filtering available items */
+    if (refs.customSearchInput) {
+        refs.customSearchInput.addEventListener("input", () => {
+            renderCustomSection();
         });
     }
 
-    if (refs.customDrawerClose) {
-        refs.customDrawerClose.addEventListener("click", closeCustomDrawer);
-    }
-
-    if (refs.customDrawer) {
-        const backdrop = refs.customDrawer.querySelector(".drawer-backdrop");
-        if (backdrop) {
-            backdrop.addEventListener("click", closeCustomDrawer);
-        }
-    }
+    /* Custom tab: export buttons */
+    if (refs.exportCustomExcel) refs.exportCustomExcel.addEventListener("click", () => exportCustomData("xlsx"));
+    if (refs.exportCustomCsv) refs.exportCustomCsv.addEventListener("click", () => exportCustomData("csv"));
+    if (refs.exportCustomPdf) refs.exportCustomPdf.addEventListener("click", () => exportSectionAsPdf("customSection", "استطلاع-مخصص.pdf"));
 
     // Explore section filters
     if (refs.exploreProgram) {
@@ -720,13 +711,6 @@ function bindGapsEvents() {
     });
 }
 
-function closeCustomDrawer() {
-    if (refs.customDrawer) {
-        refs.customDrawer.classList.add("hidden");
-        document.body.style.overflow = "";
-    }
-}
-
 function bindSingleFilterEvents(programRef, yearRef, stakeholderRef, subjectRef, genderRef, stateRef, resetRef, controlsRenderer, sectionRenderer) {
     programRef.addEventListener("change", (event) => {
         stateRef.program = event.target.value;
@@ -812,12 +796,14 @@ function renderViewState() {
     if (refs.overviewSection) refs.overviewSection.classList.toggle("hidden", state.view !== "overview");
     if (refs.exploreSection) refs.exploreSection.classList.toggle("hidden", state.view !== "explore");
     if (refs.insightsSection) refs.insightsSection.classList.toggle("hidden", state.view !== "insights");
+    if (refs.customSection) refs.customSection.classList.toggle("hidden", state.view !== "custom");
     if (refs.searchSection) refs.searchSection.classList.toggle("hidden", state.view !== "search");
 }
 
 function renderCurrentView() {
     if (state.view === "overview") renderOverviewSection();
     if (state.view === "explore") renderExploreSection();
+    if (state.view === "custom") { renderCustomControls(); renderCustomSection(); }
     if (state.view === "search") { if (refs.searchInput) refs.searchInput.focus(); }
     if (state.view === "insights") {
         if (state.insightsSubTab === "analysis") renderAnalysisSection();
@@ -2113,8 +2099,12 @@ function renderAnalysisSection() {
 }
 
 function renderCustomSection() {
-    const rows = getCustomRows();
-    const selectedRows = rows.filter((row) => state.customSelected.has(row.uid));
+    const allRows = getCustomRows();
+    const customQuery = refs.customSearchInput ? refs.customSearchInput.value.trim() : "";
+    const rows = customQuery
+        ? allRows.filter((row) => searchMatches(customQuery, [row.title, row.surveyTitle, row.topicLabel, row.sectionLabel, row.programName].join(" ")))
+        : allRows;
+    const selectedRows = allRows.filter((row) => state.customSelected.has(row.uid));
     const selectedAverage = averageScore(selectedRows);
     const totalSelectedParticipants = selectedRows.reduce((sum, row) => sum + row.respondentCount, 0);
 
@@ -3246,6 +3236,23 @@ function exportGapsData(type) {
         return;
     }
     exportExcel(`${filename}.xlsx`, "تقرير الفجوات", headers, data);
+}
+
+function exportCustomData(type) {
+    const allRows = getCustomRows();
+    const selectedRows = allRows.filter((row) => state.customSelected.has(row.uid));
+    if (!selectedRows.length) {
+        window.alert("لا توجد عناصر محددة للتصدير. حدّد بنوداً أولاً.");
+        return;
+    }
+    const headers = ["المحور", "الاستطلاع", "العبارة", "الموضوع", "البرنامج", "السنة", "المشاركون", "المتوسط"];
+    const data = selectedRows.map((row) => [
+        row.sectionLabel, row.surveyTitle, row.title, row.topicLabel,
+        row.programName, `${row.year}هـ`, row.respondentCount, formatScore(row.average),
+    ]);
+    const filename = "استطلاع-مخصص";
+    if (type === "csv") { exportCsv(`${filename}.csv`, headers, data); return; }
+    exportExcel(`${filename}.xlsx`, "استطلاع مخصص", headers, data);
 }
 
 function exportExcel(filename, sheetName, headers, data) {
