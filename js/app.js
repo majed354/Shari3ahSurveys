@@ -172,6 +172,8 @@ function cacheRefs() {
     refs.searchNoResults = document.getElementById("searchNoResults");
     refs.searchNoResultsHint = document.getElementById("searchNoResultsHint");
     refs.searchResultsList = document.getElementById("searchResultsList");
+    refs.exportSearchCsv = document.getElementById("exportSearchCsv");
+    refs.exportSearchPdf = document.getElementById("exportSearchPdf");
     refs.analysisSubView = document.getElementById("analysisSubView");
     refs.compareSubView = document.getElementById("compareSubView");
 
@@ -354,7 +356,7 @@ function bindEvents() {
     /* Custom tab: export buttons */
     if (refs.exportCustomExcel) refs.exportCustomExcel.addEventListener("click", () => exportCustomData("xlsx"));
     if (refs.exportCustomCsv) refs.exportCustomCsv.addEventListener("click", () => exportCustomData("csv"));
-    if (refs.exportCustomPdf) refs.exportCustomPdf.addEventListener("click", () => exportSectionAsPdf("customSection", "استطلاع-مخصص.pdf"));
+    if (refs.exportCustomPdf) refs.exportCustomPdf.addEventListener("click", () => exportCustomResultsPdf());
 
     // Explore section filters
     if (refs.exploreProgram) {
@@ -373,6 +375,8 @@ function bindEvents() {
             searchDebounce = setTimeout(() => renderSearchResults(), 200);
         });
     }
+    if (refs.exportSearchCsv) refs.exportSearchCsv.addEventListener("click", () => exportSearchResults("csv"));
+    if (refs.exportSearchPdf) refs.exportSearchPdf.addEventListener("click", () => exportSearchResults("pdf"));
 
     if (refs.exploreResetBtn) {
         refs.exploreResetBtn.addEventListener("click", () => {
@@ -639,7 +643,7 @@ function bindEvents() {
 
     if (refs.exportExploreExcel) refs.exportExploreExcel.addEventListener("click", () => exportExploreData("xlsx"));
     if (refs.exportExploreCsv) refs.exportExploreCsv.addEventListener("click", () => exportExploreData("csv"));
-    if (refs.exportExplorePdf) refs.exportExplorePdf.addEventListener("click", () => exportSectionAsPdf("exploreExportArea", "استكشاف-البرامج.pdf"));
+    if (refs.exportExplorePdf) refs.exportExplorePdf.addEventListener("click", () => exportExploreResultsPdf());
 
     bindTrendEvents();
     bindGapsEvents();
@@ -657,10 +661,10 @@ function bindEvents() {
         else if (state.insightsSubTab === "gaps") exportGapsData("csv");
     });
     if (refs.exportInsightsPdf) refs.exportInsightsPdf.addEventListener("click", () => {
-        if (state.insightsSubTab === "compare") exportSectionAsPdf("compareSubView", "مقارنة-الاستطلاعات.pdf");
-        else if (state.insightsSubTab === "analysis") exportSectionAsPdf("analysisSubView", "تحليل-الاستطلاعات.pdf");
-        else if (state.insightsSubTab === "trend") exportSectionAsPdf("trendSubView", "التطور-الزمني.pdf");
-        else if (state.insightsSubTab === "gaps") exportSectionAsPdf("gapsSubView", "تقرير-الفجوات.pdf");
+        if (state.insightsSubTab === "compare") exportComparisonResultsPdf();
+        else if (state.insightsSubTab === "analysis") exportAnalysisResultsPdf();
+        else if (state.insightsSubTab === "trend") exportTrendResultsPdf();
+        else if (state.insightsSubTab === "gaps") exportGapsResultsPdf();
     });
 }
 
@@ -2636,28 +2640,91 @@ function renderMetricCards(container, cards) {
 
 /* ===== SEARCH TAB ===== */
 
-function renderSearchResults() {
-    const raw = (refs.searchInput ? refs.searchInput.value : "").trim();
-    if (!raw) {
-        if (refs.searchEmpty) refs.searchEmpty.classList.remove("hidden");
-        if (refs.searchNoResults) refs.searchNoResults.classList.add("hidden");
-        if (refs.searchResultsList) { refs.searchResultsList.classList.add("hidden"); refs.searchResultsList.innerHTML = ""; }
-        if (refs.searchResultCount) refs.searchResultCount.textContent = "";
-        return;
+function getVisibleSearchCriteria(record, queryInfo) {
+    return (record.selfStudyEntries || [])
+        .filter((entry) => entry.criterionCode)
+        .filter((entry) => !queryInfo.criterionCode || normalizeCriterionCodeForSearch(entry.criterionCode).startsWith(queryInfo.criterionCode));
+}
+
+function buildSearchCriterionSummary(uniqueCriterionCodes) {
+    if (!uniqueCriterionCodes.length) return "غير مرتبط بمحك";
+    return `المحكات: ${escapeHtml(uniqueCriterionCodes.slice(0, 4).join("، "))}${uniqueCriterionCodes.length > 4 ? ` +${toArabicNumber(uniqueCriterionCodes.length - 4)}` : ""}`;
+}
+
+function buildSearchResultMarkup(record, raw, queryInfo) {
+    const scoreTone = record.average >= 3.5 ? "good" : record.average >= 2.5 ? "ok" : "low";
+    const visibleCriteria = getVisibleSearchCriteria(record, queryInfo);
+    const uniqueCriterionCodes = Array.from(new Set(visibleCriteria.map((entry) => entry.criterionCode)));
+    const genderLabel = getSearchResultGenderLabel(record.gender);
+    const criterionBadges = uniqueCriterionCodes
+        .map((code) => `<span class="search-result-badge is-criterion">${escapeHtml(code)}</span>`)
+        .join("");
+    const criterionSummary = buildSearchCriterionSummary(uniqueCriterionCodes);
+    const unlinkedBadge = uniqueCriterionCodes.length ? "" : `<span class="search-result-badge">غير مرتبط بمحك</span>`;
+
+    let contextHtml = escapeHtml(record.itemLabel);
+    if (raw.length >= 2) {
+        const escaped = escapeRegExp(raw);
+        try {
+            contextHtml = contextHtml.replace(new RegExp(`(${escaped})`, "gi"), "<mark>$1</mark>");
+        } catch (error) {
+            /* ignore regex error */
+        }
     }
-    if (refs.searchEmpty) refs.searchEmpty.classList.add("hidden");
 
+    return `<div class="search-result-item">
+        <div class="search-result-head">
+            <span class="search-result-title">${contextHtml}</span>
+            <span class="search-result-score" data-tone="${scoreTone}">المتوسط ${formatScore(record.average)}</span>
+        </div>
+        <div class="search-result-badges">
+            <span class="search-result-badge is-program">${escapeHtml(record.programName)}</span>
+            <span class="search-result-badge">${escapeHtml(record.degree)}</span>
+            <span class="search-result-badge is-year">${record.year}هـ</span>
+            <span class="search-result-badge is-gender">${escapeHtml(genderLabel)}</span>
+            <span class="search-result-badge">${escapeHtml(record.stakeholderLabel)}</span>
+            <span class="search-result-badge">${escapeHtml(record.sectionLabel)}</span>
+            ${unlinkedBadge}
+            ${criterionBadges}
+        </div>
+        <div class="search-result-context">
+            ${escapeHtml(record.surveyTitle)}${record.topicLabel ? " · " + escapeHtml(record.topicLabel) : ""}
+        </div>
+        <div class="search-result-metrics">
+            <span class="search-result-metric">الجنس: ${escapeHtml(genderLabel)}</span>
+            <span class="search-result-metric">عدد الاستجابات: ${formatResponseCount(record.responses)}</span>
+            <span class="search-result-metric">درجة المتوسط: ${escapeHtml(formatScore(record.average))}</span>
+        </div>
+        ${criterionSummary ? `<div class="search-result-context">${criterionSummary}</div>` : ""}
+    </div>`;
+}
+
+function getSearchResultsPayload(rawInput) {
+    const raw = String(rawInput || "").trim();
     const queryInfo = analyzeSearchQuery(raw);
-    const hasStructuredQuery = Boolean(queryInfo.criterionCode || queryInfo.years.size);
-
-    /* Search all records */
+    const hasStructuredQuery = Boolean(queryInfo.criterionCode || queryInfo.years.size || queryInfo.degrees.size);
     const results = [];
+
+    if (!raw) {
+        return {
+            raw,
+            queryInfo,
+            hasStructuredQuery,
+            results,
+            displayResults: results,
+            truncated: false,
+        };
+    }
+
     ITEM_RECORDS.forEach((record) => {
         const entries = record.selfStudyEntries || [];
         let matched = true;
-        let matchSource = "";
 
-        if (queryInfo.years.size && !queryInfo.years.has(String(record.year))) {
+        if (queryInfo.degrees.size && !degreeMatchesQuery(record.degree, queryInfo.degrees)) {
+            matched = false;
+        }
+
+        if (matched && queryInfo.years.size && !queryInfo.years.has(String(record.year))) {
             matched = false;
         }
 
@@ -2666,7 +2733,6 @@ function renderSearchResults() {
                 if (!entry.criterionCode) return false;
                 return normalizeCriterionCodeForSearch(entry.criterionCode).startsWith(queryInfo.criterionCode);
             });
-            if (matched) matchSource = "criterion";
         }
 
         if (matched && queryInfo.textQuery) {
@@ -2678,17 +2744,37 @@ function renderSearchResults() {
                 ...(entries.length ? entries.map((entry) => `${entry.criterionCode} ${entry.criterionText} ${entry.supportedSide}`) : ["غير مرتبط بمحك"]),
             ].join(" ");
             matched = searchMatches(queryInfo.textQuery, searchText);
-            if (matched) matchSource = matchSource || "text";
         }
 
         if (!hasStructuredQuery && !queryInfo.textQuery) matched = false;
-        if (matched) results.push({ record, matchSource });
+        if (matched) results.push(record);
     });
 
+    return {
+        raw,
+        queryInfo,
+        hasStructuredQuery,
+        results,
+        displayResults: results.slice(0, 200),
+        truncated: results.length > 200,
+    };
+}
+
+function renderSearchResults() {
+    const payload = getSearchResultsPayload(refs.searchInput ? refs.searchInput.value : "");
+    if (!payload.raw) {
+        if (refs.searchEmpty) refs.searchEmpty.classList.remove("hidden");
+        if (refs.searchNoResults) refs.searchNoResults.classList.add("hidden");
+        if (refs.searchResultsList) { refs.searchResultsList.classList.add("hidden"); refs.searchResultsList.innerHTML = ""; }
+        if (refs.searchResultCount) refs.searchResultCount.textContent = "";
+        return;
+    }
+    if (refs.searchEmpty) refs.searchEmpty.classList.add("hidden");
+
     /* Show results */
-    if (!results.length) {
+    if (!payload.results.length) {
         if (refs.searchNoResults) refs.searchNoResults.classList.remove("hidden");
-        if (refs.searchNoResultsHint) refs.searchNoResultsHint.textContent = `لم يُعثر على نتائج لـ "${raw}"`;
+        if (refs.searchNoResultsHint) refs.searchNoResultsHint.textContent = `لم يُعثر على نتائج لـ "${payload.raw}"`;
         if (refs.searchResultsList) { refs.searchResultsList.classList.add("hidden"); refs.searchResultsList.innerHTML = ""; }
         if (refs.searchResultCount) refs.searchResultCount.textContent = "";
         return;
@@ -2696,58 +2782,15 @@ function renderSearchResults() {
 
     if (refs.searchNoResults) refs.searchNoResults.classList.add("hidden");
     if (refs.searchResultsList) refs.searchResultsList.classList.remove("hidden");
-    if (refs.searchResultCount) refs.searchResultCount.textContent = `${toArabicNumber(results.length)} نتيجة`;
-
-    /* Limit display to 200 to avoid performance issues */
-    const displayResults = results.slice(0, 200);
+    if (refs.searchResultCount) refs.searchResultCount.textContent = `${toArabicNumber(payload.results.length)} نتيجة`;
 
     if (refs.searchResultsList) {
-        refs.searchResultsList.innerHTML = displayResults.map(({ record, matchSource }) => {
-            const scoreTone = record.average >= 3.5 ? "good" : record.average >= 2.5 ? "ok" : "low";
-            const visibleCriteria = (record.selfStudyEntries || [])
-                .filter((e) => e.criterionCode)
-                .filter((e) => !queryInfo.criterionCode || normalizeCriterionCodeForSearch(e.criterionCode).startsWith(queryInfo.criterionCode));
-            const uniqueCriterionCodes = Array.from(new Set(visibleCriteria.map((e) => e.criterionCode)));
-            const criterionBadges = uniqueCriterionCodes
-                .map((code) => `<span class="search-result-badge is-criterion">${escapeHtml(code)}</span>`)
-                .join("");
-            const criterionSummary = uniqueCriterionCodes.length
-                ? `المحكات: ${escapeHtml(uniqueCriterionCodes.slice(0, 4).join("، "))}${uniqueCriterionCodes.length > 4 ? ` +${toArabicNumber(uniqueCriterionCodes.length - 4)}` : ""}`
-                : "غير مرتبط بمحك";
-            const unlinkedBadge = uniqueCriterionCodes.length ? "" : `<span class="search-result-badge">غير مرتبط بمحك</span>`;
+        refs.searchResultsList.innerHTML = payload.displayResults
+            .map((record) => buildSearchResultMarkup(record, payload.raw, payload.queryInfo))
+            .join("");
 
-            /* Highlight matching text */
-            let contextHtml = escapeHtml(record.itemLabel);
-            if (raw.length >= 2) {
-                const escaped = escapeRegExp(raw);
-                try {
-                    contextHtml = contextHtml.replace(new RegExp(`(${escaped})`, "gi"), "<mark>$1</mark>");
-                } catch (e) { /* ignore regex error */ }
-            }
-
-            return `<div class="search-result-item">
-                <div class="search-result-head">
-                    <span class="search-result-title">${contextHtml}</span>
-                    <span class="search-result-score" data-tone="${scoreTone}">${formatScore(record.average)}</span>
-                </div>
-                <div class="search-result-badges">
-                    <span class="search-result-badge is-program">${escapeHtml(record.programName)}</span>
-                    <span class="search-result-badge">${escapeHtml(record.degree)}</span>
-                    <span class="search-result-badge is-year">${record.year}هـ</span>
-                    <span class="search-result-badge">${escapeHtml(record.stakeholderLabel)}</span>
-                    <span class="search-result-badge">${escapeHtml(record.sectionLabel)}</span>
-                    ${unlinkedBadge}
-                    ${criterionBadges}
-                </div>
-                <div class="search-result-context">
-                    ${escapeHtml(record.surveyTitle)}${record.topicLabel ? " · " + escapeHtml(record.topicLabel) : ""}
-                </div>
-                ${criterionSummary ? `<div class="search-result-context">${criterionSummary}</div>` : ""}
-            </div>`;
-        }).join("");
-
-        if (results.length > 200) {
-            refs.searchResultsList.innerHTML += `<div class="search-empty-state"><p>يُعرض أول ٢٠٠ نتيجة من ${toArabicNumber(results.length)}. حاول تضييق البحث.</p></div>`;
+        if (payload.truncated) {
+            refs.searchResultsList.innerHTML += `<div class="search-empty-state"><p>يُعرض أول ٢٠٠ نتيجة من ${toArabicNumber(payload.results.length)}. حاول تضييق البحث.</p></div>`;
         }
     }
 }
@@ -3127,6 +3170,362 @@ function renderGapsSection() {
     }
 }
 
+function buildExportCardHtml(payload) {
+    const filtersHtml = (payload.filters || []).length
+        ? `<div class="pdf-export-badges">${payload.filters.map((item) => `<span class="pdf-export-badge">${escapeHtml(item)}</span>`).join("")}</div>`
+        : "";
+    const metricsHtml = (payload.metrics || []).length
+        ? `<div class="pdf-export-metrics">${payload.metrics.map((item) => `
+            <div class="pdf-export-metric">
+                <span class="pdf-export-metric-label">${escapeHtml(item.label)}</span>
+                <strong>${escapeHtml(item.value)}</strong>
+            </div>
+        `).join("")}</div>`
+        : "";
+    const noteHtml = payload.note ? `<div class="pdf-export-note">${escapeHtml(payload.note)}</div>` : "";
+    const tableHead = payload.headers.map((header) => `<th scope="col">${escapeHtml(header)}</th>`).join("");
+    const tableRows = payload.data.map((row) => `
+        <tr>${row.map((value) => `<td>${escapeHtml(value)}</td>`).join("")}</tr>
+    `).join("");
+
+    return `
+        <div class="pdf-export-card">
+            <div class="pdf-export-head">
+                <div>
+                    <h1>${escapeHtml(payload.title)}</h1>
+                    ${payload.subtitle ? `<p>${escapeHtml(payload.subtitle)}</p>` : ""}
+                </div>
+                <div class="pdf-export-date">${escapeHtml(new Date().toLocaleString("ar-SA"))}</div>
+            </div>
+            ${filtersHtml}
+            ${metricsHtml}
+            ${noteHtml}
+            <div class="pdf-export-table-wrap">
+                <table class="pdf-export-table">
+                    <thead><tr>${tableHead}</tr></thead>
+                    <tbody>${tableRows}</tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+async function exportPayloadAsPdfCard(payload) {
+    if (!payload) return;
+    if (!payload.data || !payload.data.length) {
+        window.alert("لا توجد نتائج قابلة للتصدير.");
+        return;
+    }
+
+    const container = document.createElement("div");
+    container.id = `pdfExportCard-${Date.now()}`;
+    container.className = "pdf-export-shell";
+    container.innerHTML = buildExportCardHtml(payload);
+    document.body.appendChild(container);
+
+    try {
+        await exportSectionAsPdf(container.id, payload.filename);
+    } finally {
+        container.remove();
+    }
+}
+
+function buildExploreExportPayload() {
+    const records = getItemRecordsForExploreFilters();
+    const surveyRows = aggregateSurveyRows(records);
+    if (!records.length) {
+        window.alert("لا توجد بيانات قابلة للتصدير في هذا النطاق.");
+        return null;
+    }
+
+    return {
+        filename: "استكشاف-البرامج.pdf",
+        title: "بطاقة نتائج الاستكشاف",
+        subtitle: "النتائج الحالية وفق المرشحات المختارة",
+        filters: buildSingleFilterChips(state.exploreFilters).map((chip) => `${chip.label}: ${chip.value}`),
+        metrics: [
+            { label: "عدد السجلات", value: toArabicNumber(records.length) },
+            { label: "عدد الاستطلاعات", value: toArabicNumber(surveyRows.length) },
+            { label: "إجمالي الاستجابات", value: toArabicNumber(records.reduce((sum, row) => sum + row.responses, 0)) },
+        ],
+        headers: ["البرنامج", "الدرجة", "السنة", "المحور", "الاستطلاع", "العبارة", "الجنس", "عدد الاستجابات", "المتوسط"],
+        data: records.map((row) => [
+            row.programName,
+            row.degree,
+            `${row.year}هـ`,
+            row.sectionLabel,
+            row.surveyTitle,
+            row.itemLabel,
+            getSearchResultGenderLabel(row.gender),
+            formatResponseCount(row.responses),
+            formatScore(row.average),
+        ]),
+    };
+}
+
+function buildComparisonExportPayload() {
+    const slotGroups = getActiveCompareSlots().map((slot) => ({
+        slot,
+        surveyRows: aggregateSurveyRows(getRecordsForCompareSlot(slot)),
+    }));
+
+    if (slotGroups.length < 2) {
+        window.alert("يلزم تحديد خانتين على الأقل لتصدير المقارنة.");
+        return null;
+    }
+
+    const comparisonRows = buildComparisonTableRows(slotGroups.map((group) => group.surveyRows));
+    return {
+        filename: "مقارنة-الاستطلاعات.pdf",
+        title: "بطاقة نتائج المقارنة",
+        subtitle: slotGroups.map((group) => formatCompareSlotLabel(group.slot)).join(" | "),
+        filters: [
+            `الجهة: ${state.compareFilters.stakeholder === "all" ? "الكل" : getStakeholderLabel(state.compareFilters.stakeholder)}`,
+            `الموضوع: ${getTopicSelectionLabel(state.compareFilters)}`,
+        ],
+        metrics: [
+            { label: "عدد المقارنات", value: toArabicNumber(slotGroups.length) },
+            { label: "عدد الصفوف", value: toArabicNumber(comparisonRows.length) },
+        ],
+        headers: [
+            "المحور",
+            "الاستطلاع",
+            ...slotGroups.flatMap((group) => [
+                `${formatCompareSlotLabel(group.slot)} - المتوسط`,
+                `${formatCompareSlotLabel(group.slot)} - عدد الاستجابات`,
+            ]),
+        ],
+        data: comparisonRows.map((row) => [
+            row.meta.sectionLabel,
+            row.meta.title,
+            ...row.values.flatMap((value) => [
+                value ? formatScore(value.average) : "—",
+                value ? formatResponseCount(value.respondentCount) : "—",
+            ]),
+        ]),
+    };
+}
+
+function buildAnalysisExportPayload() {
+    const records = getRecordsForAnalysis();
+    const surveyRows = aggregateSurveyRows(records);
+    if (!surveyRows.length) {
+        window.alert("لا توجد بيانات قابلة للتصدير في هذا النطاق.");
+        return null;
+    }
+
+    return {
+        filename: "تحليل-الاستطلاعات.pdf",
+        title: "بطاقة نتائج التحليل",
+        subtitle: "ملخص الاستطلاعات ضمن نطاق التحليل الحالي",
+        filters: [
+            `البرامج: ${state.analysisFilters.programs.size ? `${toArabicNumber(state.analysisFilters.programs.size)} برنامج` : "لا توجد برامج محددة"}`,
+            `السنة: ${state.analysisFilters.year === "all" ? "كل السنوات" : `${state.analysisFilters.year}هـ`}`,
+            `الجهة: ${state.analysisFilters.stakeholder === "all" ? "الكل" : getStakeholderLabel(state.analysisFilters.stakeholder)}`,
+            `الموضوع: ${getTopicSelectionLabel(state.analysisFilters)}`,
+        ],
+        metrics: [
+            { label: "عدد الاستطلاعات", value: toArabicNumber(surveyRows.length) },
+            { label: "إجمالي الاستجابات", value: toArabicNumber(surveyRows.reduce((sum, row) => sum + row.respondentCount, 0)) },
+        ],
+        headers: ["المحور", "الاستطلاع", "عدد الاستجابات", "المتوسط"],
+        data: surveyRows.map((row) => [
+            row.sectionLabel,
+            row.title,
+            formatResponseCount(row.respondentCount),
+            formatScore(row.average),
+        ]),
+    };
+}
+
+function buildTrendExportPayload() {
+    const programId = state.trendFilters.program;
+    if (!programId || programId === "all") {
+        window.alert("اختر برنامجاً أولاً.");
+        return null;
+    }
+
+    const program = getProgramById(programId);
+    const years = sortYears(getAvailableYears(programId));
+    const headers = ["المحور", ...years.map((year) => `${year}هـ`), "التغيّر"];
+    const data = SECTION_META.map((section) => {
+        const values = years.map((year) => {
+            const records = ITEM_RECORDS.filter((record) =>
+                record.programId === programId && record.year === year &&
+                (state.trendFilters.stakeholder === "all" || record.stakeholder === state.trendFilters.stakeholder) &&
+                matchesTopicFilter(record, state.trendFilters)
+            );
+            const surveys = aggregateSurveyRows(records).filter((row) => row.sectionId === section.id);
+            if (!surveys.length) return null;
+            return roundNumber(surveys.reduce((sum, row) => sum + row.average, 0) / surveys.length);
+        });
+        const delta = values.length >= 2 && values[0] != null && values[1] != null ? roundNumber(values[0] - values[1]) : null;
+        return [section.label, ...values.map((value) => value != null ? formatScore(value) : "—"), delta != null ? formatScore(delta) : "—"];
+    });
+
+    return {
+        filename: `التطور-الزمني-${sanitizeFileName(program.name)}.pdf`,
+        title: "بطاقة نتائج التطور الزمني",
+        subtitle: `${program.name} - ${program.degree}`,
+        filters: [
+            `الجهة: ${state.trendFilters.stakeholder === "all" ? "الكل" : getStakeholderLabel(state.trendFilters.stakeholder)}`,
+            `الموضوع: ${getTopicSelectionLabel(state.trendFilters)}`,
+        ],
+        metrics: [
+            { label: "عدد السنوات", value: toArabicNumber(years.length) },
+            { label: "البرنامج", value: formatProgramLabel(program) },
+        ],
+        headers,
+        data,
+    };
+}
+
+function buildGapsExportPayload() {
+    const { program, year, target } = state.gapsFilters;
+    if (!program || program === "all") {
+        window.alert("اختر برنامجاً أولاً.");
+        return null;
+    }
+
+    const programInfo = getProgramById(program);
+    const records = ITEM_RECORDS.filter((record) =>
+        record.programId === program && record.year === year && record.stakeholder === "students" &&
+        matchesTopicFilter(record, state.gapsFilters)
+    );
+    const surveys = aggregateSurveyRows(records);
+    if (!surveys.length) {
+        window.alert("لا توجد بيانات قابلة للتصدير.");
+        return null;
+    }
+
+    const gapRows = surveys.map((row) => {
+        const gap = roundNumber(row.average - target);
+        const status = gap >= 0 ? "محقق" : gap >= -0.3 ? "قريب" : "دون المستهدف";
+        return [row.sectionLabel, row.title, formatScore(row.average), formatScore(target), formatScore(gap), status];
+    }).sort((first, second) => parseFloat(first[4]) - parseFloat(second[4]));
+
+    return {
+        filename: `تقرير-الفجوات-${sanitizeFileName(programInfo.name)}-${year}.pdf`,
+        title: "بطاقة نتائج الفجوات",
+        subtitle: `${programInfo.name} - ${programInfo.degree} - ${year}هـ`,
+        filters: [`الموضوع: ${getTopicSelectionLabel(state.gapsFilters)}`],
+        metrics: [
+            { label: "عدد الاستطلاعات", value: toArabicNumber(surveys.length) },
+            { label: "المستهدف", value: formatScore(target) },
+        ],
+        headers: ["المحور", "الاستطلاع", "المتوسط", "المستهدف", "الفجوة", "الحالة"],
+        data: gapRows,
+    };
+}
+
+function buildCustomExportPayload() {
+    const selectedRows = getCustomRows().filter((row) => state.customSelected.has(row.uid));
+    if (!selectedRows.length) {
+        window.alert("لا توجد عناصر محددة للتصدير. حدّد بنوداً أولاً.");
+        return null;
+    }
+
+    return {
+        filename: "استطلاع-مخصص.pdf",
+        title: "بطاقة نتائج الاستطلاع المخصص",
+        subtitle: "العناصر المحددة حاليًا",
+        filters: buildSingleFilterChips(state.customFilters).map((chip) => `${chip.label}: ${chip.value}`),
+        metrics: [
+            { label: "عدد العناصر", value: toArabicNumber(selectedRows.length) },
+            { label: "إجمالي الاستجابات", value: toArabicNumber(selectedRows.reduce((sum, row) => sum + row.respondentCount, 0)) },
+        ],
+        headers: ["المحور", "الاستطلاع", "العبارة", "الموضوع", "البرنامج", "السنة", "عدد الاستجابات", "المتوسط"],
+        data: selectedRows.map((row) => [
+            row.sectionLabel,
+            row.surveyTitle,
+            row.title,
+            row.topicLabel,
+            row.programName,
+            `${row.year}هـ`,
+            formatResponseCount(row.respondentCount),
+            formatScore(row.average),
+        ]),
+    };
+}
+
+function buildSearchExportPayload(limitToDisplay = false) {
+    const payload = getSearchResultsPayload(refs.searchInput ? refs.searchInput.value : "");
+    if (!payload.raw) {
+        window.alert("اكتب عبارة بحث أولًا.");
+        return null;
+    }
+    if (!payload.results.length) {
+        window.alert("لا توجد نتائج مطابقة قابلة للتصدير.");
+        return null;
+    }
+
+    const records = limitToDisplay ? payload.displayResults : payload.results;
+    return {
+        filename: `نتائج-البحث-${sanitizeFileName(payload.raw)}.pdf`,
+        title: "بطاقة نتائج البحث",
+        subtitle: `عبارة البحث: ${payload.raw}`,
+        filters: [`عدد النتائج: ${toArabicNumber(payload.results.length)}`],
+        metrics: [
+            { label: "النتائج المصدرة", value: toArabicNumber(records.length) },
+            { label: "إجمالي الاستجابات", value: toArabicNumber(records.reduce((sum, row) => sum + row.responses, 0)) },
+        ],
+        note: payload.truncated && limitToDisplay ? `اقتصر تصدير PDF على أول ${toArabicNumber(records.length)} نتيجة من أصل ${toArabicNumber(payload.results.length)} نتيجة.` : "",
+        headers: ["البرنامج", "الدرجة", "السنة", "الاستطلاع", "الموضوع", "العبارة", "الجنس", "عدد الاستجابات", "المتوسط", "المحكات"],
+        data: records.map((record) => {
+            const visibleCriteria = getVisibleSearchCriteria(record, payload.queryInfo);
+            const criterionCodes = Array.from(new Set(visibleCriteria.map((entry) => entry.criterionCode))).filter(Boolean);
+            return [
+                record.programName,
+                record.degree,
+                `${record.year}هـ`,
+                record.surveyTitle,
+                record.topicLabel || "—",
+                record.itemLabel,
+                getSearchResultGenderLabel(record.gender),
+                formatResponseCount(record.responses),
+                formatScore(record.average),
+                criterionCodes.length ? criterionCodes.join("، ") : "غير مرتبط بمحك",
+            ];
+        }),
+    };
+}
+
+function exportSearchResults(type) {
+    const payload = buildSearchExportPayload(type === "pdf");
+    if (!payload) return;
+
+    if (type === "csv") {
+        exportCsv(payload.filename.replace(/\.pdf$/i, ".csv"), payload.headers, payload.data);
+        return;
+    }
+
+    exportPayloadAsPdfCard(payload);
+}
+
+function exportExploreResultsPdf() {
+    return exportPayloadAsPdfCard(buildExploreExportPayload());
+}
+
+function exportComparisonResultsPdf() {
+    return exportPayloadAsPdfCard(buildComparisonExportPayload());
+}
+
+function exportAnalysisResultsPdf() {
+    return exportPayloadAsPdfCard(buildAnalysisExportPayload());
+}
+
+function exportTrendResultsPdf() {
+    return exportPayloadAsPdfCard(buildTrendExportPayload());
+}
+
+function exportGapsResultsPdf() {
+    return exportPayloadAsPdfCard(buildGapsExportPayload());
+}
+
+function exportCustomResultsPdf() {
+    return exportPayloadAsPdfCard(buildCustomExportPayload());
+}
+
 function exportExploreData(type) {
     const records = getItemRecordsForExploreFilters();
     const surveyRows = aggregateSurveyRows(records);
@@ -3398,6 +3797,12 @@ function getGenderLabel(gender) {
         "إناث": "إناث",
     };
     return map[gender] || gender;
+}
+
+function getSearchResultGenderLabel(gender) {
+    const label = getGenderLabel(gender);
+    if (label === "إناث") return "أنثى";
+    return label || "غير محدد";
 }
 
 function getSelfStudyEntries(programId, year, surveyTitle, itemLabel) {
@@ -3722,6 +4127,7 @@ function analyzeSearchQuery(raw) {
         normalizedRaw,
         criterionCode: "",
         years: new Set(),
+        degrees: new Set(),
         textQuery: "",
     };
 
@@ -3736,6 +4142,12 @@ function analyzeSearchQuery(raw) {
     });
 
     let textQuery = normalizedRaw;
+    DEGREE_SEARCH_RULES.forEach((rule) => {
+        if (rule.pattern.test(normalizedRaw)) {
+            info.degrees.add(rule.value);
+            textQuery = textQuery.replace(rule.pattern, " ");
+        }
+    });
     if (info.criterionCode) {
         const criterionToken = info.criterionCode.replace(/\./g, " ");
         textQuery = textQuery.replace(new RegExp(`(^|\\s)${escapeRegExp(criterionToken)}(?=\\s|$)`, "g"), " ");
@@ -3750,6 +4162,36 @@ function analyzeSearchQuery(raw) {
 
     info.textQuery = textQuery;
     return info;
+}
+
+const DEGREE_SEARCH_RULES = [
+    { pattern: /(^|\s)بكالوريوس انتساب(?=\s|$)/, value: "بكالوريوس" },
+    { pattern: /(^|\s)بكالوريوس(?=\s|$)/, value: "بكالوريوس" },
+    { pattern: /(^|\s)الماجستير(?=\s|$)/, value: "الماجستير" },
+    { pattern: /(^|\s)ماجستير(?=\s|$)/, value: "الماجستير" },
+    { pattern: /(^|\s)الدكتوراه(?=\s|$)/, value: "دكتوراه" },
+    { pattern: /(^|\s)دكتوراه(?=\s|$)/, value: "دكتوراه" },
+    { pattern: /(^|\s)دراسات عليا(?=\s|$)/, value: "دراسات عليا" },
+];
+
+function degreeMatchesQuery(recordDegree, degreeFilters) {
+    if (!degreeFilters || !degreeFilters.size) return true;
+    const degree = normalizeDegreeForSearch(recordDegree);
+    if (!degree) return false;
+    return Array.from(degreeFilters).some((filterValue) => {
+        if (filterValue === "دراسات عليا") {
+            return degree === "الماجستير" || degree === "دكتوراه";
+        }
+        return degree === filterValue;
+    });
+}
+
+function normalizeDegreeForSearch(value) {
+    const degree = normalizeText(value);
+    if (degree === "ماجستير" || degree === "الماجستير") return "الماجستير";
+    if (degree === "دكتوراه" || degree === "الدكتوراه" || degree === "دكتوراة") return "دكتوراه";
+    if (degree === "بكالوريوس" || degree === "بكالوريوس انتساب") return "بكالوريوس";
+    return degree;
 }
 
 function stripCommonArabicPrefix(token) {

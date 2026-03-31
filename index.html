@@ -51,11 +51,11 @@
 
         <section class="panel nav-panel">
             <nav id="navTabs" class="nav-tabs" aria-label="الأقسام الأساسية">
+                <button class="nav-btn" type="button" data-view="search" aria-current="false">البحث</button>
                 <button class="nav-btn is-active" type="button" data-view="overview" aria-current="page">لوحة المتابعة</button>
                 <button class="nav-btn" type="button" data-view="explore" aria-current="false">استكشاف البرامج</button>
                 <button class="nav-btn" type="button" data-view="insights" aria-current="false">التحليل والمقارنة</button>
                 <button class="nav-btn" type="button" data-view="custom" aria-current="false">استطلاع مخصص</button>
-                <button class="nav-btn" type="button" data-view="search" aria-current="false">البحث</button>
             </nav>
         </section>
 
@@ -660,6 +660,10 @@
                     <div>
                         <h2>البحث في الاستطلاعات</h2>
                         <p id="searchMeta" class="meta-text">ابحث بالكلمة، أو رقم المحك، أو اسم البرنامج</p>
+                    </div>
+                    <div class="action-group">
+                        <button id="exportSearchCsv" class="btn" type="button">CSV</button>
+                        <button id="exportSearchPdf" class="btn btn-primary" type="button">PDF</button>
                     </div>
                 </div>
 
