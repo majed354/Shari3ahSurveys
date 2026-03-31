@@ -1087,6 +1087,11 @@ function renderProgramOptionsFor(selectRef, currentValue, includeAll) {
         ...programs.map((program) => `<option value="${program.id}">${escapeHtml(formatProgramLabel(program))}</option>`),
     ].join("");
     selectRef.value = programs.some((program) => program.id === currentValue) || currentValue === "all" ? currentValue : "all";
+    renderFilterableSelect(selectRef, {
+        kind: "program",
+        searchPlaceholder: "ابحث في البرامج",
+        emptyLabel: "لا توجد برامج مطابقة",
+    });
 }
 
 function renderYearOptionsFor(selectRef, currentValue, programId, includeAll) {
@@ -1417,6 +1422,20 @@ function buildFilterableItem(optionNode, kind, groupLabel) {
 
     if (kind === "selfstudy") {
         return buildSelfStudyFilterableItem(optionNode.value, label);
+    }
+
+    if (kind === "program") {
+        const parts = label.split(" - ");
+        return {
+            value: optionNode.value,
+            tone: "program",
+            badge: parts[1] || "برنامج",
+            title: parts[0] || label,
+            meta: parts[1] || "",
+            triggerLabel: label,
+            searchText: normalizeText(label),
+            isAll: false,
+        };
     }
 
     return buildGeneralFilterableItem(optionNode.value, label, groupLabel);
@@ -2236,7 +2255,6 @@ function matchesSingleFilters(record, filters) {
     if (filters.year !== "all" && record.year !== filters.year) return false;
     if (filters.stakeholder !== "all" && record.stakeholder !== filters.stakeholder) return false;
     if (filters.gender !== "all" && record.gender !== filters.gender) return false;
-    if (filters.query !== undefined && !matchesQueryFilter(record)) return false;
     return matchesTopicFilter(record, filters);
 }
 
@@ -2610,15 +2628,16 @@ function renderSearchResults() {
 
     const q = normalizeForSearch(raw);
 
-    /* Detect criterion pattern like 1.1.1 or ١.١.١ */
+    /* Detect criterion pattern like 1.1.1 or ١.١.١ or ١-١-١ or محك ١-١-١ */
     const criterionPattern = raw.replace(/[محكالمحك\s]/g, "").trim();
-    const isCriterionSearch = /^[\d٠-٩][.\-٫][\d٠-٩][.\-٫][\d٠-٩]/.test(criterionPattern);
+    const isCriterionSearch = /^[\d٠-٩][.\-\u2013\u2014٫ـ][\d٠-٩][.\-\u2013\u2014٫ـ][\d٠-٩]/.test(criterionPattern);
     let normalizedCriterionCode = "";
     if (isCriterionSearch) {
         normalizedCriterionCode = criterionPattern
             .replace(/[٠-٩]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0x0660 + 48))
-            .replace(/[٫]/g, ".")
-            .replace(/[-]/g, ".");
+            .replace(/[^0-9]/g, ".")
+            .replace(/\.+/g, ".")
+            .replace(/^\.|\.$/g, "");
     }
 
     /* Search all records */
@@ -2629,9 +2648,11 @@ function renderSearchResults() {
 
         /* Criterion search — match by selfStudyEntries criterionCode */
         if (isCriterionSearch && record.selfStudyEntries && record.selfStudyEntries.length) {
-            const hit = record.selfStudyEntries.some((e) =>
-                e.criterionCode && e.criterionCode.replace(/[-]/g, ".").startsWith(normalizedCriterionCode)
-            );
+            const hit = record.selfStudyEntries.some((e) => {
+                if (!e.criterionCode) return false;
+                const norm = e.criterionCode.replace(/\s/g, "").replace(/[-]/g, ".");
+                return norm.startsWith(normalizedCriterionCode);
+            });
             if (hit) { matched = true; matchSource = "criterion"; }
         }
 
@@ -2669,7 +2690,7 @@ function renderSearchResults() {
         refs.searchResultsList.innerHTML = displayResults.map(({ record, matchSource }) => {
             const scoreTone = record.average >= 3.5 ? "good" : record.average >= 2.5 ? "ok" : "low";
             const criterionBadges = (record.selfStudyEntries || [])
-                .filter((e) => !isCriterionSearch || e.criterionCode.replace(/[-]/g, ".").startsWith(normalizedCriterionCode))
+                .filter((e) => !isCriterionSearch || e.criterionCode.replace(/\s/g, "").replace(/[-]/g, ".").startsWith(normalizedCriterionCode))
                 .map((e) => `<span class="search-result-badge is-criterion">${escapeHtml(e.criterionCode)}</span>`)
                 .join("");
 

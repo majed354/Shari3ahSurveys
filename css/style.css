@@ -312,6 +312,7 @@ input {
 .field-group select,
 .field-group input[type="search"] {
     width: 100%;
+    max-width: 100%;
     padding: 13px 14px;
     border: 1px solid var(--line-strong);
     border-radius: var(--radius-md);
@@ -395,8 +396,8 @@ input {
     border: 1px solid var(--line-strong);
     background: #fff;
     box-shadow: 0 20px 40px rgba(17, 24, 39, 0.14);
-    width: clamp(340px, 50vw, 520px);
-    max-width: 90vw;
+    width: clamp(360px, 60vw, 640px);
+    max-width: 92vw;
 }
 
 .filterable-select.is-open .filterable-select__menu {
@@ -495,6 +496,11 @@ input {
 .filterable-select__option[data-tone="phrase"] {
     border-right-color: #475569;
     background: #f8fafc;
+}
+
+.filterable-select__option[data-tone="program"] {
+    border-right-color: #2c786f;
+    background: rgba(44, 120, 111, 0.04);
 }
 
 .filterable-select__option-head {
