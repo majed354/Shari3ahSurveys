@@ -1246,6 +1246,14 @@ function renderSubjectOptions(selectRef, baseRecords, targetState, key) {
 function renderSelfStudyOptions(selectRef, searchRef, baseRecords, targetState) {
     if (!selectRef) return;
     const allOptions = collectSelfStudyOptions(baseRecords);
+    const hasUnlinkedItems = baseRecords.some((record) => !(record.selfStudyEntries || []).length);
+    if (hasUnlinkedItems) {
+        allOptions.unshift({
+            value: "unlinked",
+            label: "غير مرتبط بمحك | عبارات بلا ربط بمحك",
+            searchText: normalizeText("غير مرتبط بمحك عبارات بلا ربط بمحك"),
+        });
+    }
     const allowedValues = new Set(["all", ...allOptions.map((option) => option.value)]);
     if (!allowedValues.has(targetState.selfStudyTarget)) {
         targetState.selfStudyTarget = "all";
@@ -1413,7 +1421,7 @@ function buildFilterableItem(optionNode, kind, groupLabel) {
             tone: "all",
             badge: "الكل",
             title: label,
-            meta: kind === "selfstudy" ? "يعرض جميع العناصر المرتبطة بالمحكات" : "يعرض جميع الخيارات المتاحة",
+            meta: kind === "selfstudy" ? "يعرض جميع العناصر المرتبطة بالمحكات وغير المرتبطة بها" : "يعرض جميع الخيارات المتاحة",
             triggerLabel: label,
             searchText: label,
             isAll: true,
@@ -1462,6 +1470,19 @@ function buildGeneralFilterableItem(value, label, groupLabel) {
 }
 
 function buildSelfStudyFilterableItem(value, label) {
+    if (value === "unlinked") {
+        return {
+            value,
+            tone: "phrase",
+            badge: "بدون محك",
+            title: "غير مرتبط بمحك",
+            meta: "يعرض العبارات التي لم تُربط بأي محك",
+            triggerLabel: "غير مرتبط بمحك",
+            searchText: normalizeText([label, value].join(" ")),
+            isAll: false,
+        };
+    }
+
     const [head, ...tailParts] = label.split("|");
     const mainHead = normalizeText(head.replace(/^↳+/g, "").replace(/^العبارة/, "نص العبارة").trim());
     const detail = normalizeText(tailParts.join("|"));
@@ -2303,8 +2324,9 @@ function matchesTopicFilter(record, filters) {
 
 function matchesSelfStudyFilter(record, selfStudyTarget) {
     const entries = record.selfStudyEntries || [];
-    if (!entries.length) return false;
     if (selfStudyTarget === "all") return true;
+    if (selfStudyTarget === "unlinked") return !entries.length;
+    if (!entries.length) return false;
 
     if (selfStudyTarget.startsWith("criterion:")) {
         return entries.some((entry) => buildSelfStudyCriterionValue(entry) === selfStudyTarget);
@@ -2625,47 +2647,41 @@ function renderSearchResults() {
     }
     if (refs.searchEmpty) refs.searchEmpty.classList.add("hidden");
 
-    const q = normalizeForSearch(raw);
-
-    /* Detect criterion pattern like 1.1.1 or ١.١.١ or ١-١-١ or محك ١-١-١ */
-    const criterionPattern = raw.replace(/[محكالمحك\s]/g, "").trim();
-    const isCriterionSearch = /^[\d٠-٩][.\-\u2013\u2014٫ـ][\d٠-٩][.\-\u2013\u2014٫ـ][\d٠-٩]/.test(criterionPattern);
-    let normalizedCriterionCode = "";
-    if (isCriterionSearch) {
-        normalizedCriterionCode = criterionPattern
-            .replace(/[٠-٩]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0x0660 + 48))
-            .replace(/[^0-9]/g, ".")
-            .replace(/\.+/g, ".")
-            .replace(/^\.|\.$/g, "");
-    }
+    const queryInfo = analyzeSearchQuery(raw);
+    const hasStructuredQuery = Boolean(queryInfo.criterionCode || queryInfo.years.size);
 
     /* Search all records */
     const results = [];
     ITEM_RECORDS.forEach((record) => {
-        let matched = false;
+        const entries = record.selfStudyEntries || [];
+        let matched = true;
         let matchSource = "";
 
-        /* Criterion search — match by selfStudyEntries criterionCode */
-        if (isCriterionSearch && record.selfStudyEntries && record.selfStudyEntries.length) {
-            const hit = record.selfStudyEntries.some((e) => {
-                if (!e.criterionCode) return false;
-                const norm = e.criterionCode.replace(/\s/g, "").replace(/[-]/g, ".");
-                return norm.startsWith(normalizedCriterionCode);
-            });
-            if (hit) { matched = true; matchSource = "criterion"; }
+        if (queryInfo.years.size && !queryInfo.years.has(String(record.year))) {
+            matched = false;
         }
 
-        /* Text search — match across all text fields */
-        if (!matched) {
+        if (matched && queryInfo.criterionCode) {
+            matched = entries.some((entry) => {
+                if (!entry.criterionCode) return false;
+                return normalizeCriterionCodeForSearch(entry.criterionCode).startsWith(queryInfo.criterionCode);
+            });
+            if (matched) matchSource = "criterion";
+        }
+
+        if (matched && queryInfo.textQuery) {
             const searchText = [
                 record.programName, record.surveyTitle, record.topicLabel,
                 record.itemLabel, record.sectionLabel, record.stakeholderLabel,
                 record.year, record.degree,
-                ...(record.selfStudyEntries || []).map((e) => `${e.criterionCode} ${e.criterionText} ${e.supportedSide}`),
+                `${record.year}ه`,
+                ...(entries.length ? entries.map((entry) => `${entry.criterionCode} ${entry.criterionText} ${entry.supportedSide}`) : ["غير مرتبط بمحك"]),
             ].join(" ");
-            if (searchMatches(q, searchText)) { matched = true; matchSource = "text"; }
+            matched = searchMatches(queryInfo.textQuery, searchText);
+            if (matched) matchSource = matchSource || "text";
         }
 
+        if (!hasStructuredQuery && !queryInfo.textQuery) matched = false;
         if (matched) results.push({ record, matchSource });
     });
 
@@ -2688,15 +2704,22 @@ function renderSearchResults() {
     if (refs.searchResultsList) {
         refs.searchResultsList.innerHTML = displayResults.map(({ record, matchSource }) => {
             const scoreTone = record.average >= 3.5 ? "good" : record.average >= 2.5 ? "ok" : "low";
-            const criterionBadges = (record.selfStudyEntries || [])
-                .filter((e) => !isCriterionSearch || e.criterionCode.replace(/\s/g, "").replace(/[-]/g, ".").startsWith(normalizedCriterionCode))
-                .map((e) => `<span class="search-result-badge is-criterion">${escapeHtml(e.criterionCode)}</span>`)
+            const visibleCriteria = (record.selfStudyEntries || [])
+                .filter((e) => e.criterionCode)
+                .filter((e) => !queryInfo.criterionCode || normalizeCriterionCodeForSearch(e.criterionCode).startsWith(queryInfo.criterionCode));
+            const uniqueCriterionCodes = Array.from(new Set(visibleCriteria.map((e) => e.criterionCode)));
+            const criterionBadges = uniqueCriterionCodes
+                .map((code) => `<span class="search-result-badge is-criterion">${escapeHtml(code)}</span>`)
                 .join("");
+            const criterionSummary = uniqueCriterionCodes.length
+                ? `المحكات: ${escapeHtml(uniqueCriterionCodes.slice(0, 4).join("، "))}${uniqueCriterionCodes.length > 4 ? ` +${toArabicNumber(uniqueCriterionCodes.length - 4)}` : ""}`
+                : "غير مرتبط بمحك";
+            const unlinkedBadge = uniqueCriterionCodes.length ? "" : `<span class="search-result-badge">غير مرتبط بمحك</span>`;
 
             /* Highlight matching text */
             let contextHtml = escapeHtml(record.itemLabel);
             if (raw.length >= 2) {
-                const escaped = raw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+                const escaped = escapeRegExp(raw);
                 try {
                     contextHtml = contextHtml.replace(new RegExp(`(${escaped})`, "gi"), "<mark>$1</mark>");
                 } catch (e) { /* ignore regex error */ }
@@ -2709,14 +2732,17 @@ function renderSearchResults() {
                 </div>
                 <div class="search-result-badges">
                     <span class="search-result-badge is-program">${escapeHtml(record.programName)}</span>
+                    <span class="search-result-badge">${escapeHtml(record.degree)}</span>
                     <span class="search-result-badge is-year">${record.year}هـ</span>
                     <span class="search-result-badge">${escapeHtml(record.stakeholderLabel)}</span>
                     <span class="search-result-badge">${escapeHtml(record.sectionLabel)}</span>
+                    ${unlinkedBadge}
                     ${criterionBadges}
                 </div>
                 <div class="search-result-context">
                     ${escapeHtml(record.surveyTitle)}${record.topicLabel ? " · " + escapeHtml(record.topicLabel) : ""}
                 </div>
+                ${criterionSummary ? `<div class="search-result-context">${criterionSummary}</div>` : ""}
             </div>`;
         }).join("");
 
@@ -3433,6 +3459,7 @@ function getSubjectLabel(subjectValue) {
 
 function getSelfStudyLabel(value) {
     if (value === "all") return "كل محكات الدراسة الذاتية";
+    if (value === "unlinked") return "غير مرتبط بمحك";
 
     if (value.startsWith("criterion:")) {
         const [criterionCode, criterionText] = value.replace("criterion:", "").split("||");
@@ -3674,6 +3701,55 @@ function normalizeForSearch(value) {
         .replace(/[^0-9\u0621-\u063a\u0641-\u064a\s]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
+}
+
+function normalizeCriterionCodeForSearch(value) {
+    return String(value || "")
+        .replace(/[٠-٩]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0x0660 + 48))
+        .replace(/[^0-9]+/g, ".")
+        .replace(/\.+/g, ".")
+        .replace(/^\.|\.$/g, "");
+}
+
+function escapeRegExp(value) {
+    return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function analyzeSearchQuery(raw) {
+    const normalizedRaw = normalizeForSearch(raw);
+    const info = {
+        raw,
+        normalizedRaw,
+        criterionCode: "",
+        years: new Set(),
+        textQuery: "",
+    };
+
+    const criterionMatch = raw.match(/([0-9٠-٩]+(?:\s*[.\-\u2013\u2014٫ـ]\s*[0-9٠-٩]+){2})/);
+    if (criterionMatch) {
+        info.criterionCode = normalizeCriterionCodeForSearch(criterionMatch[1]);
+    }
+
+    normalizedRaw.replace(/(^|\s)(14\d{2})(?:\s*ه)?(?=\s|$)/g, (_, __, year) => {
+        info.years.add(year);
+        return _;
+    });
+
+    let textQuery = normalizedRaw;
+    if (info.criterionCode) {
+        const criterionToken = info.criterionCode.replace(/\./g, " ");
+        textQuery = textQuery.replace(new RegExp(`(^|\\s)${escapeRegExp(criterionToken)}(?=\\s|$)`, "g"), " ");
+    }
+    info.years.forEach((year) => {
+        textQuery = textQuery.replace(new RegExp(`(^|\\s)${year}(?:\\s*ه)?(?=\\s|$)`, "g"), " ");
+    });
+    textQuery = textQuery
+        .replace(/(^|\s)محك(?=\s|$)/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    info.textQuery = textQuery;
+    return info;
 }
 
 function stripCommonArabicPrefix(token) {

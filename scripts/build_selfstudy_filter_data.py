@@ -24,6 +24,14 @@ def normalize_text(value: object) -> str:
     return clean_text(value)
 
 
+def normalize_criterion_code(value: object) -> str:
+    text = normalize_text(value)
+    digits = re.findall(r"\d+", text)
+    if len(digits) >= 3:
+        return "-".join(digits[:3])
+    return text
+
+
 def extract_year(value: str) -> str:
     text = normalize_text(value)
     match = re.search(r"(14\d{2})", text)
@@ -81,8 +89,14 @@ def load_workbook(archive: zipfile.ZipFile, shared_strings: List[str]) -> Dict[s
 
 def iter_detailed_rows(sheets: Dict[str, List[Dict[str, str]]]) -> Iterable[Dict[str, str]]:
     seen: set[Tuple[str, ...]] = set()
+    preferred_sheet = "فهرسة تفصيلية موحدة"
+    sheet_items = (
+        [(preferred_sheet, sheets[preferred_sheet])]
+        if preferred_sheet in sheets
+        else list(sheets.items())
+    )
 
-    for sheet_name, rows in sheets.items():
+    for sheet_name, rows in sheet_items:
         if "فهرسة تفصيلية" not in sheet_name:
             continue
 
@@ -105,7 +119,8 @@ def iter_detailed_rows(sheets: Dict[str, List[Dict[str, str]]]) -> Iterable[Dict
             continue
 
         for row in rows[1:]:
-            criterion_code = normalize_text(row.get(columns["رقم المحك"]))
+            status_label = normalize_text(row.get(columns.get("حالة الربط", ""), ""))
+            criterion_code = normalize_criterion_code(row.get(columns["رقم المحك"]))
             criterion_text = normalize_text(row.get(columns["نص المحك"]))
             supported_side = normalize_text(row.get(columns["جانب المحك المدعوم"]))
             survey_title = normalize_text(row.get(columns["نوع الاستطلاع"]))
@@ -116,6 +131,9 @@ def iter_detailed_rows(sheets: Dict[str, List[Dict[str, str]]]) -> Iterable[Dict
             year = extract_year(semester_label)
             standard_label = normalize_text(row.get(columns.get("المعيار", ""), ""))
             section_label = normalize_text(row.get(columns.get("القسم", ""), ""))
+
+            if not criterion_code or "مراجعة" in status_label:
+                continue
 
             program_id = PROGRAM_ID_MAP.get((program_name, degree))
             if not program_id or not year:
