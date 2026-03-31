@@ -395,8 +395,8 @@ input {
     border: 1px solid var(--line-strong);
     background: #fff;
     box-shadow: 0 20px 40px rgba(17, 24, 39, 0.14);
-    width: max(100%, 340px);
-    max-width: min(520px, 90vw);
+    width: clamp(340px, 50vw, 520px);
+    max-width: 90vw;
 }
 
 .filterable-select.is-open .filterable-select__menu {

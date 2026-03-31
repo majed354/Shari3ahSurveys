@@ -2640,6 +2640,7 @@ function renderSearchResults() {
             const searchText = [
                 record.programName, record.surveyTitle, record.topicLabel,
                 record.itemLabel, record.sectionLabel, record.stakeholderLabel,
+                record.year, record.degree,
                 ...(record.selfStudyEntries || []).map((e) => `${e.criterionCode} ${e.criterionText} ${e.supportedSide}`),
             ].join(" ");
             if (searchMatches(q, searchText)) { matched = true; matchSource = "text"; }
@@ -3645,6 +3646,7 @@ function normalizeForSearch(value) {
         .replace(/ة/g, "ه")
         .replace(/ؤ/g, "و")
         .replace(/ئ/g, "ي")
+        .replace(/[٠-٩]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0x0660 + 48))
         .replace(/[^0-9\u0621-\u063a\u0641-\u064a\s]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
