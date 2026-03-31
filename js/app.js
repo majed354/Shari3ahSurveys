@@ -1845,7 +1845,7 @@ function renderExploreSection() {
         {
             label: "المتوسط العام",
             value: formatScore(sectionAverage),
-            note: records.length ? `${toArabicNumber(records.reduce((sum, r) => sum + r.responses, 0))} مشارك` : "لا توجد بيانات",
+            note: records.length ? formatResponseCount(records.reduce((sum, r) => sum + r.responses, 0)) : "لا توجد بيانات",
             tone: toneForScore(sectionAverage),
         },
         {
@@ -1969,11 +1969,11 @@ function renderCompareSection() {
         const group = slotGroups.find((item) => item.slot === slot);
         const active = Boolean(slot.program && slot.year && group);
         const average = active ? averageScore(group.surveyRows) : null;
-        const totalParticipants = active ? group.surveyRows.reduce((sum, row) => sum + row.respondentCount, 0) : 0;
+        const totalResponses = active ? group.surveyRows.reduce((sum, row) => sum + row.respondentCount, 0) : 0;
         return {
             label: `الخانة ${toArabicNumber(index + 1)}`,
             value: active ? formatScore(average) : "—",
-            note: active ? `${formatCompareSlotLabel(slot)} · ${toArabicNumber(totalParticipants)} مشارك` : "غير محدد",
+            note: active ? `${formatCompareSlotLabel(slot)} · ${formatResponseCount(totalResponses)}` : "غير محدد",
             tone: active ? toneForScore(average) : "info",
         };
     }));
@@ -2125,7 +2125,7 @@ function renderCustomSection() {
         : allRows;
     const selectedRows = allRows.filter((row) => state.customSelected.has(row.uid));
     const selectedAverage = averageScore(selectedRows);
-    const totalSelectedParticipants = selectedRows.reduce((sum, row) => sum + row.respondentCount, 0);
+    const totalSelectedResponses = selectedRows.reduce((sum, row) => sum + row.respondentCount, 0);
 
     refs.customMeta.textContent = `${buildSingleFilterScopeLabel(state.customFilters)} · ${toArabicNumber(rows.length)} عبارة متاحة`;
     refs.customAvailableMeta.textContent = `${toArabicNumber(rows.length)} عبارة`;
@@ -2147,7 +2147,7 @@ function renderCustomSection() {
         {
             label: "متوسط المحدد",
             value: formatScore(selectedAverage),
-            note: selectedRows.length ? `${toArabicNumber(totalSelectedParticipants)} مشارك` : "لا توجد عناصر محددة",
+            note: selectedRows.length ? formatResponseCount(totalSelectedResponses) : "لا توجد عناصر محددة",
             tone: toneForScore(selectedAverage),
         },
         {
@@ -2163,7 +2163,7 @@ function renderCustomSection() {
             <input type="checkbox" data-row-id="${row.uid}" ${state.customSelected.has(row.uid) ? "checked" : ""}>
             <span class="custom-option-copy">
                 <span class="custom-option-title">${escapeHtml(row.title)}</span>
-                <span class="custom-option-meta">${escapeHtml(row.sectionLabel)} · ${escapeHtml(row.surveyTitle)} · ${escapeHtml(row.topicLabel)} · ${escapeHtml(row.programName)} · ${escapeHtml(`${row.year}هـ`)} · ${toArabicNumber(row.respondentCount)} مشارك</span>
+                <span class="custom-option-meta">${escapeHtml(row.sectionLabel)} · ${escapeHtml(row.surveyTitle)} · ${escapeHtml(row.topicLabel)} · ${escapeHtml(row.programName)} · ${escapeHtml(`${row.year}هـ`)} · ${formatResponseCount(row.respondentCount)}</span>
             </span>
         </label>
     `).join("");
@@ -2505,7 +2505,7 @@ function buildAnalysisProgramRows(surveyRows) {
                 program,
                 average: averageScore(programSurveyRows),
                 count: programSurveyRows.length,
-                totalParticipants: programSurveyRows.reduce((sum, row) => sum + row.respondentCount, 0),
+                totalResponses: programSurveyRows.reduce((sum, row) => sum + row.respondentCount, 0),
                 sectionAverages: SECTION_META.map((section) => ({
                     id: section.id,
                     label: section.shortLabel,
@@ -2535,7 +2535,7 @@ function buildAnalysisTable(programRows) {
             <tr>
                 <th>البرنامج</th>
                 <th>عدد الاستطلاعات</th>
-                <th>المشاركون</th>
+                <th>عدد الاستجابات</th>
                 ${SECTION_META.map((section) => `<th>${escapeHtml(section.shortLabel)}</th>`).join("")}
             </tr>
         `,
@@ -2546,7 +2546,7 @@ function buildAnalysisTable(programRows) {
                     <span class="cell-subtitle">${escapeHtml(item.program.degree)}</span>
                 </td>
                 <td>${toArabicNumber(item.count)}</td>
-                <td>${toArabicNumber(item.totalParticipants)}</td>
+                <td>${toArabicNumber(item.totalResponses)}</td>
                 ${item.sectionAverages.map((section) => `<td>${section.average == null ? "—" : renderScorePill(section.average)}</td>`).join("")}
             </tr>
         `).join(""),
@@ -2742,7 +2742,7 @@ function renderInsightList(container, items, emptyText) {
     container.innerHTML = items.map((item) => `
         <article class="insight-item">
             <div class="insight-item-title">${escapeHtml(item.title)}</div>
-            <div class="insight-item-meta">${escapeHtml(item.sectionLabel)} · ${escapeHtml(item.programName)} · ${escapeHtml(item.year)}هـ · ${toArabicNumber(item.respondentCount)} مشارك</div>
+            <div class="insight-item-meta">${escapeHtml(item.sectionLabel)} · ${escapeHtml(item.programName)} · ${escapeHtml(item.year)}هـ · ${formatResponseCount(item.respondentCount)}</div>
             <div class="insight-item-value">${formatScore(item.average)}</div>
         </article>
     `).join("");
@@ -3105,7 +3105,7 @@ function renderGapsSection() {
 function exportExploreData(type) {
     const records = getItemRecordsForExploreFilters();
     const surveyRows = aggregateSurveyRows(records);
-    const headers = ["البرنامج", "السنة", "المحور", "الاستطلاع", "العبارة", "الجنس", "المشاركون", "المتوسط"];
+    const headers = ["البرنامج", "السنة", "المحور", "الاستطلاع", "العبارة", "الجنس", "عدد الاستجابات", "المتوسط"];
     const data = records.map((row) => [
         row.programName,
         row.year,
@@ -3144,7 +3144,7 @@ function exportComparisonData(type) {
         "الاستطلاع",
         ...slotGroups.flatMap((group) => [
             `${formatCompareSlotLabel(group.slot)} - المتوسط`,
-            `${formatCompareSlotLabel(group.slot)} - عدد الطلاب`,
+            `${formatCompareSlotLabel(group.slot)} - عدد الاستجابات`,
         ]),
     ];
     const data = comparisonRows.map((row) => [
@@ -3178,7 +3178,7 @@ function exportAnalysisData(type) {
         return;
     }
 
-    const headers = ["المحور", "الاستطلاع", "عدد الطلاب", "المتوسط"];
+    const headers = ["المحور", "الاستطلاع", "عدد الاستجابات", "المتوسط"];
     const data = surveyRows.map((row) => [
         row.sectionLabel,
         row.title,
@@ -3267,7 +3267,7 @@ function exportCustomData(type) {
         window.alert("لا توجد عناصر محددة للتصدير. حدّد بنوداً أولاً.");
         return;
     }
-    const headers = ["المحور", "الاستطلاع", "العبارة", "الموضوع", "البرنامج", "السنة", "المشاركون", "المتوسط"];
+    const headers = ["المحور", "الاستطلاع", "العبارة", "الموضوع", "البرنامج", "السنة", "عدد الاستجابات", "المتوسط"];
     const data = selectedRows.map((row) => [
         row.sectionLabel, row.surveyTitle, row.title, row.topicLabel,
         row.programName, `${row.year}هـ`, row.respondentCount, formatScore(row.average),
@@ -3567,9 +3567,13 @@ function renderComparisonCell(value) {
     return `
         <td>
             <span class="cell-title">${escapeHtml(formatScore(value.average))}</span>
-            <span class="cell-subtitle">${toArabicNumber(value.respondentCount)} مشارك</span>
+            <span class="cell-subtitle">${formatResponseCount(value.respondentCount)}</span>
         </td>
     `;
+}
+
+function formatResponseCount(value) {
+    return `${toArabicNumber(value)} استجابة`;
 }
 
 function buildProgramRowSubtitle(row) {
