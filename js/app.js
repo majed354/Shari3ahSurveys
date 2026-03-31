@@ -111,6 +111,7 @@ const state = {
     },
     customFilters: createSingleFilterState(),
     customSelected: new Set(),
+    searchMode: "precise",
     trendFilters: { program: "all", stakeholder: DEFAULT_STAKEHOLDER, topicMode: DEFAULT_TOPIC_MODE, selfStudyTarget: "all" },
     gapsFilters: { program: "all", year: DEFAULT_YEAR, target: 3.5, topicMode: DEFAULT_TOPIC_MODE, selfStudyTarget: "all" },
 };
@@ -165,7 +166,9 @@ function cacheRefs() {
     refs.exploreSection = document.getElementById("exploreSection");
     refs.insightsSection = document.getElementById("insightsSection");
     refs.searchSection = document.getElementById("searchSection");
+    refs.searchMeta = document.getElementById("searchMeta");
     refs.searchInput = document.getElementById("searchInput");
+    refs.searchModeChips = document.getElementById("searchModeChips");
     refs.searchResultCount = document.getElementById("searchResultCount");
     refs.searchResults = document.getElementById("searchResults");
     refs.searchEmpty = document.getElementById("searchEmpty");
@@ -786,6 +789,7 @@ function refreshAllControls() {
     renderExploreControls();
     renderCompareControls();
     renderAnalysisControls();
+    renderSearchControls();
     renderTrendControls();
     renderGapsControls();
     // Don't render custom controls here - they render when drawer opens
@@ -808,7 +812,10 @@ function renderCurrentView() {
     if (state.view === "overview") renderOverviewSection();
     if (state.view === "explore") renderExploreSection();
     if (state.view === "custom") { renderCustomControls(); renderCustomSection(); }
-    if (state.view === "search") { if (refs.searchInput) refs.searchInput.focus(); }
+    if (state.view === "search") {
+        renderSearchControls();
+        if (refs.searchInput) refs.searchInput.focus();
+    }
     if (state.view === "insights") {
         if (state.insightsSubTab === "analysis") renderAnalysisSection();
         if (state.insightsSubTab === "compare") renderCompareSection();
@@ -836,6 +843,32 @@ function renderChipOptions(containerEl, options, activeValue, onChange) {
     containerEl.addEventListener("click", containerEl._chipHandler);
 
     return containerEl;
+}
+
+function getSearchModeLabel(mode) {
+    return mode === "precise" ? "مطابقة دقيقة" : "بحث مرن";
+}
+
+function renderSearchControls() {
+    refs.searchModeChips = renderChipOptions(
+        refs.searchModeChips,
+        [
+            { value: "precise", label: "مطابقة دقيقة" },
+            { value: "flex", label: "بحث مرن" },
+        ],
+        state.searchMode,
+        (value) => {
+            state.searchMode = value;
+            renderSearchControls();
+            renderSearchResults();
+        }
+    );
+
+    if (refs.searchMeta) {
+        refs.searchMeta.textContent = state.searchMode === "precise"
+            ? "مطابقة بالكلمات بعد التطبيع العربي مع تجاهل أل التعريف والفروق الإملائية الشائعة"
+            : "بحث مرن يدعم التقارب اللغوي والمرادفات والمطابقة الموسعة";
+    }
 }
 
 function renderSummaryCards() {
@@ -2743,7 +2776,9 @@ function getSearchResultsPayload(rawInput) {
                 `${record.year}ه`,
                 ...(entries.length ? entries.map((entry) => `${entry.criterionCode} ${entry.criterionText} ${entry.supportedSide}`) : ["غير مرتبط بمحك"]),
             ].join(" ");
-            matched = searchMatches(queryInfo.textQuery, searchText);
+            matched = state.searchMode === "precise"
+                ? searchMatchesPrecisely(queryInfo.textQuery, searchText)
+                : searchMatches(queryInfo.textQuery, searchText);
         }
 
         if (!hasStructuredQuery && !queryInfo.textQuery) matched = false;
@@ -3464,7 +3499,10 @@ function buildSearchExportPayload(limitToDisplay = false) {
         filename: `نتائج-البحث-${sanitizeFileName(payload.raw)}.pdf`,
         title: "بطاقة نتائج البحث",
         subtitle: `عبارة البحث: ${payload.raw}`,
-        filters: [`عدد النتائج: ${toArabicNumber(payload.results.length)}`],
+        filters: [
+            `نمط البحث: ${getSearchModeLabel(state.searchMode)}`,
+            `عدد النتائج: ${toArabicNumber(payload.results.length)}`,
+        ],
         metrics: [
             { label: "النتائج المصدرة", value: toArabicNumber(records.length) },
             { label: "إجمالي الاستجابات", value: toArabicNumber(records.reduce((sum, row) => sum + row.responses, 0)) },
@@ -4265,6 +4303,34 @@ function isCloseTokenMatch(queryToken, textToken) {
             return levenshteinDistance(candidate, target) <= threshold;
         }),
     );
+}
+
+function searchMatchesPrecisely(query, text) {
+    const normalizedQuery = normalizeForSearch(query);
+    const normalizedText = normalizeForSearch(text);
+
+    if (!normalizedQuery) return true;
+    if (!normalizedText) return false;
+
+    const queryTokens = normalizedQuery.split(" ").filter(Boolean);
+    const textTokens = normalizedText.split(" ").filter(Boolean);
+    if (!queryTokens.length) return true;
+    if (!textTokens.length) return false;
+
+    const exactTextTokens = new Set();
+    textTokens.forEach((token) => {
+        exactTextTokens.add(token);
+        const strippedToken = stripCommonArabicPrefix(token);
+        if (strippedToken && strippedToken !== token) {
+            exactTextTokens.add(strippedToken);
+        }
+    });
+
+    return queryTokens.every((token) => {
+        if (exactTextTokens.has(token)) return true;
+        const strippedToken = stripCommonArabicPrefix(token);
+        return Boolean(strippedToken && exactTextTokens.has(strippedToken));
+    });
 }
 
 function searchMatches(query, text) {
