@@ -46,10 +46,6 @@
                 </div>
             </div>
 
-            <div class="hero-search">
-                <input id="globalSearchInput" type="search" class="hero-search-input" placeholder="ابحث في جميع الاستطلاعات..." aria-label="بحث عام في الاستطلاعات">
-            </div>
-
             <div id="summaryGrid" class="summary-grid"></div>
         </header>
 
@@ -58,6 +54,7 @@
                 <button class="nav-btn is-active" type="button" data-view="overview" aria-current="page">لوحة المتابعة</button>
                 <button class="nav-btn" type="button" data-view="explore" aria-current="false">استكشاف البرامج</button>
                 <button class="nav-btn" type="button" data-view="insights" aria-current="false">التحليل والمقارنة</button>
+                <button class="nav-btn" type="button" data-view="search" aria-current="false">البحث</button>
             </nav>
         </section>
 
@@ -151,13 +148,6 @@
                 </div>
 
                 <article class="card filter-card">
-                    <div class="filters-grid filters-grid-single">
-                        <div class="field-group">
-                            <label for="exploreSearchInput">بحث نصي</label>
-                            <input id="exploreSearchInput" type="search" placeholder="ابحث في البرنامج أو الاستطلاع أو الموضوع أو نص العبارة...">
-                        </div>
-                    </div>
-
                     <div class="filters-grid filters-grid-single">
                         <div class="field-group">
                             <label for="exploreProgram">البرنامج</label>
@@ -305,18 +295,22 @@
                             </div>
                         </div>
 
-                        <div class="filter-subhead">
-                            <div>
-                                <h3>اختيار البرامج</h3>
-                                <p>يمكن تحديد برنامج واحد أو عدة برامج في الوقت نفسه.</p>
-                            </div>
-                            <div class="action-group">
-                                <button id="analysisSelectAllProgramsBtn" class="btn btn-ghost" type="button">تحديد الكل</button>
-                                <button id="analysisClearProgramsBtn" class="btn btn-ghost" type="button">مسح</button>
+                        <div class="field-group">
+                            <label>البرامج</label>
+                            <div id="analysisProgramsDropdown" class="multi-select">
+                                <button id="analysisProgramsTrigger" class="multi-select__trigger" type="button">
+                                    <span class="multi-select__trigger-label">كل البرامج</span>
+                                    <span class="multi-select__trigger-icon">▾</span>
+                                </button>
+                                <div class="multi-select__menu">
+                                    <div class="multi-select__actions">
+                                        <button id="analysisSelectAllProgramsBtn" class="btn btn-ghost btn-sm" type="button">تحديد الكل</button>
+                                        <button id="analysisClearProgramsBtn" class="btn btn-ghost btn-sm" type="button">مسح</button>
+                                    </div>
+                                    <div id="analysisProgramsList" class="multi-select__options"></div>
+                                </div>
                             </div>
                         </div>
-
-                        <div id="analysisProgramsList" class="program-checklist"></div>
                         <div id="analysisActiveFilters" class="chips-row"></div>
                     </article>
 
@@ -481,6 +475,16 @@
                                 <select id="trendStakeholderSelect"></select>
                             </div>
                         </div>
+                        <div class="chip-filter-group">
+                            <div class="chip-filter">
+                                <span class="chip-filter-label">نوع الموضوع</span>
+                                <div id="trendTopicModeChips" class="chip-filter-options" data-filter="topicMode"></div>
+                            </div>
+                        </div>
+                        <div id="trendSelfStudyPanel" class="field-group hidden">
+                            <label for="trendSelfStudyFilter">محكات الدراسة الذاتية</label>
+                            <select id="trendSelfStudyFilter"></select>
+                        </div>
                     </article>
                     <div id="trendIndicators" class="kpi-grid"></div>
                     <article class="card chart-card">
@@ -511,6 +515,16 @@
                                 <label for="gapsTargetInput">المعيار المستهدف</label>
                                 <input id="gapsTargetInput" type="number" min="1" max="5" step="0.1" value="3.5" class="gaps-target-input">
                             </div>
+                        </div>
+                        <div class="chip-filter-group">
+                            <div class="chip-filter">
+                                <span class="chip-filter-label">نوع الموضوع</span>
+                                <div id="gapsTopicModeChips" class="chip-filter-options" data-filter="topicMode"></div>
+                            </div>
+                        </div>
+                        <div id="gapsSelfStudyPanel" class="field-group hidden">
+                            <label for="gapsSelfStudyFilter">محكات الدراسة الذاتية</label>
+                            <select id="gapsSelfStudyFilter"></select>
                         </div>
                     </article>
                     <div id="gapsIndicators" class="kpi-grid"></div>
@@ -545,6 +559,39 @@
                         <h3>فقرة جاهزة للدراسة الذاتية</h3>
                         <div id="gapsNarrativeText" class="narrative-text"></div>
                     </article>
+                </div>
+            </section>
+
+            <section id="searchSection" class="view-section hidden">
+                <div class="section-head">
+                    <div>
+                        <h2>البحث في الاستطلاعات</h2>
+                        <p id="searchMeta" class="meta-text">ابحث بالكلمة، أو رقم المحك، أو اسم البرنامج</p>
+                    </div>
+                </div>
+
+                <article class="card search-card">
+                    <div class="search-box">
+                        <input id="searchInput" type="search" class="search-input" placeholder="اكتب للبحث... مثال: المكتبة، محك ١.١.١، التفسير" autocomplete="off">
+                        <span id="searchResultCount" class="search-result-count"></span>
+                    </div>
+                </article>
+
+                <div id="searchResults" class="search-results">
+                    <div id="searchEmpty" class="search-empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+                            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35" stroke-linecap="round"/>
+                        </svg>
+                        <p>ابدأ بكتابة كلمة البحث لعرض النتائج</p>
+                    </div>
+                    <div id="searchNoResults" class="search-empty-state hidden">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+                            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35" stroke-linecap="round"/><path d="m8 8 6 6M14 8l-6 6" stroke-linecap="round"/>
+                        </svg>
+                        <p>لا توجد نتائج مطابقة</p>
+                        <small id="searchNoResultsHint" class="text-soft"></small>
+                    </div>
+                    <div id="searchResultsList" class="search-results-list hidden"></div>
                 </div>
             </section>
         </main>

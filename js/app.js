@@ -87,7 +87,6 @@ const state = {
         topicMode: DEFAULT_TOPIC_MODE,
         selfStudyTarget: "all",
         selfStudySearch: "",
-        query: "",
     },
     compareFilters: {
         stakeholder: DEFAULT_STAKEHOLDER,
@@ -157,7 +156,6 @@ function cacheRefs() {
     refs.footerSource = document.getElementById("footerSource");
     refs.navTabs = document.getElementById("navTabs");
     refs.loadingOverlay = document.getElementById("loadingOverlay");
-    refs.globalSearchInput = document.getElementById("globalSearchInput");
     refs.bottomSheet = document.getElementById("bottomSheet");
     refs.bottomSheetTitle = document.getElementById("bottomSheetTitle");
     refs.bottomSheetSearch = document.getElementById("bottomSheetSearch");
@@ -166,6 +164,14 @@ function cacheRefs() {
     refs.overviewSection = document.getElementById("overviewSection");
     refs.exploreSection = document.getElementById("exploreSection");
     refs.insightsSection = document.getElementById("insightsSection");
+    refs.searchSection = document.getElementById("searchSection");
+    refs.searchInput = document.getElementById("searchInput");
+    refs.searchResultCount = document.getElementById("searchResultCount");
+    refs.searchResults = document.getElementById("searchResults");
+    refs.searchEmpty = document.getElementById("searchEmpty");
+    refs.searchNoResults = document.getElementById("searchNoResults");
+    refs.searchNoResultsHint = document.getElementById("searchNoResultsHint");
+    refs.searchResultsList = document.getElementById("searchResultsList");
     refs.analysisSubView = document.getElementById("analysisSubView");
     refs.compareSubView = document.getElementById("compareSubView");
 
@@ -182,7 +188,7 @@ function cacheRefs() {
     // Explore section
     refs.exploreMeta = document.getElementById("exploreMeta");
     refs.exploreResetBtn = document.getElementById("exploreResetBtn");
-    refs.exploreSearchInput = document.getElementById("exploreSearchInput");
+    // exploreSearchInput removed — search is now in dedicated tab
     refs.exploreProgram = document.getElementById("exploreProgram");
     refs.exploreYearChips = document.getElementById("exploreYearChips");
     refs.exploreStakeholderChips = document.getElementById("exploreStakeholderChips");
@@ -250,6 +256,8 @@ function cacheRefs() {
     refs.analysisSelfStudyPanel = document.getElementById("analysisSelfStudyPanel");
     refs.analysisSelfStudyFilter = document.getElementById("analysisSelfStudyFilter");
     refs.analysisProgramsList = document.getElementById("analysisProgramsList");
+    refs.analysisProgramsDropdown = document.getElementById("analysisProgramsDropdown");
+    refs.analysisProgramsTrigger = document.getElementById("analysisProgramsTrigger");
     refs.analysisSelectAllProgramsBtn = document.getElementById("analysisSelectAllProgramsBtn");
     refs.analysisClearProgramsBtn = document.getElementById("analysisClearProgramsBtn");
     refs.analysisActiveFilters = document.getElementById("analysisActiveFilters");
@@ -357,21 +365,6 @@ function bindEvents() {
         }
     }
 
-    // Global search
-    if (refs.globalSearchInput) {
-        refs.globalSearchInput.addEventListener("input", (event) => {
-            const query = event.target.value.trim();
-            if (query) {
-                state.view = "explore";
-                state.exploreFilters.query = query;
-                if (refs.exploreSearchInput) refs.exploreSearchInput.value = query;
-                renderViewState();
-                renderExploreControls();
-                renderExploreSection();
-            }
-        });
-    }
-
     // Explore section filters
     if (refs.exploreProgram) {
         refs.exploreProgram.addEventListener("change", (event) => {
@@ -381,11 +374,12 @@ function bindEvents() {
         });
     }
 
-    if (refs.exploreSearchInput) {
-        refs.exploreSearchInput.addEventListener("input", (event) => {
-            state.exploreFilters.query = event.target.value || "";
-            renderExploreControls();
-            renderExploreSection();
+    // Dedicated search tab
+    if (refs.searchInput) {
+        let searchDebounce = null;
+        refs.searchInput.addEventListener("input", () => {
+            clearTimeout(searchDebounce);
+            searchDebounce = setTimeout(() => renderSearchResults(), 200);
         });
     }
 
@@ -579,6 +573,18 @@ function bindEvents() {
             state.analysisFilters.selfStudyTarget = event.target.value;
             renderAnalysisControls();
             renderAnalysisSection();
+        });
+    }
+
+    /* Multi-select dropdown toggle */
+    if (refs.analysisProgramsTrigger && refs.analysisProgramsDropdown) {
+        refs.analysisProgramsTrigger.addEventListener("click", () => {
+            refs.analysisProgramsDropdown.classList.toggle("is-open");
+        });
+        document.addEventListener("click", (event) => {
+            if (refs.analysisProgramsDropdown && !refs.analysisProgramsDropdown.contains(event.target)) {
+                refs.analysisProgramsDropdown.classList.remove("is-open");
+            }
         });
     }
 
@@ -806,11 +812,13 @@ function renderViewState() {
     if (refs.overviewSection) refs.overviewSection.classList.toggle("hidden", state.view !== "overview");
     if (refs.exploreSection) refs.exploreSection.classList.toggle("hidden", state.view !== "explore");
     if (refs.insightsSection) refs.insightsSection.classList.toggle("hidden", state.view !== "insights");
+    if (refs.searchSection) refs.searchSection.classList.toggle("hidden", state.view !== "search");
 }
 
 function renderCurrentView() {
     if (state.view === "overview") renderOverviewSection();
     if (state.view === "explore") renderExploreSection();
+    if (state.view === "search") { if (refs.searchInput) refs.searchInput.focus(); }
     if (state.view === "insights") {
         if (state.insightsSubTab === "analysis") renderAnalysisSection();
         if (state.insightsSubTab === "compare") renderCompareSection();
@@ -1640,7 +1648,8 @@ function renderCompareSlotOptions(slot) {
 }
 
 function renderAnalysisProgramsChecklist() {
-    refs.analysisProgramsList.innerHTML = getProgramsWithData().map((program) => `
+    const programs = getProgramsWithData();
+    refs.analysisProgramsList.innerHTML = programs.map((program) => `
         <label class="program-option">
             <input type="checkbox" data-program="${program.id}" ${state.analysisFilters.programs.has(program.id) ? "checked" : ""}>
             <span>
@@ -1649,6 +1658,18 @@ function renderAnalysisProgramsChecklist() {
             </span>
         </label>
     `).join("");
+
+    /* Update dropdown trigger label */
+    if (refs.analysisProgramsTrigger) {
+        const labelEl = refs.analysisProgramsTrigger.querySelector(".multi-select__trigger-label");
+        if (labelEl) {
+            const count = state.analysisFilters.programs.size;
+            const total = programs.length;
+            if (count === 0) labelEl.textContent = "لم يُحدد أي برنامج";
+            else if (count === total) labelEl.textContent = "كل البرامج";
+            else labelEl.textContent = `${toArabicNumber(count)} من ${toArabicNumber(total)} برنامج`;
+        }
+    }
 }
 
 function renderOverviewSection() {
@@ -1892,13 +1913,7 @@ function renderExploreSection() {
 }
 
 function getItemRecordsForExploreFilters() {
-    return ITEM_RECORDS.filter((record) => matchesSingleFilters(record, state.exploreFilters) && matchesQueryFilter(record));
-}
-
-function matchesQueryFilter(record) {
-    if (!state.exploreFilters.query) return true;
-    const q = normalizeForSearch(state.exploreFilters.query);
-    return searchMatches(q, normalizeForSearch([record.title, record.surveyTitle, record.topicLabel].join(" ")));
+    return ITEM_RECORDS.filter((record) => matchesSingleFilters(record, state.exploreFilters));
 }
 
 function buildExploreItemRows(records) {
@@ -2588,6 +2603,116 @@ function renderMetricCards(container, cards) {
             <div class="kpi-note">${escapeHtml(card.note || "")}</div>
         </article>
     `).join("");
+}
+
+/* ===== SEARCH TAB ===== */
+
+function renderSearchResults() {
+    const raw = (refs.searchInput ? refs.searchInput.value : "").trim();
+    if (!raw) {
+        if (refs.searchEmpty) refs.searchEmpty.classList.remove("hidden");
+        if (refs.searchNoResults) refs.searchNoResults.classList.add("hidden");
+        if (refs.searchResultsList) { refs.searchResultsList.classList.add("hidden"); refs.searchResultsList.innerHTML = ""; }
+        if (refs.searchResultCount) refs.searchResultCount.textContent = "";
+        return;
+    }
+    if (refs.searchEmpty) refs.searchEmpty.classList.add("hidden");
+
+    const q = normalizeForSearch(raw);
+
+    /* Detect criterion pattern like 1.1.1 or ١.١.١ */
+    const criterionPattern = raw.replace(/[محكالمحك\s]/g, "").trim();
+    const isCriterionSearch = /^[\d٠-٩][.\-٫][\d٠-٩][.\-٫][\d٠-٩]/.test(criterionPattern);
+    let normalizedCriterionCode = "";
+    if (isCriterionSearch) {
+        normalizedCriterionCode = criterionPattern
+            .replace(/[٠-٩]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0x0660 + 48))
+            .replace(/[٫]/g, ".")
+            .replace(/[-]/g, ".");
+    }
+
+    /* Search all records */
+    const results = [];
+    ITEM_RECORDS.forEach((record) => {
+        let matched = false;
+        let matchSource = "";
+
+        /* Criterion search — match by selfStudyEntries criterionCode */
+        if (isCriterionSearch && record.selfStudyEntries && record.selfStudyEntries.length) {
+            const hit = record.selfStudyEntries.some((e) =>
+                e.criterionCode && e.criterionCode.replace(/[-]/g, ".").startsWith(normalizedCriterionCode)
+            );
+            if (hit) { matched = true; matchSource = "criterion"; }
+        }
+
+        /* Text search — match across all text fields */
+        if (!matched) {
+            const searchText = [
+                record.programName, record.surveyTitle, record.topicLabel,
+                record.itemLabel, record.sectionLabel, record.stakeholderLabel,
+                ...(record.selfStudyEntries || []).map((e) => `${e.criterionCode} ${e.criterionText} ${e.supportedSide}`),
+            ].join(" ");
+            if (searchMatches(q, searchText)) { matched = true; matchSource = "text"; }
+        }
+
+        if (matched) results.push({ record, matchSource });
+    });
+
+    /* Show results */
+    if (!results.length) {
+        if (refs.searchNoResults) refs.searchNoResults.classList.remove("hidden");
+        if (refs.searchNoResultsHint) refs.searchNoResultsHint.textContent = `لم يُعثر على نتائج لـ "${raw}"`;
+        if (refs.searchResultsList) { refs.searchResultsList.classList.add("hidden"); refs.searchResultsList.innerHTML = ""; }
+        if (refs.searchResultCount) refs.searchResultCount.textContent = "";
+        return;
+    }
+
+    if (refs.searchNoResults) refs.searchNoResults.classList.add("hidden");
+    if (refs.searchResultsList) refs.searchResultsList.classList.remove("hidden");
+    if (refs.searchResultCount) refs.searchResultCount.textContent = `${toArabicNumber(results.length)} نتيجة`;
+
+    /* Limit display to 200 to avoid performance issues */
+    const displayResults = results.slice(0, 200);
+
+    if (refs.searchResultsList) {
+        refs.searchResultsList.innerHTML = displayResults.map(({ record, matchSource }) => {
+            const scoreTone = record.average >= 3.5 ? "good" : record.average >= 2.5 ? "ok" : "low";
+            const criterionBadges = (record.selfStudyEntries || [])
+                .filter((e) => !isCriterionSearch || e.criterionCode.replace(/[-]/g, ".").startsWith(normalizedCriterionCode))
+                .map((e) => `<span class="search-result-badge is-criterion">${escapeHtml(e.criterionCode)}</span>`)
+                .join("");
+
+            /* Highlight matching text */
+            let contextHtml = escapeHtml(record.itemLabel);
+            if (raw.length >= 2) {
+                const escaped = raw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+                try {
+                    contextHtml = contextHtml.replace(new RegExp(`(${escaped})`, "gi"), "<mark>$1</mark>");
+                } catch (e) { /* ignore regex error */ }
+            }
+
+            return `<div class="search-result-item">
+                <div class="search-result-head">
+                    <span class="search-result-title">${contextHtml}</span>
+                    <span class="search-result-score" data-tone="${scoreTone}">${formatScore(record.average)}</span>
+                </div>
+                <div class="search-result-badges">
+                    <span class="search-result-badge is-program">${escapeHtml(record.programName)}</span>
+                    <span class="search-result-badge is-year">${record.year}هـ</span>
+                    <span class="search-result-badge">${escapeHtml(record.stakeholderLabel)}</span>
+                    <span class="search-result-badge">${escapeHtml(record.sectionLabel)}</span>
+                    ${criterionBadges}
+                </div>
+                <div class="search-result-context">
+                    ${escapeHtml(record.surveyTitle)}${record.topicLabel ? " · " + escapeHtml(record.topicLabel) : ""}
+                </div>
+            </div>`;
+        }).join("");
+
+        if (results.length > 200) {
+            refs.searchResultsList.innerHTML += `<div class="search-empty-state"><p>يُعرض أول ٢٠٠ نتيجة من ${toArabicNumber(results.length)}. حاول تضييق البحث.</p></div>`;
+        }
+    }
 }
 
 function renderFilterChips(container, chips) {
