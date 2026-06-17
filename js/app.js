@@ -78,6 +78,8 @@ const state = {
     view: "overview",
     insightsSubTab: "analysis",
     charts: {},
+    bottomSheetContext: "",
+    latestClosurePayload: null,
     exploreFilters: {
         program: "all",
         year: DEFAULT_YEAR,
@@ -163,8 +165,8 @@ function createClosureFilterState(programId = "") {
         topicMode: DEFAULT_TOPIC_MODE,
         selfStudyTarget: "all",
         selfStudySearch: "",
-        level: "topic",
-        minImprovement: 5,
+        level: "item",
+        minImprovement: 2,
     };
 }
 
@@ -183,8 +185,10 @@ function cacheRefs() {
     refs.navTabs = document.getElementById("navTabs");
     refs.loadingOverlay = document.getElementById("loadingOverlay");
     refs.bottomSheet = document.getElementById("bottomSheet");
+    refs.bottomSheetCloseBtn = document.getElementById("bottomSheetCloseBtn");
     refs.bottomSheetTitle = document.getElementById("bottomSheetTitle");
     refs.bottomSheetSearch = document.getElementById("bottomSheetSearch");
+    refs.bottomSheetSearchWrap = refs.bottomSheetSearch ? refs.bottomSheetSearch.closest(".bottom-sheet-search") : null;
     refs.bottomSheetOptions = document.getElementById("bottomSheetOptions");
 
     refs.overviewSection = document.getElementById("overviewSection");
@@ -251,6 +255,9 @@ function cacheRefs() {
     refs.exportInsightsExcel = document.getElementById("exportInsightsExcel");
     refs.exportInsightsCsv = document.getElementById("exportInsightsCsv");
     refs.exportInsightsPdf = document.getElementById("exportInsightsPdf");
+    refs.exportClosureExcel = document.getElementById("exportClosureExcel");
+    refs.exportClosureCsv = document.getElementById("exportClosureCsv");
+    refs.exportClosurePdf = document.getElementById("exportClosurePdf");
 
     // Custom drawer
     refs.customSection = document.getElementById("customSection");
@@ -320,6 +327,7 @@ function cacheRefs() {
     refs.closureHighlights = document.getElementById("closureHighlights");
     refs.closureNarrative = document.getElementById("closureNarrative");
     refs.closureDeltaChart = document.getElementById("closureDeltaChart");
+    refs.closureTableCard = document.getElementById("closureTableCard");
     refs.closureTableMeta = document.getElementById("closureTableMeta");
     refs.closureTableHead = document.getElementById("closureTableHead");
     refs.closureTableBody = document.getElementById("closureTableBody");
@@ -698,7 +706,11 @@ function bindEvents() {
     if (refs.exportExploreExcel) refs.exportExploreExcel.addEventListener("click", () => exportExploreData("xlsx"));
     if (refs.exportExploreCsv) refs.exportExploreCsv.addEventListener("click", () => exportExploreData("csv"));
     if (refs.exportExplorePdf) refs.exportExplorePdf.addEventListener("click", () => exportExploreResultsPdf());
+    if (refs.exportClosureExcel) refs.exportClosureExcel.addEventListener("click", () => exportClosureData("xlsx"));
+    if (refs.exportClosureCsv) refs.exportClosureCsv.addEventListener("click", () => exportClosureData("csv"));
+    if (refs.exportClosurePdf) refs.exportClosurePdf.addEventListener("click", () => exportClosureResultsPdf());
 
+    bindBottomSheetEvents();
     bindTrendEvents();
     bindClosureEvents();
     bindGapsEvents();
@@ -741,6 +753,25 @@ function bindTrendEvents() {
     });
 }
 
+function bindBottomSheetEvents() {
+    if (!refs.bottomSheet) return;
+
+    const backdrop = refs.bottomSheet.querySelector(".bottom-sheet-backdrop");
+    if (backdrop) {
+        backdrop.addEventListener("click", () => closeBottomSheet());
+    }
+
+    if (refs.bottomSheetCloseBtn) {
+        refs.bottomSheetCloseBtn.addEventListener("click", () => closeBottomSheet());
+    }
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !refs.bottomSheet.classList.contains("hidden")) {
+            closeBottomSheet();
+        }
+    });
+}
+
 function bindClosureEvents() {
     if (refs.closureProgramSelect) refs.closureProgramSelect.addEventListener("change", (event) => {
         state.closureFilters.program = event.target.value;
@@ -771,8 +802,9 @@ function bindClosureEvents() {
     });
 
     if (refs.closureMinImprovementInput) refs.closureMinImprovementInput.addEventListener("input", (event) => {
-        const value = Math.max(5, Number(event.target.value || 5));
-        state.closureFilters.minImprovement = Number.isFinite(value) ? value : 5;
+        const rawValue = Number(event.target.value);
+        const value = Number.isFinite(rawValue) ? Math.max(0, rawValue) : 2;
+        state.closureFilters.minImprovement = value;
         refs.closureMinImprovementInput.value = String(state.closureFilters.minImprovement);
         renderClosureSection();
     });
@@ -787,6 +819,15 @@ function bindClosureEvents() {
         state.closureFilters.selfStudyTarget = event.target.value;
         renderClosureControls();
         renderClosureSection();
+    });
+
+    if (refs.closureHighlights) refs.closureHighlights.addEventListener("click", (event) => {
+        const detailButton = event.target.closest("[data-closure-detail-index]");
+        if (!detailButton) return;
+        const rowIndex = Number(detailButton.dataset.closureDetailIndex);
+        const row = state.latestClosurePayload?.qualifyingRows?.[rowIndex];
+        if (!row) return;
+        openClosureDetailSheet(row, state.latestClosurePayload);
     });
 }
 
@@ -1194,13 +1235,14 @@ function renderClosureControls() {
 
     if (refs.closureLevelSelect) {
         refs.closureLevelSelect.innerHTML = [
-            `<option value="topic">الموضوع الدقيق</option>`,
-            `<option value="item">العبارة المتطابقة</option>`,
-            `<option value="survey">الاستطلاع الكامل</option>`,
+            `<option value="item">مطابقة مضبوطة للبند الواحد</option>`,
+            `<option value="expanded">المطابقة المتوسعة</option>`,
+            `<option value="veryExpanded">المطابقة المتوسعة جدًا</option>`,
         ].join("");
-        refs.closureLevelSelect.value = ["topic", "item", "survey"].includes(state.closureFilters.level)
+        refs.closureLevelSelect.value = ["item", "expanded", "veryExpanded"].includes(state.closureFilters.level)
             ? state.closureFilters.level
-            : "topic";
+            : "item";
+        state.closureFilters.level = refs.closureLevelSelect.value;
     }
 
     if (refs.closureMinImprovementInput) {
@@ -1282,15 +1324,22 @@ function buildClosureFilterChips() {
         { label: "الفترة", value: state.closureFilters.fromYear && state.closureFilters.toYear ? `${state.closureFilters.fromYear}هـ ← ${state.closureFilters.toYear}هـ` : "غير مكتملة" },
         { label: "نوع الموضوع", value: getTopicModeLabel(state.closureFilters.topicMode) },
         { label: "التحديد", value: getTopicSelectionLabel(state.closureFilters) },
-        { label: "المستوى", value: getClosureLevelLabel(state.closureFilters.level) },
-        { label: "الحد الأدنى", value: `${toArabicNumber(state.closureFilters.minImprovement)} نقطة مئوية` },
+        { label: "المطابقة", value: getClosureLevelLabel(state.closureFilters.level) },
+        { label: "الحد الأدنى", value: formatClosureThreshold(state.closureFilters.minImprovement) },
     ];
 }
 
 function getClosureLevelLabel(level) {
+    if (level === "item") return "مطابقة مضبوطة للبند الواحد";
+    if (level === "expanded") return "المطابقة المتوسعة";
+    if (level === "veryExpanded") return "المطابقة المتوسعة جدًا";
     if (level === "survey") return "الاستطلاع الكامل";
-    if (level === "item") return "العبارة المتطابقة";
     return "الموضوع الدقيق";
+}
+
+function getClosureThreshold() {
+    const rawValue = Number(state.closureFilters.minImprovement);
+    return Number.isFinite(rawValue) ? Math.max(0, rawValue) : 2;
 }
 
 function renderCustomControls() {
@@ -2430,6 +2479,7 @@ function renderAnalysisSection() {
 function renderClosureSection() {
     renderClosureControls();
     const payload = getClosureComparisonPayload();
+    state.latestClosurePayload = payload;
 
     if (refs.insightsMeta) {
         refs.insightsMeta.textContent = payload.metaText;
@@ -2444,53 +2494,63 @@ function renderClosureSection() {
     drawClosureChart(payload.qualifyingRows);
 
     if (payload.ready && payload.qualifyingRows.length) {
-        refs.closureTableHead.innerHTML = `
-            <tr>
-                <th>المحور</th>
-                <th>المستوى</th>
-                <th>المؤشر</th>
-                <th>${escapeHtml(payload.fromYearLabel)} المتوسط</th>
-                <th>${escapeHtml(payload.toYearLabel)} المتوسط</th>
-                <th>${escapeHtml(payload.fromYearLabel)} النسبة</th>
-                <th>${escapeHtml(payload.toYearLabel)} النسبة</th>
-                <th>التحسن</th>
-                <th>${escapeHtml(payload.fromYearLabel)} الاستجابات</th>
-                <th>${escapeHtml(payload.toYearLabel)} الاستجابات</th>
-            </tr>
-        `;
-        refs.closureTableBody.innerHTML = payload.qualifyingRows.map((row) => `
-            <tr>
-                <td>${escapeHtml(row.sectionLabel)}</td>
-                <td>${escapeHtml(getClosureLevelLabel(payload.level))}</td>
-                <td>
-                    <span class="cell-title">${escapeHtml(row.title)}</span>
-                    <span class="cell-subtitle">${escapeHtml(row.subtitle)}</span>
-                </td>
-                <td>${renderScorePill(row.fromAverage)}</td>
-                <td>${renderScorePill(row.toAverage)}</td>
-                <td>${escapeHtml(formatPercent(row.fromPercent))}</td>
-                <td>${escapeHtml(formatPercent(row.toPercent))}</td>
-                <td><span class="delta-pill positive">${escapeHtml(formatDeltaPoints(row.deltaPercent))}</span></td>
-                <td>${toArabicNumber(row.fromResponses)}</td>
-                <td>${toArabicNumber(row.toResponses)}</td>
-            </tr>
-        `).join("");
-        refs.closureTableMeta.textContent = `${toArabicNumber(payload.qualifyingRows.length)} مؤشر تحسن مؤثر`;
-        refs.closureEmpty.classList.add("hidden");
+        if (refs.closureTableCard) refs.closureTableCard.classList.remove("hidden");
+        if (refs.closureTableHead) {
+            refs.closureTableHead.innerHTML = `
+                <tr>
+                    <th>المحور</th>
+                    <th>التحسن</th>
+                    <th>نوع المطابقة</th>
+                    <th>تفاصيل الربط</th>
+                    <th>${escapeHtml(payload.fromYearLabel)}</th>
+                    <th>${escapeHtml(payload.toYearLabel)}</th>
+                </tr>
+            `;
+        }
+        if (refs.closureTableBody) {
+            refs.closureTableBody.innerHTML = payload.qualifyingRows.map((row) => `
+                <tr>
+                    <td>
+                        <span class="cell-title">${escapeHtml(row.sectionLabel)}</span>
+                        <span class="cell-subtitle">${escapeHtml(row.title)}</span>
+                    </td>
+                    <td>
+                        <span class="delta-pill positive">${escapeHtml(formatClosureImprovement(row.deltaHundred))}</span>
+                        <span class="cell-subtitle">${escapeHtml(formatPercent(row.fromPercent))} → ${escapeHtml(formatPercent(row.toPercent))}</span>
+                    </td>
+                    <td>
+                        <span class="cell-title">${escapeHtml(getClosureMatchModeLabel(row.matchMode))}</span>
+                        <span class="cell-subtitle">${escapeHtml(formatClosureMatchScore(row.matchMode, row.matchScore))}</span>
+                    </td>
+                    <td>${buildClosureLinkingCellHtml(row)}</td>
+                    <td>${buildClosureYearTableCellHtml(row.fromRow, payload.fromYearLabel, row.fromAverage, row.fromPercent, row.fromResponses)}</td>
+                    <td>${buildClosureYearTableCellHtml(row.toRow, payload.toYearLabel, row.toAverage, row.toPercent, row.toResponses)}</td>
+                </tr>
+            `).join("");
+        }
+        if (refs.closureTableMeta) {
+            refs.closureTableMeta.textContent = `${toArabicNumber(payload.qualifyingRows.length)} مؤشر تحسن مؤثر مع تفاصيل الربط والبنود`;
+        }
+        if (refs.closureEmpty) refs.closureEmpty.classList.add("hidden");
     } else {
-        refs.closureTableHead.innerHTML = "";
-        refs.closureTableBody.innerHTML = "";
-        refs.closureTableMeta.textContent = payload.ready ? "0 مؤشرات مؤهلة" : "اختر نطاق المقارنة";
-        refs.closureEmpty.textContent = payload.emptyMessage;
-        refs.closureEmpty.classList.remove("hidden");
+        if (refs.closureTableHead) refs.closureTableHead.innerHTML = "";
+        if (refs.closureTableBody) refs.closureTableBody.innerHTML = "";
+        if (refs.closureTableMeta) refs.closureTableMeta.textContent = payload.ready ? "0 مؤشرات مؤهلة" : "اختر نطاق المقارنة";
+        if (refs.closureEmpty) {
+            refs.closureEmpty.textContent = payload.emptyMessage;
+            refs.closureEmpty.classList.remove("hidden");
+        }
     }
 }
 
 function getClosureComparisonPayload() {
+    const matchMode = ["item", "expanded", "veryExpanded"].includes(state.closureFilters.level)
+        ? state.closureFilters.level
+        : "item";
     const program = state.closureFilters.program ? getProgramById(state.closureFilters.program) : null;
     const fromYearLabel = state.closureFilters.fromYear ? `${state.closureFilters.fromYear}هـ` : "السنة الأولى";
     const toYearLabel = state.closureFilters.toYear ? `${state.closureFilters.toYear}هـ` : "السنة الثانية";
-    const threshold = Number(state.closureFilters.minImprovement || 5);
+    const threshold = getClosureThreshold();
 
     if (!program || !state.closureFilters.fromYear || !state.closureFilters.toYear) {
         return buildClosureEmptyPayload({
@@ -2514,34 +2574,34 @@ function getClosureComparisonPayload() {
         matchesTopicFilter(record, state.closureFilters)
     );
 
-    const fromRows = aggregateRowsByLevel(fromRecords, state.closureFilters.level);
-    const toRows = aggregateRowsByLevel(toRecords, state.closureFilters.level);
-    const fromMap = new Map(fromRows.map((row) => [getClosureComparisonKey(row, state.closureFilters.level), row]));
-    const toMap = new Map(toRows.map((row) => [getClosureComparisonKey(row, state.closureFilters.level), row]));
+    const fromRows = aggregateItemRows(fromRecords);
+    const toRows = aggregateItemRows(toRecords);
+    const comparableRows = buildClosureComparableRows(fromRows, toRows, matchMode)
+        .map((pair) => buildClosureRow(pair.fromRow, pair.toRow, matchMode, pair.matchMeta))
+        .sort((first, second) => second.deltaHundred - first.deltaHundred || second.toAverage - first.toAverage);
 
-    const comparableRows = Array.from(fromMap.entries())
-        .filter(([key]) => toMap.has(key))
-        .map(([key, fromRow]) => buildClosureRow(fromRow, toMap.get(key), state.closureFilters.level))
-        .sort((first, second) => second.deltaPercent - first.deltaPercent || second.toAverage - first.toAverage);
-
-    const qualifyingRows = comparableRows.filter((row) => row.deltaPercent >= threshold);
-    const positiveBelowThresholdCount = comparableRows.filter((row) => row.deltaPercent > 0 && row.deltaPercent < threshold).length;
+    const qualifyingRows = comparableRows.filter((row) => row.deltaHundred >= threshold);
+    const positiveBelowThresholdCount = comparableRows.filter((row) => row.deltaHundred > 0 && row.deltaHundred < threshold).length;
     const topRow = qualifyingRows[0] || null;
     const averageImprovement = qualifyingRows.length
-        ? roundNumber(qualifyingRows.reduce((sum, row) => sum + row.deltaPercent, 0) / qualifyingRows.length)
+        ? roundNumber(qualifyingRows.reduce((sum, row) => sum + row.deltaHundred, 0) / qualifyingRows.length)
         : null;
 
     let emptyMessage = "لا توجد مؤشرات قابلة للمقارنة بين السنتين ضمن النطاق الحالي.";
     if (comparableRows.length && !qualifyingRows.length) {
-        emptyMessage = `توجد ${toArabicNumber(comparableRows.length)} مؤشرات قابلة للمقارنة، لكن لم يتجاوز أيٌّ منها حد التحسن الأدنى (${toArabicNumber(threshold)} نقاط مئوية).`;
-    } else if (!comparableRows.length && state.closureFilters.level === "item") {
-        emptyMessage = "لم تظهر عبارات متطابقة قابلة للمقارنة. جرّب التحويل إلى مستوى الموضوع الدقيق لأنه الأنسب عند تغيّر الصياغة بين السنتين.";
+        emptyMessage = `توجد ${toArabicNumber(comparableRows.length)} مؤشرات قابلة للمقارنة، لكن لم يتجاوز أيٌّ منها حد التحسن الأدنى (${formatClosureThreshold(threshold)}).`;
+    } else if (!comparableRows.length && matchMode === "veryExpanded") {
+        emptyMessage = "لم تظهر مطابقة متوسعة جدًا كافية بين السنتين ضمن هذا النطاق. يمكنك توسيع الموضوع أو تخفيف الحد الأدنى للتحسن.";
+    } else if (!comparableRows.length && matchMode === "expanded") {
+        emptyMessage = "لم تظهر مطابقة متوسعة كافية بين السنتين ضمن هذا النطاق. يمكنك تغيير الموضوع أو تخفيف الحد الأدنى للتحسن.";
+    } else if (!comparableRows.length) {
+        emptyMessage = "لم تظهر بنود قابلة للمطابقة المضبوطة بين السنتين ضمن هذا النطاق. جرّب التحويل إلى المطابقة المتوسعة لالتقاط المزيد من التحسن.";
     }
 
     return {
         ready: true,
         program,
-        level: state.closureFilters.level,
+        level: matchMode,
         threshold,
         fromYear: state.closureFilters.fromYear,
         toYear: state.closureFilters.toYear,
@@ -2553,7 +2613,7 @@ function getClosureComparisonPayload() {
         averageImprovement,
         topRow,
         emptyMessage,
-        metaText: `${formatProgramLabel(program)} · ${fromYearLabel} ← ${toYearLabel} · ${getClosureLevelLabel(state.closureFilters.level)} · ${getTopicSelectionLabel(state.closureFilters)}`,
+        metaText: `${formatProgramLabel(program)} · ${fromYearLabel} ← ${toYearLabel} · ${getClosureLevelLabel(matchMode)} · ${getTopicSelectionLabel(state.closureFilters)}`,
         cards: [
             {
                 label: "المؤشرات القابلة للمقارنة",
@@ -2564,18 +2624,18 @@ function getClosureComparisonPayload() {
             {
                 label: "المؤشرات المؤهلة",
                 value: toArabicNumber(qualifyingRows.length),
-                note: `بعد استبعاد أي تحسن أقل من ${toArabicNumber(threshold)} نقاط مئوية`,
+                note: `بعد استبعاد أي تحسن أقل من ${formatClosureThreshold(threshold)}`,
                 tone: qualifyingRows.length ? "good" : "warning",
             },
             {
                 label: "أكبر تحسن",
-                value: topRow ? formatDeltaPoints(topRow.deltaPercent) : "—",
+                value: topRow ? formatClosureImprovement(topRow.deltaHundred) : "—",
                 note: topRow ? truncateLabel(topRow.title, 42) : "لا يوجد تحسن مؤثر حتى الآن",
                 tone: topRow ? "good" : "info",
             },
             {
                 label: "متوسط التحسن",
-                value: averageImprovement != null ? formatDeltaPoints(averageImprovement) : "—",
+                value: averageImprovement != null ? formatClosureImprovement(averageImprovement) : "—",
                 note: qualifyingRows.length
                     ? `تم تجاهل ${toArabicNumber(positiveBelowThresholdCount)} تحسنات طفيفة غير مؤثرة`
                     : "لا توجد نتائج مؤهلة للحساب",
@@ -2590,7 +2650,7 @@ function buildClosureEmptyPayload({ metaText, emptyMessage, fromYearLabel, toYea
         ready: false,
         program: null,
         level: state.closureFilters.level,
-        threshold: Number(state.closureFilters.minImprovement || 5),
+        threshold: getClosureThreshold(),
         fromYear: state.closureFilters.fromYear,
         toYear: state.closureFilters.toYear,
         fromYearLabel,
@@ -2617,12 +2677,122 @@ function aggregateRowsByLevel(records, level) {
     return aggregateTopicRows(records);
 }
 
+function buildClosureComparableRows(fromRows, toRows, level) {
+    if (level === "survey") {
+        const fromMap = new Map(fromRows.map((row) => [getClosureComparisonKey(row, level), row]));
+        const toMap = new Map(toRows.map((row) => [getClosureComparisonKey(row, level), row]));
+        return Array.from(fromMap.entries())
+            .filter(([key]) => toMap.has(key))
+            .map(([key, fromRow]) => ({
+                fromRow,
+                toRow: toMap.get(key),
+                matchMeta: { mode: "exact", score: 1 },
+            }));
+    }
+
+    const fromGroups = groupClosureRows(fromRows, level);
+    const toGroups = groupClosureRows(toRows, level);
+    const groupKeys = collectUnique([...fromGroups.keys(), ...toGroups.keys()], (value) => value);
+    return groupKeys.flatMap((groupKey) => pairClosureRowsWithinGroup(
+        fromGroups.get(groupKey) || [],
+        toGroups.get(groupKey) || [],
+        level
+    ));
+}
+
+function groupClosureRows(rows, level) {
+    const groups = new Map();
+    rows.forEach((row) => {
+        const groupKey = level === "expanded" || level === "veryExpanded"
+            ? row.sectionId
+            : [row.sectionId, normalizeText(row.surveyTitle)].join("||");
+        if (!groups.has(groupKey)) {
+            groups.set(groupKey, []);
+        }
+        groups.get(groupKey).push(row);
+    });
+    return groups;
+}
+
+function pairClosureRowsWithinGroup(fromRows, toRows, level) {
+    if (!fromRows.length || !toRows.length) return [];
+
+    const matchedFrom = new Set();
+    const matchedTo = new Set();
+    const pairs = [];
+    const exactMap = new Map();
+
+    toRows.forEach((row, index) => {
+        exactMap.set(getClosureExactKey(row, level), { row, index });
+    });
+
+    fromRows.forEach((row, index) => {
+        const exactMatch = exactMap.get(getClosureExactKey(row, level));
+        if (!exactMatch || matchedTo.has(exactMatch.index)) return;
+        matchedFrom.add(index);
+        matchedTo.add(exactMatch.index);
+        pairs.push({
+            fromRow: row,
+            toRow: exactMatch.row,
+            matchMeta: { mode: "exact", score: 1 },
+        });
+    });
+
+    const candidates = [];
+    fromRows.forEach((fromRow, fromIndex) => {
+        if (matchedFrom.has(fromIndex)) return;
+        toRows.forEach((toRow, toIndex) => {
+            if (matchedTo.has(toIndex)) return;
+            const score = getClosureFlexibleMatchScore(fromRow, toRow, level);
+            if (score <= 0) return;
+            candidates.push({
+                fromIndex,
+                toIndex,
+                fromRow,
+                toRow,
+                score,
+            });
+        });
+    });
+
+    candidates
+        .sort((first, second) => second.score - first.score)
+        .forEach((candidate) => {
+            if (matchedFrom.has(candidate.fromIndex) || matchedTo.has(candidate.toIndex)) return;
+            matchedFrom.add(candidate.fromIndex);
+            matchedTo.add(candidate.toIndex);
+            pairs.push({
+                fromRow: candidate.fromRow,
+                toRow: candidate.toRow,
+                matchMeta: {
+                    mode: level === "veryExpanded" ? "veryExpanded" : level === "expanded" ? "expanded" : "flexible",
+                    score: candidate.score,
+                },
+            });
+        });
+
+    return pairs;
+}
+
+function getClosureExactKey(row, level) {
+    if (level === "topic") {
+        return normalizeText(row.title);
+    }
+
+    if (level === "item" || level === "expanded" || level === "veryExpanded") {
+        const orderKey = row.itemOrder < 900000 ? `#${row.itemOrder}` : "";
+        return [normalizeText(row.surveyTitle), normalizeText(row.parentTitle), orderKey, normalizeText(row.title)].join("||");
+    }
+
+    return getClosureComparisonKey(row, level);
+}
+
 function getClosureComparisonKey(row, level) {
     if (level === "survey") {
         return [row.sectionId, normalizeText(row.title)].join("||");
     }
 
-    if (level === "item") {
+    if (level === "item" || level === "expanded" || level === "veryExpanded") {
         const itemKey = row.itemOrder < 900000
             ? `item:${row.itemOrder}`
             : `label:${normalizeText(row.title)}`;
@@ -2641,10 +2811,102 @@ function getClosureComparisonKey(row, level) {
     ].join("||");
 }
 
-function buildClosureRow(fromRow, toRow, level) {
+function getClosureFlexibleMatchScore(fromRow, toRow, level) {
+    const surveyScore = buildFlexibleTextScore(fromRow.surveyTitle, toRow.surveyTitle);
+    if (level === "veryExpanded") {
+        const topicScore = buildFlexibleTextScore(fromRow.parentTitle, toRow.parentTitle);
+        const titleScore = buildFlexibleTextScore(fromRow.title, toRow.title);
+        const exactOrder = fromRow.itemOrder < 900000 && toRow.itemOrder < 900000 && fromRow.itemOrder === toRow.itemOrder;
+        const nearOrder = fromRow.itemOrder < 900000 && toRow.itemOrder < 900000 && Math.abs(fromRow.itemOrder - toRow.itemOrder) <= 4;
+        const broadOrder = fromRow.itemOrder < 900000 && toRow.itemOrder < 900000 && Math.abs(fromRow.itemOrder - toRow.itemOrder) <= 8;
+
+        if (Math.max(surveyScore, topicScore, titleScore) < 0.1 && !nearOrder) return 0;
+        if (surveyScore < 0.3 && topicScore < 0.12 && titleScore < 0.08 && !broadOrder) return 0;
+
+        const orderBonus = exactOrder ? 0.24 : nearOrder ? 0.15 : broadOrder ? 0.07 : 0;
+        const structureBonus = surveyScore >= 0.8 ? 0.08 : surveyScore >= 0.55 ? 0.04 : 0;
+        const semanticBonus = topicScore >= 0.25 || titleScore >= 0.22 ? 0.05 : 0;
+
+        return Math.min(
+            1,
+            roundNumber((surveyScore * 0.22) + (topicScore * 0.24) + (titleScore * 0.1) + orderBonus + structureBonus + semanticBonus)
+        );
+    }
+
+    if (level === "expanded") {
+        const topicScore = buildFlexibleTextScore(fromRow.parentTitle, toRow.parentTitle);
+        const titleScore = buildFlexibleTextScore(fromRow.title, toRow.title);
+        const exactOrder = fromRow.itemOrder < 900000 && toRow.itemOrder < 900000 && fromRow.itemOrder === toRow.itemOrder;
+        const nearOrder = fromRow.itemOrder < 900000 && toRow.itemOrder < 900000 && Math.abs(fromRow.itemOrder - toRow.itemOrder) <= 2;
+        const farButStructured = surveyScore >= 0.75 && (topicScore >= 0.18 || nearOrder || exactOrder);
+
+        if (surveyScore < 0.5 && topicScore < 0.5 && !exactOrder && !nearOrder) return 0;
+        if (titleScore < 0.18 && topicScore < 0.18 && !farButStructured) return 0;
+
+        const orderBonus = exactOrder ? 0.22 : nearOrder ? 0.12 : 0;
+        const structureBonus = surveyScore >= 0.9 ? 0.08 : surveyScore >= 0.75 ? 0.04 : 0;
+        return Math.min(
+            1,
+            roundNumber((surveyScore * 0.28) + (topicScore * 0.34) + (titleScore * 0.18) + orderBonus + structureBonus)
+        );
+    }
+
+    if (surveyScore < 0.88) return 0;
+
+    if (level === "topic") {
+        const titleScore = buildFlexibleTextScore(fromRow.title, toRow.title);
+        return titleScore >= 0.45 ? titleScore : 0;
+    }
+
+    if (level === "item") {
+        const topicScore = buildFlexibleTextScore(fromRow.parentTitle, toRow.parentTitle);
+        const titleScore = buildFlexibleTextScore(fromRow.title, toRow.title);
+        const exactOrder = fromRow.itemOrder < 900000 && toRow.itemOrder < 900000 && fromRow.itemOrder === toRow.itemOrder;
+        const nearOrder = fromRow.itemOrder < 900000 && toRow.itemOrder < 900000 && Math.abs(fromRow.itemOrder - toRow.itemOrder) <= 1;
+
+        if (topicScore < 0.2 && titleScore < 0.7 && !exactOrder) return 0;
+        if (titleScore < 0.34 && topicScore < 0.7 && !exactOrder) return 0;
+
+        const orderBonus = exactOrder ? 0.18 : nearOrder ? 0.06 : 0;
+        return Math.min(1, roundNumber((titleScore * 0.65) + (topicScore * 0.35) + orderBonus));
+    }
+
+    return 0;
+}
+
+function buildFlexibleTextScore(firstValue, secondValue) {
+    const first = normalizeForSearch(firstValue);
+    const second = normalizeForSearch(secondValue);
+    if (!first || !second) return 0;
+    if (first === second) return 1;
+    if (first.includes(second) || second.includes(first)) return 0.92;
+
+    const preciseForward = searchMatchesPrecisely(first, second);
+    const preciseBackward = searchMatchesPrecisely(second, first);
+    if (preciseForward && preciseBackward) return 0.9;
+
+    const softForward = searchMatches(first, second);
+    const softBackward = searchMatches(second, first);
+
+    const firstTokens = collectUnique(first.split(" ").filter(Boolean), (value) => value);
+    const secondTokens = collectUnique(second.split(" ").filter(Boolean), (value) => value);
+    const secondSet = new Set(secondTokens);
+    const sharedCount = firstTokens.filter((token) => secondSet.has(token)).length;
+    const overlapScore = Math.max(
+        firstTokens.length ? sharedCount / firstTokens.length : 0,
+        secondTokens.length ? sharedCount / secondTokens.length : 0,
+    );
+
+    if (softForward && softBackward) return Math.max(0.78, overlapScore);
+    if (softForward || softBackward) return Math.max(0.64, overlapScore);
+    return overlapScore;
+}
+
+function buildClosureRow(fromRow, toRow, level, matchMeta = { mode: "exact", score: 1 }) {
     const fromAverage = Number(fromRow.average || 0);
     const toAverage = Number(toRow.average || 0);
     const deltaScore = roundNumber(toAverage - fromAverage);
+    const deltaHundred = roundNumber(deltaScore * 100);
     const deltaPercent = roundNumber(deltaScore * 20);
     const fromPercent = roundNumber(fromAverage * 20);
     const toPercent = roundNumber(toAverage * 20);
@@ -2663,18 +2925,61 @@ function buildClosureRow(fromRow, toRow, level) {
         sectionId: toRow.sectionId || fromRow.sectionId,
         sectionLabel: toRow.sectionLabel || fromRow.sectionLabel,
         title: toRow.title || fromRow.title,
-        subtitle,
+        subtitle: matchMeta.mode !== "exact"
+            ? `${subtitle} · ${getClosureMatchModeLabel(matchMeta.mode)}`
+            : subtitle,
         fromAverage,
         toAverage,
         fromPercent,
         toPercent,
+        deltaHundred,
         deltaScore,
         deltaPercent,
         fromResponses: fromRow.respondentCount,
         toResponses: toRow.respondentCount,
+        matchMode: matchMeta.mode,
+        matchScore: matchMeta.score,
         fromRow,
         toRow,
     };
+}
+
+function getClosureMatchModeLabel(mode) {
+    if (mode === "veryExpanded") return "مطابقة متوسعة جدًا";
+    if (mode === "expanded") return "مطابقة متوسعة";
+    if (mode === "flexible") return "ربط مرن";
+    return "مطابقة مباشرة";
+}
+
+function formatClosureMatchScore(mode, score) {
+    if (mode === "exact") return "البندان متطابقان مباشرة بين السنتين";
+    if (!Number.isFinite(Number(score))) return "ربط سياقي";
+    const percent = roundNumber(Number(score) * 100);
+    return `قوة الربط ${toArabicNumber(percent)}%`;
+}
+
+function buildClosureLinkingCellHtml(row) {
+    return `
+        <div class="table-detail-stack">
+            <span class="cell-title">${escapeHtml(row.fromRow.parentTitle || row.toRow.parentTitle || "—")}</span>
+            <span class="cell-subtitle">الاستطلاع: ${escapeHtml(row.fromRow.surveyTitle || row.toRow.surveyTitle || "—")}</span>
+            <span class="cell-subtitle">رقم العبارة: ${escapeHtml(getItemNumberLabel(row.fromRow))} → ${escapeHtml(getItemNumberLabel(row.toRow))}</span>
+        </div>
+    `;
+}
+
+function buildClosureYearTableCellHtml(sourceRow, yearLabel, average, percent, responses) {
+    return `
+        <div class="table-detail-stack">
+            <span class="cell-title">${escapeHtml(yearLabel)}</span>
+            <span class="cell-subtitle">الاستطلاع: ${escapeHtml(sourceRow.surveyTitle || "—")}</span>
+            <span class="cell-subtitle">الموضوع: ${escapeHtml(sourceRow.parentTitle || "—")}</span>
+            <span class="cell-subtitle">رقم العبارة: ${escapeHtml(getItemNumberLabel(sourceRow))}</span>
+            <span class="cell-subtitle">البند: ${escapeHtml(sourceRow.title || "—")}</span>
+            <span class="cell-subtitle">المتوسط: ${escapeHtml(formatScore(average))} · النسبة: ${escapeHtml(formatPercent(percent))}</span>
+            <span class="cell-subtitle">عدد المقيمين: ${toArabicNumber(responses)}</span>
+        </div>
+    `;
 }
 
 function renderClosureHighlights(container, rows, emptyText) {
@@ -2685,12 +2990,16 @@ function renderClosureHighlights(container, rows, emptyText) {
     }
 
     container.innerHTML = rows.slice(0, 5).map((row, index) => `
-        <article class="insight-item">
+        <button class="insight-item insight-item-button" type="button" data-closure-detail-index="${index}">
             <div class="insight-item-title">${toArabicNumber(index + 1)}. ${escapeHtml(row.title)}</div>
             <div class="insight-item-meta">${escapeHtml(row.sectionLabel)} · ${escapeHtml(row.subtitle)}</div>
             <div class="insight-item-meta">${escapeHtml(formatPercent(row.fromPercent))} → ${escapeHtml(formatPercent(row.toPercent))} · ${toArabicNumber(row.fromResponses)} / ${toArabicNumber(row.toResponses)} استجابة</div>
-            <div class="insight-item-value">${escapeHtml(formatDeltaPoints(row.deltaPercent))} نقطة مئوية</div>
-        </article>
+            <div class="insight-item-value">${escapeHtml(formatClosureImprovement(row.deltaHundred))}</div>
+            <div class="insight-item-foot">
+                <span>اضغط لعرض تفاصيل البند في كل سنة</span>
+                <span class="insight-item-arrow" aria-hidden="true">‹</span>
+            </div>
+        </button>
     `).join("");
 }
 
@@ -2705,16 +3014,103 @@ function buildClosureNarrativeHtml(payload) {
 
     if (!payload.qualifyingRows.length) {
         return `
-            <p>تمت مقارنة <strong>${escapeHtml(toArabicNumber(payload.comparableRows.length))}</strong> مؤشرًا بين ${escapeHtml(payload.fromYearLabel)} و${escapeHtml(payload.toYearLabel)} في برنامج <strong>${escapeHtml(payload.program.name)}</strong>، لكن لم يظهر تحسن يتجاوز الحد الأدنى المعتمد (${escapeHtml(toArabicNumber(payload.threshold))} نقاط مئوية).</p>
-            <p>إن رغبت في توسيع فرص الالتقاط، فالأفضل استخدام مستوى <strong>الموضوع الدقيق</strong> لأنه يستوعب تغيّر صياغة العبارة مع بقاء الموضوع نفسه.</p>
+            <p>تمت مقارنة <strong>${escapeHtml(toArabicNumber(payload.comparableRows.length))}</strong> مؤشرًا بين ${escapeHtml(payload.fromYearLabel)} و${escapeHtml(payload.toYearLabel)} في برنامج <strong>${escapeHtml(payload.program.name)}</strong>، لكن لم يظهر تحسن يتجاوز الحد الأدنى المعتمد (${escapeHtml(formatClosureThreshold(payload.threshold))}).</p>
+            <p>يمكن توسيع فرص الالتقاط بتخفيف الحد الأدنى قليلًا أو تغيير نطاق الموضوع حتى تظهر مقارنات أكثر داخل الاستطلاعات نفسها.</p>
         `;
     }
 
     const topRows = payload.qualifyingRows.slice(0, 3);
     return `
-        <p>أظهر برنامج <strong>${escapeHtml(payload.program.name)}</strong> عدد <strong>${escapeHtml(toArabicNumber(payload.qualifyingRows.length))}</strong> من دلائل التحسن المؤثرة بين ${escapeHtml(payload.fromYearLabel)} و${escapeHtml(payload.toYearLabel)}، بعد استبعاد أي زيادة تقل عن <strong>${escapeHtml(toArabicNumber(payload.threshold))}</strong> نقاط مئوية.</p>
-        <p>أقوى مؤشرات الإغلاق كانت في: ${topRows.map((row) => `<strong>${escapeHtml(row.title)}</strong> (${escapeHtml(formatDeltaPoints(row.deltaPercent))} نقطة مئوية)`).join("، ")}.</p>
-        <p>متوسط التحسن في المؤشرات المؤهلة بلغ <strong>${escapeHtml(formatDeltaPoints(payload.averageImprovement))}</strong> نقطة مئوية، وهذا يمنح البرنامج شواهد مباشرة على تحسن النتائج بين السنتين في النطاق المحدد.</p>
+        <p>أظهر برنامج <strong>${escapeHtml(payload.program.name)}</strong> عدد <strong>${escapeHtml(toArabicNumber(payload.qualifyingRows.length))}</strong> من دلائل التحسن المؤثرة بين ${escapeHtml(payload.fromYearLabel)} و${escapeHtml(payload.toYearLabel)}، بعد استبعاد أي زيادة تقل عن <strong>${escapeHtml(formatClosureThreshold(payload.threshold))}</strong>.</p>
+        <p>أقوى مؤشرات الإغلاق كانت في: ${topRows.map((row) => `<strong>${escapeHtml(row.title)}</strong> (${escapeHtml(formatClosureImprovement(row.deltaHundred))})`).join("، ")}.</p>
+        <p>متوسط التحسن في المؤشرات المؤهلة بلغ <strong>${escapeHtml(formatClosureImprovement(payload.averageImprovement))}</strong>، وهذا يمنح البرنامج شواهد مباشرة على تحسن النتائج بين السنتين في النطاق المحدد.</p>
+    `;
+}
+
+function openClosureDetailSheet(row, payload) {
+    if (!refs.bottomSheet || !refs.bottomSheetOptions) return;
+
+    state.bottomSheetContext = "closure-detail";
+    refs.bottomSheetTitle.textContent = row.title;
+    if (refs.bottomSheetSearchWrap) refs.bottomSheetSearchWrap.classList.add("hidden");
+    if (refs.bottomSheetSearch) refs.bottomSheetSearch.value = "";
+    refs.bottomSheetOptions.innerHTML = buildClosureDetailHtml(row, payload);
+    refs.bottomSheet.classList.remove("hidden");
+    document.body.classList.add("sheet-open");
+}
+
+function closeBottomSheet() {
+    if (!refs.bottomSheet) return;
+    refs.bottomSheet.classList.add("hidden");
+    if (refs.bottomSheetSearchWrap) refs.bottomSheetSearchWrap.classList.add("hidden");
+    if (refs.bottomSheetSearch) refs.bottomSheetSearch.value = "";
+    if (refs.bottomSheetOptions) refs.bottomSheetOptions.innerHTML = "";
+    document.body.classList.remove("sheet-open");
+    state.bottomSheetContext = "";
+}
+
+function buildClosureDetailHtml(row, payload) {
+    const comparisonLabel = getClosureMatchModeLabel(row.matchMode);
+    const summaryText = row.matchMode === "veryExpanded"
+        ? `استخدم هذا العرض مطابقة متوسعة جدًا لالتقاط التحسن حتى مع تباعد أكبر في الصياغة، مع إبقاء الربط داخل السياق الأقرب في ${payload.fromYearLabel} و${payload.toYearLabel}.`
+        : row.matchMode === "expanded"
+        ? `استخدم هذا العرض مطابقة متوسعة لالتقاط التحسن بين بندين متقاربين في السياق حتى لو كانت الصياغة أبعد من المطابقة المضبوطة بين ${payload.fromYearLabel} و${payload.toYearLabel}.`
+        : row.matchMode === "flexible"
+            ? `تم ربط بندين متقاربين داخل الاستطلاع نفسه، ثم قياس التحسن بين ${payload.fromYearLabel} و${payload.toYearLabel}.`
+            : `تمت مطابقة البند نفسه بين ${payload.fromYearLabel} و${payload.toYearLabel} ثم قياس مقدار التحسن.`;
+
+    return `
+        <section class="detail-sheet-summary">
+            <div class="detail-sheet-badges">
+                <span class="detail-sheet-chip">${escapeHtml(row.sectionLabel)}</span>
+                <span class="detail-sheet-chip">${escapeHtml(comparisonLabel)}</span>
+                <span class="detail-sheet-chip positive">${escapeHtml(formatClosureImprovement(row.deltaHundred))}</span>
+            </div>
+            <p>${escapeHtml(summaryText)}</p>
+        </section>
+        <section class="detail-sheet-grid">
+            ${buildClosureYearCardHtml(row.fromRow, payload.fromYearLabel, row.fromAverage, row.fromPercent, row.fromResponses, "from")}
+            ${buildClosureYearCardHtml(row.toRow, payload.toYearLabel, row.toAverage, row.toPercent, row.toResponses, "to")}
+        </section>
+    `;
+}
+
+function buildClosureYearCardHtml(sourceRow, yearLabel, average, percent, responses, tone) {
+    return `
+        <article class="detail-sheet-card theme-${escapeHtml(tone)}">
+            <header class="detail-sheet-card-head">
+                <div class="detail-sheet-year">${escapeHtml(yearLabel)}</div>
+                <div class="detail-sheet-score">${escapeHtml(formatScore(average))}</div>
+            </header>
+            <div class="detail-sheet-stats">
+                <div class="detail-sheet-stat">
+                    <span class="detail-sheet-stat-label">النسبة</span>
+                    <span class="detail-sheet-stat-value">${escapeHtml(formatPercent(percent))}</span>
+                </div>
+                <div class="detail-sheet-stat">
+                    <span class="detail-sheet-stat-label">عدد المقيمين</span>
+                    <span class="detail-sheet-stat-value">${toArabicNumber(responses)}</span>
+                </div>
+            </div>
+            <div class="detail-sheet-fields">
+                <div class="detail-sheet-field">
+                    <span class="detail-sheet-field-label">الاستطلاع</span>
+                    <span class="detail-sheet-field-value">${escapeHtml(sourceRow.surveyTitle || "—")}</span>
+                </div>
+                <div class="detail-sheet-field">
+                    <span class="detail-sheet-field-label">الموضوع الدقيق</span>
+                    <span class="detail-sheet-field-value">${escapeHtml(sourceRow.parentTitle || "—")}</span>
+                </div>
+                <div class="detail-sheet-field">
+                    <span class="detail-sheet-field-label">رقم العبارة</span>
+                    <span class="detail-sheet-field-value">${escapeHtml(getItemNumberLabel(sourceRow))}</span>
+                </div>
+                <div class="detail-sheet-field">
+                    <span class="detail-sheet-field-label">نص البند</span>
+                    <span class="detail-sheet-field-value">${escapeHtml(sourceRow.title || "—")}</span>
+                </div>
+            </div>
+        </article>
     `;
 }
 
@@ -2725,8 +3121,8 @@ function drawClosureChart(rows) {
         data: {
             labels: topRows.map((row) => truncateLabel(row.title, 42)),
             datasets: [{
-                label: "التحسن بالنقاط المئوية",
-                data: topRows.map((row) => row.deltaPercent),
+                label: "التحسن من 100",
+                data: topRows.map((row) => row.deltaHundred),
                 backgroundColor: "#1b8a61",
                 borderRadius: 10,
             }],
@@ -2740,7 +3136,7 @@ function drawClosureChart(rows) {
                 tooltip: {
                     callbacks: {
                         label(context) {
-                            return `التحسن ${formatDeltaPoints(context.raw)} نقطة مئوية`;
+                            return `التحسن ${formatClosureImprovement(context.raw)}`;
                         },
                     },
                 },
@@ -3038,6 +3434,7 @@ function createAggregateEntry(record, level, key) {
         rowDepth: 0,
         surveyIndex: record.surveyIndex,
         topicIndex: record.topicIndex,
+        itemNumber: record.itemNumber,
         itemOrder: record.itemOrder,
         sortRank: record.sortRank,
         respondentCount: 0,
@@ -3095,6 +3492,7 @@ function finalizeAggregateEntry(entry) {
         rowDepth: entry.rowDepth,
         surveyIndex: entry.surveyIndex,
         topicIndex: entry.topicIndex,
+        itemNumber: entry.itemNumber,
         itemOrder: entry.itemOrder,
         sortRank: entry.sortRank,
         average: entry._responseTotal ? roundNumber(entry._scoreTotal / entry._responseTotal) : null,
@@ -3993,30 +4391,30 @@ function buildClosureExportPayload() {
         metrics: [
             { label: "المؤشرات القابلة للمقارنة", value: toArabicNumber(payload.comparableRows.length) },
             { label: "المؤشرات المؤهلة", value: toArabicNumber(payload.qualifyingRows.length) },
-            { label: "أكبر تحسن", value: payload.topRow ? `${formatDeltaPoints(payload.topRow.deltaPercent)} نقطة` : "—" },
+            { label: "أكبر تحسن", value: payload.topRow ? formatClosureImprovement(payload.topRow.deltaHundred) : "—" },
         ],
-        note: "يعرض هذا التصدير المؤشرات التي تحسنت فقط، مع استبعاد أي تحسن أقل من الحد الأدنى المحدد وعدم إظهار حالات التراجع.",
+        note: `يعرض هذا التصدير المؤشرات التي تحسنت فقط، مع استبعاد أي تحسن أقل من ${formatClosureThreshold(payload.threshold)} وعدم إظهار حالات التراجع.`,
         headers: [
             "المحور",
-            "المستوى",
+            "نوع المطابقة",
             "المؤشر",
             `${payload.fromYearLabel} المتوسط`,
             `${payload.toYearLabel} المتوسط`,
             `${payload.fromYearLabel} النسبة`,
             `${payload.toYearLabel} النسبة`,
-            "التحسن",
+            "التحسن (من 100)",
             `${payload.fromYearLabel} الاستجابات`,
             `${payload.toYearLabel} الاستجابات`,
         ],
         data: payload.qualifyingRows.map((row) => [
             row.sectionLabel,
-            getClosureLevelLabel(payload.level),
+            getClosureMatchModeLabel(row.matchMode),
             `${row.title} — ${row.subtitle}`,
             formatScore(row.fromAverage),
             formatScore(row.toAverage),
             formatPercent(row.fromPercent),
             formatPercent(row.toPercent),
-            `${formatDeltaPoints(row.deltaPercent)} نقطة مئوية`,
+            formatClosureImprovement(row.deltaHundred),
             toArabicNumber(row.fromResponses),
             toArabicNumber(row.toResponses),
         ]),
@@ -4322,27 +4720,27 @@ function exportClosureData(type) {
 
     const headers = [
         "المحور",
-        "المستوى",
+        "نوع المطابقة",
         "المؤشر",
         "التفصيل",
         `${payload.fromYearLabel} المتوسط`,
         `${payload.toYearLabel} المتوسط`,
         `${payload.fromYearLabel} النسبة`,
         `${payload.toYearLabel} النسبة`,
-        "التحسن بالنقاط المئوية",
+        "التحسن (من 100)",
         `${payload.fromYearLabel} الاستجابات`,
         `${payload.toYearLabel} الاستجابات`,
     ];
     const data = payload.qualifyingRows.map((row) => [
         row.sectionLabel,
-        getClosureLevelLabel(payload.level),
+        getClosureMatchModeLabel(row.matchMode),
         row.title,
         row.subtitle,
         formatScore(row.fromAverage),
         formatScore(row.toAverage),
         formatPercent(row.fromPercent),
         formatPercent(row.toPercent),
-        formatDeltaPoints(row.deltaPercent),
+        formatClosureImprovement(row.deltaHundred),
         row.fromResponses,
         row.toResponses,
     ]);
@@ -4751,10 +5149,21 @@ function buildProgramRowSubtitle(row) {
         return `<span class="cell-subtitle">${toArabicNumber(row.itemCount)} عبارة · ${escapeHtml(row.parentTitle)}</span>`;
     }
     if (row.rowKind === "عبارة") {
-        const itemNumber = row.itemOrder < 900000 ? `رقم ${toArabicNumber(row.itemOrder)}` : "عبارة تفصيلية";
+        const itemNumber = getItemNumberLabel(row) !== "—"
+            ? `رقم ${getItemNumberLabel(row)}`
+            : "عبارة تفصيلية";
         return `<span class="cell-subtitle">${escapeHtml(row.parentTitle)} · ${escapeHtml(itemNumber)}</span>`;
     }
     return "";
+}
+
+function getItemNumberLabel(row) {
+    const rawValue = String(row?.itemNumber || "").trim();
+    if (rawValue) return rawValue;
+    if (Number.isFinite(Number(row?.itemOrder)) && Number(row.itemOrder) < 900000) {
+        return toArabicNumber(Number(row.itemOrder));
+    }
+    return "—";
 }
 
 function chartHasData(config) {
@@ -5080,6 +5489,19 @@ function formatDeltaPoints(value) {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     })}`;
+}
+
+function formatClosureImprovement(value) {
+    if (value == null || Number.isNaN(Number(value))) return "—";
+    return `${formatDeltaPoints(value)} من 100`;
+}
+
+function formatClosureThreshold(value) {
+    if (value == null || Number.isNaN(Number(value))) return "—";
+    return `${Number(value).toLocaleString("ar-SA", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+    })} من 100`;
 }
 
 function toArabicNumber(value) {

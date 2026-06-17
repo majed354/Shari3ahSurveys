@@ -480,12 +480,12 @@
                                 <select id="closureToYearSelect"></select>
                             </div>
                             <div class="field-group">
-                                <label for="closureLevelSelect">مستوى المقارنة</label>
+                                <label for="closureLevelSelect">نوع المطابقة</label>
                                 <select id="closureLevelSelect"></select>
                             </div>
                             <div class="field-group">
-                                <label for="closureMinImprovementInput">الحد الأدنى للتحسن</label>
-                                <input id="closureMinImprovementInput" type="number" min="5" step="1" value="5" class="gaps-target-input">
+                                <label for="closureMinImprovementInput">الحد الأدنى للتحسن (من 100)</label>
+                                <input id="closureMinImprovementInput" type="number" min="0" step="0.1" value="2" class="gaps-target-input">
                             </div>
                         </div>
 
@@ -511,6 +511,20 @@
                         </div>
 
                         <div id="closureActiveFilters" class="chips-row"></div>
+                    </article>
+
+                    <article class="card">
+                        <div class="card-head">
+                            <div>
+                                <h3>تصدير نتائج الإغلاق</h3>
+                                <p class="meta-text">يتم تصدير جميع المؤشرات المؤهلة الظاهرة في بطاقات التحسن الحالية.</p>
+                            </div>
+                            <div class="action-group">
+                                <button id="exportClosureExcel" class="btn" type="button">Excel</button>
+                                <button id="exportClosureCsv" class="btn" type="button">CSV</button>
+                                <button id="exportClosurePdf" class="btn btn-primary" type="button">PDF</button>
+                            </div>
+                        </div>
                     </article>
 
                     <div id="closureIndicators" class="kpi-grid"></div>
@@ -542,7 +556,7 @@
                         </article>
                     </div>
 
-                    <article class="card">
+                    <article id="closureTableCard" class="card">
                         <div class="card-head">
                             <h3>جدول إغلاق دائرة الجودة</h3>
                             <span id="closureTableMeta" class="meta-text"></span>
@@ -806,6 +820,7 @@
             <div class="bottom-sheet-handle"></div>
             <div class="bottom-sheet-head">
                 <h3 id="bottomSheetTitle"></h3>
+                <button id="bottomSheetCloseBtn" class="bottom-sheet-close" type="button" aria-label="إغلاق">×</button>
             </div>
             <div class="bottom-sheet-search">
                 <input id="bottomSheetSearch" type="search" placeholder="بحث...">

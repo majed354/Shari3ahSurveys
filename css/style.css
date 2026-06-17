@@ -57,6 +57,10 @@ input {
     display: none !important;
 }
 
+body.sheet-open {
+    overflow: hidden;
+}
+
 .page-shell {
     width: min(1500px, calc(100% - 28px));
     margin: 16px auto 28px;
@@ -763,6 +767,12 @@ input {
     line-height: 1.6;
 }
 
+.table-detail-stack {
+    display: grid;
+    gap: 2px;
+    min-width: 220px;
+}
+
 .score-pill,
 .status-pill {
     display: inline-flex;
@@ -860,6 +870,39 @@ input {
 .insight-item-value {
     font-family: var(--font-head);
     color: var(--primary-900);
+}
+
+.insight-item-button {
+    width: 100%;
+    text-align: start;
+    cursor: pointer;
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.insight-item-button:hover,
+.insight-item-button:focus-visible {
+    border-color: rgba(30, 95, 88, 0.28);
+    box-shadow: 0 14px 26px rgba(18, 57, 54, 0.08);
+    transform: translateY(-1px);
+}
+
+.insight-item-button:focus-visible {
+    outline: 3px solid rgba(30, 95, 88, 0.18);
+    outline-offset: 2px;
+}
+
+.insight-item-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--text-soft);
+    font-size: 0.84rem;
+}
+
+.insight-item-arrow {
+    font-size: 1rem;
+    color: var(--primary-800);
 }
 
 /* Multi-select dropdown */
@@ -1586,6 +1629,10 @@ input {
 
 .bottom-sheet-head {
     padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
 }
 
 .bottom-sheet-head h3 {
@@ -1593,6 +1640,25 @@ input {
     font-family: var(--font-head);
     font-size: 1.05rem;
     color: var(--primary-950);
+}
+
+.bottom-sheet-close {
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--primary-900);
+    font-size: 1.35rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.bottom-sheet-close:hover,
+.bottom-sheet-close:focus-visible {
+    border-color: rgba(30, 95, 88, 0.28);
+    box-shadow: 0 0 0 4px rgba(44, 120, 111, 0.1);
+    outline: none;
 }
 
 .bottom-sheet-search {
@@ -1620,6 +1686,121 @@ input {
     padding: 0 20px 24px;
     display: grid;
     gap: 8px;
+}
+
+.detail-sheet-summary {
+    display: grid;
+    gap: 10px;
+    padding: 6px 0 2px;
+}
+
+.detail-sheet-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.detail-sheet-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(30, 95, 88, 0.08);
+    color: var(--primary-900);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.detail-sheet-chip.positive {
+    background: rgba(27, 138, 97, 0.12);
+    color: #0f6b47;
+}
+
+.detail-sheet-summary p {
+    margin: 0;
+    color: var(--text-soft);
+    line-height: 1.8;
+}
+
+.detail-sheet-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.detail-sheet-card {
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    display: grid;
+    gap: 12px;
+}
+
+.detail-sheet-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.detail-sheet-year {
+    font-family: var(--font-head);
+    font-size: 1rem;
+    color: var(--primary-950);
+}
+
+.detail-sheet-score {
+    font-family: var(--font-head);
+    font-size: 1.1rem;
+    color: var(--primary-900);
+}
+
+.detail-sheet-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.detail-sheet-stat {
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    background: rgba(30, 95, 88, 0.05);
+    display: grid;
+    gap: 3px;
+}
+
+.detail-sheet-stat-label,
+.detail-sheet-field-label {
+    color: var(--text-soft);
+    font-size: 0.8rem;
+}
+
+.detail-sheet-stat-value,
+.detail-sheet-field-value {
+    color: var(--primary-950);
+    font-weight: 700;
+    line-height: 1.7;
+}
+
+.detail-sheet-fields {
+    display: grid;
+    gap: 10px;
+}
+
+.detail-sheet-field {
+    display: grid;
+    gap: 3px;
+}
+
+.detail-sheet-card.theme-from {
+    border-color: rgba(199, 158, 84, 0.35);
+}
+
+.detail-sheet-card.theme-to {
+    border-color: rgba(27, 138, 97, 0.28);
 }
 
 /* 8. Updated Mobile Responsive */
@@ -1684,6 +1865,11 @@ input {
     .chart-tall,
     .chart-medium {
         height: 300px;
+    }
+
+    .detail-sheet-grid,
+    .detail-sheet-stats {
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .chip-filter-group {
