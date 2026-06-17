@@ -262,6 +262,7 @@
                 <div class="sub-tabs">
                     <button class="sub-tab is-active" type="button" data-subtab="analysis">الرؤى والتحليل</button>
                     <button class="sub-tab" type="button" data-subtab="compare">المقارنة</button>
+                    <button class="sub-tab" type="button" data-subtab="closure">إغلاق دائرة الجودة</button>
                     <button class="sub-tab" type="button" data-subtab="trend">التطور الزمني</button>
                     <button class="sub-tab" type="button" data-subtab="gaps">تقرير الفجوات</button>
                 </div>
@@ -460,6 +461,99 @@
                             </table>
                         </div>
                         <div id="compareEmpty" class="empty-state hidden">ابدأ بتحديد برنامج وسنة في خانتين على الأقل للمقارنة.</div>
+                    </article>
+                </div>
+
+                <div id="closureSubView" class="sub-view hidden">
+                    <article class="card filter-card">
+                        <div class="filters-grid filters-grid-5">
+                            <div class="field-group">
+                                <label for="closureProgramSelect">البرنامج</label>
+                                <select id="closureProgramSelect"></select>
+                            </div>
+                            <div class="field-group">
+                                <label for="closureFromYearSelect">السنة الأولى</label>
+                                <select id="closureFromYearSelect"></select>
+                            </div>
+                            <div class="field-group">
+                                <label for="closureToYearSelect">السنة الثانية</label>
+                                <select id="closureToYearSelect"></select>
+                            </div>
+                            <div class="field-group">
+                                <label for="closureLevelSelect">مستوى المقارنة</label>
+                                <select id="closureLevelSelect"></select>
+                            </div>
+                            <div class="field-group">
+                                <label for="closureMinImprovementInput">الحد الأدنى للتحسن</label>
+                                <input id="closureMinImprovementInput" type="number" min="5" step="1" value="5" class="gaps-target-input">
+                            </div>
+                        </div>
+
+                        <div class="chip-filter-group">
+                            <div class="chip-filter">
+                                <span class="chip-filter-label">نوع الموضوع</span>
+                                <div id="closureTopicModeChips" class="chip-filter-options" data-filter="topicMode"></div>
+                            </div>
+                        </div>
+
+                        <div id="closureGeneralTopicPanel" class="filters-grid filters-grid-single">
+                            <div class="field-group">
+                                <label for="closureSubjectFilter">الموضوع العام</label>
+                                <select id="closureSubjectFilter"></select>
+                            </div>
+                        </div>
+
+                        <div id="closureSelfStudyPanel" class="filters-grid filters-grid-single hidden">
+                            <div class="field-group">
+                                <label for="closureSelfStudyFilter">المحك / الجانب المدعوم / نص العبارة</label>
+                                <select id="closureSelfStudyFilter"></select>
+                            </div>
+                        </div>
+
+                        <div id="closureActiveFilters" class="chips-row"></div>
+                    </article>
+
+                    <div id="closureIndicators" class="kpi-grid"></div>
+
+                    <div class="insights-grid">
+                        <article class="card">
+                            <div class="card-head">
+                                <h3>أبرز دلائل التحسن</h3>
+                            </div>
+                            <div id="closureHighlights" class="insight-list"></div>
+                        </article>
+
+                        <article class="card">
+                            <div class="card-head">
+                                <h3>خلاصة إغلاق الدائرة</h3>
+                            </div>
+                            <div id="closureNarrative" class="narrative-text"></div>
+                        </article>
+                    </div>
+
+                    <div class="charts-grid charts-grid-single">
+                        <article class="card chart-card">
+                            <div class="card-head">
+                                <h3>أكبر التحسينات المعتمدة</h3>
+                            </div>
+                            <div class="chart-wrap chart-tall">
+                                <canvas id="closureDeltaChart"></canvas>
+                            </div>
+                        </article>
+                    </div>
+
+                    <article class="card">
+                        <div class="card-head">
+                            <h3>جدول إغلاق دائرة الجودة</h3>
+                            <span id="closureTableMeta" class="meta-text"></span>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="data-table">
+                                <thead id="closureTableHead"></thead>
+                                <tbody id="closureTableBody"></tbody>
+                            </table>
+                        </div>
+                        <div id="closureEmpty" class="empty-state hidden">اختر برنامجًا وسنتين لعرض دلائل إغلاق دائرة الجودة.</div>
                     </article>
                 </div>
 

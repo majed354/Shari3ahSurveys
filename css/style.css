@@ -805,6 +805,22 @@ input {
     color: var(--danger);
 }
 
+.delta-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 112px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.delta-pill.positive {
+    background: rgba(27, 138, 97, 0.12);
+    color: var(--success);
+}
+
 .empty-state {
     padding: 20px;
     text-align: center;

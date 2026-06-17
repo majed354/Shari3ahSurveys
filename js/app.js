@@ -109,6 +109,7 @@ const state = {
         selfStudyTarget: "all",
         selfStudySearch: "",
     },
+    closureFilters: createClosureFilterState(),
     customFilters: createSingleFilterState(),
     customSelected: new Set(),
     searchMode: "precise",
@@ -149,6 +150,30 @@ function createSingleFilterState() {
         topicMode: DEFAULT_TOPIC_MODE,
         selfStudyTarget: "all",
         selfStudySearch: "",
+    };
+}
+
+function createClosureFilterState(programId = "") {
+    const pair = getDefaultClosureYearPair(programId);
+    return {
+        program: programId,
+        fromYear: pair.fromYear,
+        toYear: pair.toYear,
+        subject: "all",
+        topicMode: DEFAULT_TOPIC_MODE,
+        selfStudyTarget: "all",
+        selfStudySearch: "",
+        level: "topic",
+        minImprovement: 5,
+    };
+}
+
+function getDefaultClosureYearPair(programId = "") {
+    const availableYears = programId ? getAvailableYears(programId) : ALL_AVAILABLE_YEARS;
+    const years = [...availableYears].sort((first, second) => Number(first) - Number(second));
+    return {
+        fromYear: years[0] || "",
+        toYear: years[years.length - 1] || years[0] || "",
     };
 }
 
@@ -278,6 +303,28 @@ function cacheRefs() {
     refs.analysisTableBody = document.getElementById("analysisTableBody");
     refs.analysisEmpty = document.getElementById("analysisEmpty");
 
+    // Quality closure sub-view
+    refs.closureSubView = document.getElementById("closureSubView");
+    refs.closureProgramSelect = document.getElementById("closureProgramSelect");
+    refs.closureFromYearSelect = document.getElementById("closureFromYearSelect");
+    refs.closureToYearSelect = document.getElementById("closureToYearSelect");
+    refs.closureLevelSelect = document.getElementById("closureLevelSelect");
+    refs.closureMinImprovementInput = document.getElementById("closureMinImprovementInput");
+    refs.closureTopicModeChips = document.getElementById("closureTopicModeChips");
+    refs.closureGeneralTopicPanel = document.getElementById("closureGeneralTopicPanel");
+    refs.closureSubjectFilter = document.getElementById("closureSubjectFilter");
+    refs.closureSelfStudyPanel = document.getElementById("closureSelfStudyPanel");
+    refs.closureSelfStudyFilter = document.getElementById("closureSelfStudyFilter");
+    refs.closureActiveFilters = document.getElementById("closureActiveFilters");
+    refs.closureIndicators = document.getElementById("closureIndicators");
+    refs.closureHighlights = document.getElementById("closureHighlights");
+    refs.closureNarrative = document.getElementById("closureNarrative");
+    refs.closureDeltaChart = document.getElementById("closureDeltaChart");
+    refs.closureTableMeta = document.getElementById("closureTableMeta");
+    refs.closureTableHead = document.getElementById("closureTableHead");
+    refs.closureTableBody = document.getElementById("closureTableBody");
+    refs.closureEmpty = document.getElementById("closureEmpty");
+
     // Trend sub-view
     refs.trendSubView = document.getElementById("trendSubView");
     refs.trendProgramSelect = document.getElementById("trendProgramSelect");
@@ -342,7 +389,7 @@ function bindEvents() {
             refs.insightsSection.querySelectorAll("[data-subtab]").forEach((btn) => {
                 btn.classList.toggle("is-active", btn.dataset.subtab === state.insightsSubTab);
             });
-            ["analysisSubView", "compareSubView", "trendSubView", "gapsSubView"].forEach((key) => {
+            ["analysisSubView", "compareSubView", "closureSubView", "trendSubView", "gapsSubView"].forEach((key) => {
                 if (refs[key]) refs[key].classList.toggle("hidden", state.insightsSubTab !== key.replace("SubView", ""));
             });
             renderCurrentView();
@@ -503,6 +550,10 @@ function bindEvents() {
                 };
                 renderAnalysisControls();
                 renderAnalysisSection();
+            } else if (state.insightsSubTab === "closure") {
+                state.closureFilters = createClosureFilterState();
+                renderClosureControls();
+                renderClosureSection();
             }
         });
     }
@@ -649,23 +700,27 @@ function bindEvents() {
     if (refs.exportExplorePdf) refs.exportExplorePdf.addEventListener("click", () => exportExploreResultsPdf());
 
     bindTrendEvents();
+    bindClosureEvents();
     bindGapsEvents();
 
     if (refs.exportInsightsExcel) refs.exportInsightsExcel.addEventListener("click", () => {
         if (state.insightsSubTab === "compare") exportComparisonData("xlsx");
         else if (state.insightsSubTab === "analysis") exportAnalysisData("xlsx");
+        else if (state.insightsSubTab === "closure") exportClosureData("xlsx");
         else if (state.insightsSubTab === "trend") exportTrendData("xlsx");
         else if (state.insightsSubTab === "gaps") exportGapsData("xlsx");
     });
     if (refs.exportInsightsCsv) refs.exportInsightsCsv.addEventListener("click", () => {
         if (state.insightsSubTab === "compare") exportComparisonData("csv");
         else if (state.insightsSubTab === "analysis") exportAnalysisData("csv");
+        else if (state.insightsSubTab === "closure") exportClosureData("csv");
         else if (state.insightsSubTab === "trend") exportTrendData("csv");
         else if (state.insightsSubTab === "gaps") exportGapsData("csv");
     });
     if (refs.exportInsightsPdf) refs.exportInsightsPdf.addEventListener("click", () => {
         if (state.insightsSubTab === "compare") exportComparisonResultsPdf();
         else if (state.insightsSubTab === "analysis") exportAnalysisResultsPdf();
+        else if (state.insightsSubTab === "closure") exportClosureResultsPdf();
         else if (state.insightsSubTab === "trend") exportTrendResultsPdf();
         else if (state.insightsSubTab === "gaps") exportGapsResultsPdf();
     });
@@ -683,6 +738,55 @@ function bindTrendEvents() {
     if (refs.trendSelfStudyFilter) refs.trendSelfStudyFilter.addEventListener("change", (e) => {
         state.trendFilters.selfStudyTarget = e.target.value;
         renderTrendSection();
+    });
+}
+
+function bindClosureEvents() {
+    if (refs.closureProgramSelect) refs.closureProgramSelect.addEventListener("change", (event) => {
+        state.closureFilters.program = event.target.value;
+        const pair = getDefaultClosureYearPair(state.closureFilters.program);
+        state.closureFilters.fromYear = pair.fromYear;
+        state.closureFilters.toYear = pair.toYear;
+        renderClosureControls();
+        renderClosureSection();
+    });
+
+    if (refs.closureFromYearSelect) refs.closureFromYearSelect.addEventListener("change", (event) => {
+        state.closureFilters.fromYear = event.target.value;
+        normalizeClosureYearPair("from");
+        renderClosureControls();
+        renderClosureSection();
+    });
+
+    if (refs.closureToYearSelect) refs.closureToYearSelect.addEventListener("change", (event) => {
+        state.closureFilters.toYear = event.target.value;
+        normalizeClosureYearPair("to");
+        renderClosureControls();
+        renderClosureSection();
+    });
+
+    if (refs.closureLevelSelect) refs.closureLevelSelect.addEventListener("change", (event) => {
+        state.closureFilters.level = event.target.value;
+        renderClosureSection();
+    });
+
+    if (refs.closureMinImprovementInput) refs.closureMinImprovementInput.addEventListener("input", (event) => {
+        const value = Math.max(5, Number(event.target.value || 5));
+        state.closureFilters.minImprovement = Number.isFinite(value) ? value : 5;
+        refs.closureMinImprovementInput.value = String(state.closureFilters.minImprovement);
+        renderClosureSection();
+    });
+
+    if (refs.closureSubjectFilter) refs.closureSubjectFilter.addEventListener("change", (event) => {
+        state.closureFilters.subject = event.target.value;
+        renderClosureControls();
+        renderClosureSection();
+    });
+
+    if (refs.closureSelfStudyFilter) refs.closureSelfStudyFilter.addEventListener("change", (event) => {
+        state.closureFilters.selfStudyTarget = event.target.value;
+        renderClosureControls();
+        renderClosureSection();
     });
 }
 
@@ -789,6 +893,7 @@ function refreshAllControls() {
     renderExploreControls();
     renderCompareControls();
     renderAnalysisControls();
+    renderClosureControls();
     renderSearchControls();
     renderTrendControls();
     renderGapsControls();
@@ -819,6 +924,7 @@ function renderCurrentView() {
     if (state.view === "insights") {
         if (state.insightsSubTab === "analysis") renderAnalysisSection();
         if (state.insightsSubTab === "compare") renderCompareSection();
+        if (state.insightsSubTab === "closure") renderClosureSection();
         if (state.insightsSubTab === "trend") renderTrendSection();
         if (state.insightsSubTab === "gaps") renderGapsSection();
     }
@@ -1073,6 +1179,120 @@ function renderAnalysisControls() {
     ]);
 }
 
+function renderClosureControls() {
+    if (!refs.closureProgramSelect) return;
+
+    renderProgramOptionsFor(refs.closureProgramSelect, state.closureFilters.program, false, {
+        includeEmpty: true,
+        emptyLabel: "اختر البرنامج",
+    });
+
+    normalizeClosureYearPair();
+    const years = state.closureFilters.program ? getAvailableYears(state.closureFilters.program) : ALL_AVAILABLE_YEARS;
+    renderYearOptionsFromList(refs.closureFromYearSelect, state.closureFilters.fromYear, years, false);
+    renderYearOptionsFromList(refs.closureToYearSelect, state.closureFilters.toYear, years, false);
+
+    if (refs.closureLevelSelect) {
+        refs.closureLevelSelect.innerHTML = [
+            `<option value="topic">الموضوع الدقيق</option>`,
+            `<option value="item">العبارة المتطابقة</option>`,
+            `<option value="survey">الاستطلاع الكامل</option>`,
+        ].join("");
+        refs.closureLevelSelect.value = ["topic", "item", "survey"].includes(state.closureFilters.level)
+            ? state.closureFilters.level
+            : "topic";
+    }
+
+    if (refs.closureMinImprovementInput) {
+        refs.closureMinImprovementInput.value = String(state.closureFilters.minImprovement);
+    }
+
+    refs.closureTopicModeChips = renderChipOptions(
+        refs.closureTopicModeChips,
+        [{ value: "general", label: "موضوعات عامة" }, { value: "selfstudy", label: "محكات الدراسة الذاتية" }],
+        state.closureFilters.topicMode,
+        (value) => {
+            state.closureFilters.topicMode = value;
+            if (value === "general") {
+                state.closureFilters.selfStudyTarget = "all";
+            } else {
+                state.closureFilters.subject = "all";
+            }
+            renderClosureControls();
+            renderClosureSection();
+        }
+    );
+
+    renderSubjectOptionsForClosure();
+    renderSelfStudyOptionsForClosure();
+    toggleTopicModePanels(refs.closureGeneralTopicPanel, refs.closureSelfStudyPanel, state.closureFilters.topicMode);
+    renderFilterChips(refs.closureActiveFilters, buildClosureFilterChips());
+}
+
+function renderSubjectOptionsForClosure() {
+    renderSubjectOptions(refs.closureSubjectFilter, getClosureBaseRecords(), state.closureFilters, "subject");
+}
+
+function renderSelfStudyOptionsForClosure() {
+    renderSelfStudyOptions(refs.closureSelfStudyFilter, null, getClosureBaseRecords(), state.closureFilters);
+}
+
+function getClosureBaseRecords() {
+    if (!state.closureFilters.program) return [];
+    const years = new Set([state.closureFilters.fromYear, state.closureFilters.toYear].filter(Boolean));
+    return ITEM_RECORDS.filter((record) => record.programId === state.closureFilters.program && years.has(record.year));
+}
+
+function normalizeClosureYearPair(changedKey = "") {
+    const years = [...(state.closureFilters.program ? getAvailableYears(state.closureFilters.program) : ALL_AVAILABLE_YEARS)]
+        .sort((first, second) => Number(first) - Number(second));
+
+    if (!years.length) {
+        state.closureFilters.fromYear = "";
+        state.closureFilters.toYear = "";
+        return;
+    }
+
+    if (!years.includes(state.closureFilters.fromYear)) {
+        state.closureFilters.fromYear = years[0];
+    }
+
+    if (!years.includes(state.closureFilters.toYear)) {
+        state.closureFilters.toYear = years[years.length - 1];
+    }
+
+    if (years.length > 1 && state.closureFilters.fromYear === state.closureFilters.toYear) {
+        if (changedKey === "from") {
+            state.closureFilters.toYear = years.find((year) => year !== state.closureFilters.fromYear) || state.closureFilters.toYear;
+        } else {
+            state.closureFilters.fromYear = [...years].reverse().find((year) => year !== state.closureFilters.toYear) || state.closureFilters.fromYear;
+        }
+    }
+
+    if (state.closureFilters.fromYear && state.closureFilters.toYear && Number(state.closureFilters.fromYear) > Number(state.closureFilters.toYear)) {
+        const olderYear = state.closureFilters.toYear;
+        state.closureFilters.toYear = state.closureFilters.fromYear;
+        state.closureFilters.fromYear = olderYear;
+    }
+}
+
+function buildClosureFilterChips() {
+    return [
+        { label: "البرنامج", value: state.closureFilters.program ? formatProgramLabel(getProgramById(state.closureFilters.program)) : "غير محدد" },
+        { label: "الفترة", value: state.closureFilters.fromYear && state.closureFilters.toYear ? `${state.closureFilters.fromYear}هـ ← ${state.closureFilters.toYear}هـ` : "غير مكتملة" },
+        { label: "نوع الموضوع", value: getTopicModeLabel(state.closureFilters.topicMode) },
+        { label: "التحديد", value: getTopicSelectionLabel(state.closureFilters) },
+        { label: "المستوى", value: getClosureLevelLabel(state.closureFilters.level) },
+        { label: "الحد الأدنى", value: `${toArabicNumber(state.closureFilters.minImprovement)} نقطة مئوية` },
+    ];
+}
+
+function getClosureLevelLabel(level) {
+    if (level === "survey") return "الاستطلاع الكامل";
+    if (level === "item") return "العبارة المتطابقة";
+    return "الموضوع الدقيق";
+}
+
 function renderCustomControls() {
     renderProgramOptionsFor(refs.customProgramFilter, state.customFilters.program, true);
 
@@ -1117,13 +1337,19 @@ function renderCustomControls() {
     pruneCustomSelection();
 }
 
-function renderProgramOptionsFor(selectRef, currentValue, includeAll) {
+function renderProgramOptionsFor(selectRef, currentValue, includeAll, options = {}) {
     const programs = getProgramsWithData();
     selectRef.innerHTML = [
+        options.includeEmpty ? `<option value="">${escapeHtml(options.emptyLabel || "غير محدد")}</option>` : "",
         includeAll ? `<option value="all">كل البرامج</option>` : "",
         ...programs.map((program) => `<option value="${program.id}">${escapeHtml(formatProgramLabel(program))}</option>`),
     ].join("");
-    selectRef.value = programs.some((program) => program.id === currentValue) || currentValue === "all" ? currentValue : "all";
+    const hasCurrentProgram = programs.some((program) => program.id === currentValue);
+    if (hasCurrentProgram || (includeAll && currentValue === "all") || (options.includeEmpty && currentValue === "")) {
+        selectRef.value = currentValue;
+    } else {
+        selectRef.value = options.includeEmpty ? "" : "all";
+    }
     renderFilterableSelect(selectRef, {
         kind: "program",
         searchPlaceholder: "ابحث في البرامج",
@@ -1139,15 +1365,16 @@ function renderYearOptionsFor(selectRef, currentValue, programId, includeAll) {
     renderYearOptionsFromList(selectRef, currentValue, years, includeAll);
 }
 
-function renderYearOptionsFromList(selectRef, currentValue, years, includeAll) {
+function renderYearOptionsFromList(selectRef, currentValue, years, includeAll, options = {}) {
     selectRef.innerHTML = [
+        options.includeEmpty ? `<option value="">${escapeHtml(options.emptyLabel || "غير محدد")}</option>` : "",
         includeAll ? `<option value="all">كل السنوات</option>` : "",
         ...years.map((year) => `<option value="${year}">${year}هـ</option>`),
     ].join("");
-    if (currentValue === "all" || years.includes(currentValue)) {
+    if (currentValue === "all" || years.includes(currentValue) || (options.includeEmpty && currentValue === "")) {
         selectRef.value = currentValue;
     } else {
-        selectRef.value = includeAll ? "all" : (years[0] || "");
+        selectRef.value = options.includeEmpty ? "" : (includeAll ? "all" : (years[0] || ""));
     }
 }
 
@@ -1895,6 +2122,14 @@ function renderExploreSection() {
     const records = getItemRecordsForExploreFilters();
     const surveyRows = aggregateSurveyRows(records);
     const programRows = buildExploreItemRows(records);
+    const topItemRows = [...programRows]
+        .filter((row) => row.average != null)
+        .sort((first, second) => {
+            if (second.average !== first.average) return second.average - first.average;
+            if (second.respondentCount !== first.respondentCount) return second.respondentCount - first.respondentCount;
+            return first.title.localeCompare(second.title, "ar");
+        })
+        .slice(0, 10);
     const sectionAverage = surveyRows.length ? averageScore(surveyRows) : null;
 
     refs.exploreMeta.textContent = `${toArabicNumber(surveyRows.length)} استطلاع · ${toArabicNumber(programRows.length)} عبارة`;
@@ -1947,6 +2182,24 @@ function renderExploreSection() {
         options: baseChartOptions({
             plugins: { legend: { display: false } },
             scales: buildScoreScales("y"),
+        }),
+    });
+
+    drawChart("exploreItemChart", refs.exploreItemChart, {
+        type: "bar",
+        data: {
+            labels: topItemRows.map((row) => truncateLabel(row.title, 34)),
+            datasets: [{
+                label: "متوسط البند",
+                data: topItemRows.map((row) => row.average),
+                backgroundColor: "rgba(30, 95, 88, 0.82)",
+                borderRadius: 10,
+            }],
+        },
+        options: baseChartOptions({
+            indexAxis: "y",
+            plugins: { legend: { display: false } },
+            scales: buildScoreScales("x"),
         }),
     });
 
@@ -2015,8 +2268,8 @@ function renderCompareSection() {
     });
     const comparisonRows = slotGroups.length >= 2 ? buildComparisonTableRows(slotGroups.map((group) => group.surveyRows)) : [];
 
-    if (refs.compareMeta) {
-        refs.compareMeta.textContent = slotGroups.length
+    if (refs.insightsMeta) {
+        refs.insightsMeta.textContent = slotGroups.length
             ? `${toArabicNumber(slotGroups.length)} خانات محددة`
             : "اختر برنامجًا وسنة في أي خانة لتبدأ المقارنة";
     }
@@ -2116,8 +2369,8 @@ function renderAnalysisSection() {
     const watchlist = [...surveyRows].sort((first, second) => first.average - second.average).slice(0, 5);
     const analysisTable = buildAnalysisTable(programRows);
 
-    if (refs.analysisMeta) {
-        refs.analysisMeta.textContent = `${buildAnalysisScopeLabel()} · ${toArabicNumber(surveyRows.length)} استطلاع`;
+    if (refs.insightsMeta) {
+        refs.insightsMeta.textContent = `${buildAnalysisScopeLabel()} · ${toArabicNumber(surveyRows.length)} استطلاع`;
     }
 
     renderMetricCards(refs.analysisIndicators, [
@@ -2172,6 +2425,344 @@ function renderAnalysisSection() {
     refs.analysisTableHead.innerHTML = analysisTable.head;
     refs.analysisTableBody.innerHTML = analysisTable.body;
     refs.analysisEmpty.classList.toggle("hidden", analysisTable.hasRows);
+}
+
+function renderClosureSection() {
+    renderClosureControls();
+    const payload = getClosureComparisonPayload();
+
+    if (refs.insightsMeta) {
+        refs.insightsMeta.textContent = payload.metaText;
+    }
+
+    renderMetricCards(refs.closureIndicators, payload.cards);
+    renderClosureHighlights(refs.closureHighlights, payload.qualifyingRows, payload.emptyMessage);
+    if (refs.closureNarrative) {
+        refs.closureNarrative.innerHTML = buildClosureNarrativeHtml(payload);
+    }
+
+    drawClosureChart(payload.qualifyingRows);
+
+    if (payload.ready && payload.qualifyingRows.length) {
+        refs.closureTableHead.innerHTML = `
+            <tr>
+                <th>المحور</th>
+                <th>المستوى</th>
+                <th>المؤشر</th>
+                <th>${escapeHtml(payload.fromYearLabel)} المتوسط</th>
+                <th>${escapeHtml(payload.toYearLabel)} المتوسط</th>
+                <th>${escapeHtml(payload.fromYearLabel)} النسبة</th>
+                <th>${escapeHtml(payload.toYearLabel)} النسبة</th>
+                <th>التحسن</th>
+                <th>${escapeHtml(payload.fromYearLabel)} الاستجابات</th>
+                <th>${escapeHtml(payload.toYearLabel)} الاستجابات</th>
+            </tr>
+        `;
+        refs.closureTableBody.innerHTML = payload.qualifyingRows.map((row) => `
+            <tr>
+                <td>${escapeHtml(row.sectionLabel)}</td>
+                <td>${escapeHtml(getClosureLevelLabel(payload.level))}</td>
+                <td>
+                    <span class="cell-title">${escapeHtml(row.title)}</span>
+                    <span class="cell-subtitle">${escapeHtml(row.subtitle)}</span>
+                </td>
+                <td>${renderScorePill(row.fromAverage)}</td>
+                <td>${renderScorePill(row.toAverage)}</td>
+                <td>${escapeHtml(formatPercent(row.fromPercent))}</td>
+                <td>${escapeHtml(formatPercent(row.toPercent))}</td>
+                <td><span class="delta-pill positive">${escapeHtml(formatDeltaPoints(row.deltaPercent))}</span></td>
+                <td>${toArabicNumber(row.fromResponses)}</td>
+                <td>${toArabicNumber(row.toResponses)}</td>
+            </tr>
+        `).join("");
+        refs.closureTableMeta.textContent = `${toArabicNumber(payload.qualifyingRows.length)} مؤشر تحسن مؤثر`;
+        refs.closureEmpty.classList.add("hidden");
+    } else {
+        refs.closureTableHead.innerHTML = "";
+        refs.closureTableBody.innerHTML = "";
+        refs.closureTableMeta.textContent = payload.ready ? "0 مؤشرات مؤهلة" : "اختر نطاق المقارنة";
+        refs.closureEmpty.textContent = payload.emptyMessage;
+        refs.closureEmpty.classList.remove("hidden");
+    }
+}
+
+function getClosureComparisonPayload() {
+    const program = state.closureFilters.program ? getProgramById(state.closureFilters.program) : null;
+    const fromYearLabel = state.closureFilters.fromYear ? `${state.closureFilters.fromYear}هـ` : "السنة الأولى";
+    const toYearLabel = state.closureFilters.toYear ? `${state.closureFilters.toYear}هـ` : "السنة الثانية";
+    const threshold = Number(state.closureFilters.minImprovement || 5);
+
+    if (!program || !state.closureFilters.fromYear || !state.closureFilters.toYear) {
+        return buildClosureEmptyPayload({
+            metaText: "اختر برنامجًا وسنتين للبحث عن دلائل إغلاق دائرة الجودة.",
+            emptyMessage: "اختر برنامجًا وسنتين لعرض دلائل إغلاق دائرة الجودة.",
+            fromYearLabel,
+            toYearLabel,
+        });
+    }
+
+    const fromRecords = ITEM_RECORDS.filter((record) =>
+        record.programId === state.closureFilters.program &&
+        record.year === state.closureFilters.fromYear &&
+        record.stakeholder === "students" &&
+        matchesTopicFilter(record, state.closureFilters)
+    );
+    const toRecords = ITEM_RECORDS.filter((record) =>
+        record.programId === state.closureFilters.program &&
+        record.year === state.closureFilters.toYear &&
+        record.stakeholder === "students" &&
+        matchesTopicFilter(record, state.closureFilters)
+    );
+
+    const fromRows = aggregateRowsByLevel(fromRecords, state.closureFilters.level);
+    const toRows = aggregateRowsByLevel(toRecords, state.closureFilters.level);
+    const fromMap = new Map(fromRows.map((row) => [getClosureComparisonKey(row, state.closureFilters.level), row]));
+    const toMap = new Map(toRows.map((row) => [getClosureComparisonKey(row, state.closureFilters.level), row]));
+
+    const comparableRows = Array.from(fromMap.entries())
+        .filter(([key]) => toMap.has(key))
+        .map(([key, fromRow]) => buildClosureRow(fromRow, toMap.get(key), state.closureFilters.level))
+        .sort((first, second) => second.deltaPercent - first.deltaPercent || second.toAverage - first.toAverage);
+
+    const qualifyingRows = comparableRows.filter((row) => row.deltaPercent >= threshold);
+    const positiveBelowThresholdCount = comparableRows.filter((row) => row.deltaPercent > 0 && row.deltaPercent < threshold).length;
+    const topRow = qualifyingRows[0] || null;
+    const averageImprovement = qualifyingRows.length
+        ? roundNumber(qualifyingRows.reduce((sum, row) => sum + row.deltaPercent, 0) / qualifyingRows.length)
+        : null;
+
+    let emptyMessage = "لا توجد مؤشرات قابلة للمقارنة بين السنتين ضمن النطاق الحالي.";
+    if (comparableRows.length && !qualifyingRows.length) {
+        emptyMessage = `توجد ${toArabicNumber(comparableRows.length)} مؤشرات قابلة للمقارنة، لكن لم يتجاوز أيٌّ منها حد التحسن الأدنى (${toArabicNumber(threshold)} نقاط مئوية).`;
+    } else if (!comparableRows.length && state.closureFilters.level === "item") {
+        emptyMessage = "لم تظهر عبارات متطابقة قابلة للمقارنة. جرّب التحويل إلى مستوى الموضوع الدقيق لأنه الأنسب عند تغيّر الصياغة بين السنتين.";
+    }
+
+    return {
+        ready: true,
+        program,
+        level: state.closureFilters.level,
+        threshold,
+        fromYear: state.closureFilters.fromYear,
+        toYear: state.closureFilters.toYear,
+        fromYearLabel,
+        toYearLabel,
+        comparableRows,
+        qualifyingRows,
+        positiveBelowThresholdCount,
+        averageImprovement,
+        topRow,
+        emptyMessage,
+        metaText: `${formatProgramLabel(program)} · ${fromYearLabel} ← ${toYearLabel} · ${getClosureLevelLabel(state.closureFilters.level)} · ${getTopicSelectionLabel(state.closureFilters)}`,
+        cards: [
+            {
+                label: "المؤشرات القابلة للمقارنة",
+                value: toArabicNumber(comparableRows.length),
+                note: "المؤشرات التي أمكن ربطها بين السنتين",
+                tone: comparableRows.length ? "info" : "warning",
+            },
+            {
+                label: "المؤشرات المؤهلة",
+                value: toArabicNumber(qualifyingRows.length),
+                note: `بعد استبعاد أي تحسن أقل من ${toArabicNumber(threshold)} نقاط مئوية`,
+                tone: qualifyingRows.length ? "good" : "warning",
+            },
+            {
+                label: "أكبر تحسن",
+                value: topRow ? formatDeltaPoints(topRow.deltaPercent) : "—",
+                note: topRow ? truncateLabel(topRow.title, 42) : "لا يوجد تحسن مؤثر حتى الآن",
+                tone: topRow ? "good" : "info",
+            },
+            {
+                label: "متوسط التحسن",
+                value: averageImprovement != null ? formatDeltaPoints(averageImprovement) : "—",
+                note: qualifyingRows.length
+                    ? `تم تجاهل ${toArabicNumber(positiveBelowThresholdCount)} تحسنات طفيفة غير مؤثرة`
+                    : "لا توجد نتائج مؤهلة للحساب",
+                tone: averageImprovement != null ? "info" : "warning",
+            },
+        ],
+    };
+}
+
+function buildClosureEmptyPayload({ metaText, emptyMessage, fromYearLabel, toYearLabel }) {
+    return {
+        ready: false,
+        program: null,
+        level: state.closureFilters.level,
+        threshold: Number(state.closureFilters.minImprovement || 5),
+        fromYear: state.closureFilters.fromYear,
+        toYear: state.closureFilters.toYear,
+        fromYearLabel,
+        toYearLabel,
+        comparableRows: [],
+        qualifyingRows: [],
+        positiveBelowThresholdCount: 0,
+        averageImprovement: null,
+        topRow: null,
+        emptyMessage,
+        metaText,
+        cards: [
+            { label: "المؤشرات القابلة للمقارنة", value: "—", note: "حدّد البرنامج والفترة أولًا", tone: "warning" },
+            { label: "المؤشرات المؤهلة", value: "—", note: "لن يظهر إلا التحسن المؤثر", tone: "warning" },
+            { label: "أكبر تحسن", value: "—", note: "سيظهر بعد اكتمال النطاق", tone: "info" },
+            { label: "متوسط التحسن", value: "—", note: "يُحسب بعد ظهور نتائج مؤهلة", tone: "info" },
+        ],
+    };
+}
+
+function aggregateRowsByLevel(records, level) {
+    if (level === "survey") return aggregateSurveyRows(records);
+    if (level === "item") return aggregateItemRows(records);
+    return aggregateTopicRows(records);
+}
+
+function getClosureComparisonKey(row, level) {
+    if (level === "survey") {
+        return [row.sectionId, normalizeText(row.title)].join("||");
+    }
+
+    if (level === "item") {
+        const itemKey = row.itemOrder < 900000
+            ? `item:${row.itemOrder}`
+            : `label:${normalizeText(row.title)}`;
+        return [
+            row.sectionId,
+            normalizeText(row.surveyTitle),
+            normalizeText(row.parentTitle),
+            itemKey,
+        ].join("||");
+    }
+
+    return [
+        row.sectionId,
+        normalizeText(row.surveyTitle),
+        normalizeText(row.title),
+    ].join("||");
+}
+
+function buildClosureRow(fromRow, toRow, level) {
+    const fromAverage = Number(fromRow.average || 0);
+    const toAverage = Number(toRow.average || 0);
+    const deltaScore = roundNumber(toAverage - fromAverage);
+    const deltaPercent = roundNumber(deltaScore * 20);
+    const fromPercent = roundNumber(fromAverage * 20);
+    const toPercent = roundNumber(toAverage * 20);
+    const coverageCount = Math.max(fromRow.itemCount || 0, toRow.itemCount || 0);
+
+    let subtitle = "";
+    if (level === "survey") {
+        subtitle = `${toArabicNumber(coverageCount)} عبارة ضمن الاستطلاع`;
+    } else if (level === "topic") {
+        subtitle = `${toRow.surveyTitle || fromRow.surveyTitle} · ${toArabicNumber(coverageCount)} عبارة في الموضوع`;
+    } else {
+        subtitle = `${toRow.parentTitle || fromRow.parentTitle} · ${toRow.surveyTitle || fromRow.surveyTitle}`;
+    }
+
+    return {
+        sectionId: toRow.sectionId || fromRow.sectionId,
+        sectionLabel: toRow.sectionLabel || fromRow.sectionLabel,
+        title: toRow.title || fromRow.title,
+        subtitle,
+        fromAverage,
+        toAverage,
+        fromPercent,
+        toPercent,
+        deltaScore,
+        deltaPercent,
+        fromResponses: fromRow.respondentCount,
+        toResponses: toRow.respondentCount,
+        fromRow,
+        toRow,
+    };
+}
+
+function renderClosureHighlights(container, rows, emptyText) {
+    if (!container) return;
+    if (!rows.length) {
+        container.innerHTML = `<div class="empty-state">${escapeHtml(emptyText)}</div>`;
+        return;
+    }
+
+    container.innerHTML = rows.slice(0, 5).map((row, index) => `
+        <article class="insight-item">
+            <div class="insight-item-title">${toArabicNumber(index + 1)}. ${escapeHtml(row.title)}</div>
+            <div class="insight-item-meta">${escapeHtml(row.sectionLabel)} · ${escapeHtml(row.subtitle)}</div>
+            <div class="insight-item-meta">${escapeHtml(formatPercent(row.fromPercent))} → ${escapeHtml(formatPercent(row.toPercent))} · ${toArabicNumber(row.fromResponses)} / ${toArabicNumber(row.toResponses)} استجابة</div>
+            <div class="insight-item-value">${escapeHtml(formatDeltaPoints(row.deltaPercent))} نقطة مئوية</div>
+        </article>
+    `).join("");
+}
+
+function buildClosureNarrativeHtml(payload) {
+    if (!payload.ready) {
+        return `<p>${escapeHtml(payload.emptyMessage)}</p>`;
+    }
+
+    if (!payload.comparableRows.length) {
+        return `<p>${escapeHtml(payload.emptyMessage)}</p>`;
+    }
+
+    if (!payload.qualifyingRows.length) {
+        return `
+            <p>تمت مقارنة <strong>${escapeHtml(toArabicNumber(payload.comparableRows.length))}</strong> مؤشرًا بين ${escapeHtml(payload.fromYearLabel)} و${escapeHtml(payload.toYearLabel)} في برنامج <strong>${escapeHtml(payload.program.name)}</strong>، لكن لم يظهر تحسن يتجاوز الحد الأدنى المعتمد (${escapeHtml(toArabicNumber(payload.threshold))} نقاط مئوية).</p>
+            <p>إن رغبت في توسيع فرص الالتقاط، فالأفضل استخدام مستوى <strong>الموضوع الدقيق</strong> لأنه يستوعب تغيّر صياغة العبارة مع بقاء الموضوع نفسه.</p>
+        `;
+    }
+
+    const topRows = payload.qualifyingRows.slice(0, 3);
+    return `
+        <p>أظهر برنامج <strong>${escapeHtml(payload.program.name)}</strong> عدد <strong>${escapeHtml(toArabicNumber(payload.qualifyingRows.length))}</strong> من دلائل التحسن المؤثرة بين ${escapeHtml(payload.fromYearLabel)} و${escapeHtml(payload.toYearLabel)}، بعد استبعاد أي زيادة تقل عن <strong>${escapeHtml(toArabicNumber(payload.threshold))}</strong> نقاط مئوية.</p>
+        <p>أقوى مؤشرات الإغلاق كانت في: ${topRows.map((row) => `<strong>${escapeHtml(row.title)}</strong> (${escapeHtml(formatDeltaPoints(row.deltaPercent))} نقطة مئوية)`).join("، ")}.</p>
+        <p>متوسط التحسن في المؤشرات المؤهلة بلغ <strong>${escapeHtml(formatDeltaPoints(payload.averageImprovement))}</strong> نقطة مئوية، وهذا يمنح البرنامج شواهد مباشرة على تحسن النتائج بين السنتين في النطاق المحدد.</p>
+    `;
+}
+
+function drawClosureChart(rows) {
+    const topRows = rows.slice(0, 10);
+    drawChart("closureDeltaChart", refs.closureDeltaChart, {
+        type: "bar",
+        data: {
+            labels: topRows.map((row) => truncateLabel(row.title, 42)),
+            datasets: [{
+                label: "التحسن بالنقاط المئوية",
+                data: topRows.map((row) => row.deltaPercent),
+                backgroundColor: "#1b8a61",
+                borderRadius: 10,
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: "y",
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label(context) {
+                            return `التحسن ${formatDeltaPoints(context.raw)} نقطة مئوية`;
+                        },
+                    },
+                },
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback(value) {
+                            return toArabicNumber(value);
+                        },
+                    },
+                    grid: {
+                        color: "rgba(18, 57, 54, 0.1)",
+                    },
+                },
+                y: {
+                    grid: { display: false },
+                },
+            },
+        },
+    });
 }
 
 function renderCustomSection() {
@@ -2973,6 +3564,11 @@ function renderTrendControls() {
 function renderTrendSection() {
     renderTrendControls();
     const programId = state.trendFilters.program;
+    if (refs.insightsMeta) {
+        refs.insightsMeta.textContent = programId && programId !== "all"
+            ? `${formatProgramLabel(getProgramById(programId))} · ${getTopicSelectionLabel(state.trendFilters)}`
+            : "اختر برنامجاً لعرض التطور الزمني";
+    }
     if (!programId || programId === "all") {
         if (refs.trendEmpty) { refs.trendEmpty.classList.remove("hidden"); }
         if (refs.trendChangeSummary) refs.trendChangeSummary.innerHTML = "";
@@ -3036,7 +3632,7 @@ function renderTrendSection() {
             pointRadius: 5,
             pointHoverRadius: 7,
         }));
-        drawChart(refs.trendLineChart, "trendLine", {
+        drawChart("trendLine", refs.trendLineChart, {
             type: "line",
             data: { labels: years.map(y => `${y}هـ`), datasets },
             options: {
@@ -3105,6 +3701,11 @@ function renderGapsControls() {
 function renderGapsSection() {
     renderGapsControls();
     const { program, year, target } = state.gapsFilters;
+    if (refs.insightsMeta) {
+        refs.insightsMeta.textContent = program && program !== "all"
+            ? `${formatProgramLabel(getProgramById(program))} · ${year}هـ · المستهدف ${formatScore(target)}`
+            : "اختر برنامجاً وسنة لعرض تقرير الفجوات";
+    }
     if (!program || program === "all") {
         if (refs.gapsEmpty) refs.gapsEmpty.classList.remove("hidden");
         if (refs.gapsTableBody) refs.gapsTableBody.innerHTML = "";
@@ -3149,7 +3750,7 @@ function renderGapsSection() {
             return { label: sec.shortLabel, avg, gap: roundNumber(avg - target) };
         }).filter(Boolean);
 
-        drawChart(refs.gapsBarChart, "gapsBar", {
+        drawChart("gapsBar", refs.gapsBarChart, {
             type: "bar",
             data: {
                 labels: sectionGaps.map(s => s.label),
@@ -3373,6 +3974,55 @@ function buildAnalysisExportPayload() {
     };
 }
 
+function buildClosureExportPayload() {
+    const payload = getClosureComparisonPayload();
+    if (!payload.ready) {
+        window.alert("اختر برنامجًا وسنتين أولًا.");
+        return null;
+    }
+    if (!payload.qualifyingRows.length) {
+        window.alert("لا توجد مؤشرات تحسن مؤثرة قابلة للتصدير في النطاق الحالي.");
+        return null;
+    }
+
+    return {
+        filename: `اغلاق-دائرة-الجودة-${sanitizeFileName(payload.program.name)}-${payload.fromYear}-${payload.toYear}.pdf`,
+        title: "بطاقة إغلاق دائرة الجودة",
+        subtitle: `${payload.program.name} - ${payload.program.degree} - ${payload.fromYearLabel} إلى ${payload.toYearLabel}`,
+        filters: buildClosureFilterChips().map((chip) => `${chip.label}: ${chip.value}`),
+        metrics: [
+            { label: "المؤشرات القابلة للمقارنة", value: toArabicNumber(payload.comparableRows.length) },
+            { label: "المؤشرات المؤهلة", value: toArabicNumber(payload.qualifyingRows.length) },
+            { label: "أكبر تحسن", value: payload.topRow ? `${formatDeltaPoints(payload.topRow.deltaPercent)} نقطة` : "—" },
+        ],
+        note: "يعرض هذا التصدير المؤشرات التي تحسنت فقط، مع استبعاد أي تحسن أقل من الحد الأدنى المحدد وعدم إظهار حالات التراجع.",
+        headers: [
+            "المحور",
+            "المستوى",
+            "المؤشر",
+            `${payload.fromYearLabel} المتوسط`,
+            `${payload.toYearLabel} المتوسط`,
+            `${payload.fromYearLabel} النسبة`,
+            `${payload.toYearLabel} النسبة`,
+            "التحسن",
+            `${payload.fromYearLabel} الاستجابات`,
+            `${payload.toYearLabel} الاستجابات`,
+        ],
+        data: payload.qualifyingRows.map((row) => [
+            row.sectionLabel,
+            getClosureLevelLabel(payload.level),
+            `${row.title} — ${row.subtitle}`,
+            formatScore(row.fromAverage),
+            formatScore(row.toAverage),
+            formatPercent(row.fromPercent),
+            formatPercent(row.toPercent),
+            `${formatDeltaPoints(row.deltaPercent)} نقطة مئوية`,
+            toArabicNumber(row.fromResponses),
+            toArabicNumber(row.toResponses),
+        ]),
+    };
+}
+
 function buildTrendExportPayload() {
     const programId = state.trendFilters.program;
     if (!programId || programId === "all") {
@@ -3552,6 +4202,10 @@ function exportAnalysisResultsPdf() {
     return exportPayloadAsPdfCard(buildAnalysisExportPayload());
 }
 
+function exportClosureResultsPdf() {
+    return exportPayloadAsPdfCard(buildClosureExportPayload());
+}
+
 function exportTrendResultsPdf() {
     return exportPayloadAsPdfCard(buildTrendExportPayload());
 }
@@ -3653,6 +4307,53 @@ function exportAnalysisData(type) {
         return;
     }
     exportExcel("تحليل-الاستطلاعات.xlsx", "التحليل", headers, data);
+}
+
+function exportClosureData(type) {
+    const payload = getClosureComparisonPayload();
+    if (!payload.ready) {
+        window.alert("اختر برنامجًا وسنتين أولًا.");
+        return;
+    }
+    if (!payload.qualifyingRows.length) {
+        window.alert("لا توجد مؤشرات تحسن مؤثرة قابلة للتصدير في النطاق الحالي.");
+        return;
+    }
+
+    const headers = [
+        "المحور",
+        "المستوى",
+        "المؤشر",
+        "التفصيل",
+        `${payload.fromYearLabel} المتوسط`,
+        `${payload.toYearLabel} المتوسط`,
+        `${payload.fromYearLabel} النسبة`,
+        `${payload.toYearLabel} النسبة`,
+        "التحسن بالنقاط المئوية",
+        `${payload.fromYearLabel} الاستجابات`,
+        `${payload.toYearLabel} الاستجابات`,
+    ];
+    const data = payload.qualifyingRows.map((row) => [
+        row.sectionLabel,
+        getClosureLevelLabel(payload.level),
+        row.title,
+        row.subtitle,
+        formatScore(row.fromAverage),
+        formatScore(row.toAverage),
+        formatPercent(row.fromPercent),
+        formatPercent(row.toPercent),
+        formatDeltaPoints(row.deltaPercent),
+        row.fromResponses,
+        row.toResponses,
+    ]);
+    const filename = `اغلاق-دائرة-الجودة-${sanitizeFileName(payload.program.name)}-${payload.fromYear}-${payload.toYear}`;
+
+    if (type === "csv") {
+        exportCsv(`${filename}.csv`, headers, data);
+        return;
+    }
+
+    exportExcel(`${filename}.xlsx`, "إغلاق دائرة الجودة", headers, data);
 }
 
 function exportTrendData(type) {
@@ -4361,6 +5062,24 @@ function formatScore(value) {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     });
+}
+
+function formatPercent(value) {
+    if (value == null || Number.isNaN(Number(value))) return "—";
+    return `${Number(value).toLocaleString("ar-SA", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    })}%`;
+}
+
+function formatDeltaPoints(value) {
+    if (value == null || Number.isNaN(Number(value))) return "—";
+    const numeric = Number(value);
+    const sign = numeric > 0 ? "+" : "";
+    return `${sign}${numeric.toLocaleString("ar-SA", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    })}`;
 }
 
 function toArabicNumber(value) {
