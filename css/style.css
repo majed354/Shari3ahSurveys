@@ -773,6 +773,69 @@ body.sheet-open {
     min-width: 220px;
 }
 
+.report-summary-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.report-summary-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(30, 95, 88, 0.08);
+    color: var(--primary-900);
+    font-size: 0.84rem;
+    font-weight: 700;
+}
+
+.report-table-wrap {
+    background: #fcfdfd;
+}
+
+.report-focus-cell,
+.report-year-cell,
+.report-improvement-cell {
+    display: grid;
+    gap: 6px;
+}
+
+.report-focus-title {
+    color: var(--primary-950);
+    font-weight: 900;
+    line-height: 1.8;
+}
+
+.report-focus-meta,
+.report-year-detail,
+.report-year-percent {
+    color: var(--text-soft);
+    font-size: 0.85rem;
+    line-height: 1.7;
+}
+
+.report-score-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    min-width: 92px;
+    padding: 8px 14px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(23, 71, 67, 0.12), rgba(30, 95, 88, 0.18));
+    color: var(--primary-950);
+    font-family: var(--font-head);
+    font-size: 1.05rem;
+    font-weight: 900;
+}
+
+.report-score-pill.is-improvement {
+    background: linear-gradient(135deg, rgba(27, 138, 97, 0.14), rgba(199, 158, 84, 0.18));
+    color: #0f6b47;
+}
+
 .score-pill,
 .status-pill {
     display: inline-flex;

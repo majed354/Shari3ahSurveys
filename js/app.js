@@ -54,6 +54,7 @@ const EXTRACTED_DATA = SURVEYS_PACKAGE.extractedData || {};
 const SELF_STUDY_LINKS = SELF_STUDY_PACKAGE.itemLinks || {};
 const AVAILABLE_PROGRAM_YEARS = SURVEYS_PACKAGE.availableProgramYears || {};
 const ITEM_RECORDS = buildItemRecords();
+const CLOSURE_REPORT_SOURCE_LABEL = "المنظومة الجامعية";
 const AVAILABLE_GENDERS = (SURVEYS_PACKAGE.availableGenders || []).length
     ? SURVEYS_PACKAGE.availableGenders
     : collectUnique(ITEM_RECORDS.map((record) => record.gender).filter(Boolean), (value) => normalizeText(value));
@@ -162,11 +163,16 @@ function createClosureFilterState(programId = "") {
         fromYear: pair.fromYear,
         toYear: pair.toYear,
         subject: "all",
+        gender: "all",
         topicMode: DEFAULT_TOPIC_MODE,
         selfStudyTarget: "all",
         selfStudySearch: "",
         level: "item",
         minImprovement: 2,
+        displayMode: "details",
+        reportShowResponses: true,
+        reportShowStatement: true,
+        reportShowSource: true,
     };
 }
 
@@ -318,6 +324,8 @@ function cacheRefs() {
     refs.closureLevelSelect = document.getElementById("closureLevelSelect");
     refs.closureMinImprovementInput = document.getElementById("closureMinImprovementInput");
     refs.closureTopicModeChips = document.getElementById("closureTopicModeChips");
+    refs.closureGenderChips = document.getElementById("closureGenderChips");
+    refs.closureGenderHint = document.getElementById("closureGenderHint");
     refs.closureGeneralTopicPanel = document.getElementById("closureGeneralTopicPanel");
     refs.closureSubjectFilter = document.getElementById("closureSubjectFilter");
     refs.closureSelfStudyPanel = document.getElementById("closureSelfStudyPanel");
@@ -327,11 +335,22 @@ function cacheRefs() {
     refs.closureHighlights = document.getElementById("closureHighlights");
     refs.closureNarrative = document.getElementById("closureNarrative");
     refs.closureDeltaChart = document.getElementById("closureDeltaChart");
+    refs.closureDisplayTabs = document.getElementById("closureDisplayTabs");
     refs.closureTableCard = document.getElementById("closureTableCard");
     refs.closureTableMeta = document.getElementById("closureTableMeta");
     refs.closureTableHead = document.getElementById("closureTableHead");
     refs.closureTableBody = document.getElementById("closureTableBody");
     refs.closureEmpty = document.getElementById("closureEmpty");
+    refs.closureReportCard = document.getElementById("closureReportCard");
+    refs.closureReportMeta = document.getElementById("closureReportMeta");
+    refs.closureReportOptionToggles = document.getElementById("closureReportOptionToggles");
+    refs.closureReportEmpty = document.getElementById("closureReportEmpty");
+    refs.closureReportPrintArea = document.getElementById("closureReportPrintArea");
+    refs.closureReportSummary = document.getElementById("closureReportSummary");
+    refs.closureReportHead = document.getElementById("closureReportHead");
+    refs.closureReportBody = document.getElementById("closureReportBody");
+    refs.exportClosureReportCsv = document.getElementById("exportClosureReportCsv");
+    refs.exportClosureReportPdf = document.getElementById("exportClosureReportPdf");
 
     // Trend sub-view
     refs.trendSubView = document.getElementById("trendSubView");
@@ -709,6 +728,8 @@ function bindEvents() {
     if (refs.exportClosureExcel) refs.exportClosureExcel.addEventListener("click", () => exportClosureData("xlsx"));
     if (refs.exportClosureCsv) refs.exportClosureCsv.addEventListener("click", () => exportClosureData("csv"));
     if (refs.exportClosurePdf) refs.exportClosurePdf.addEventListener("click", () => exportClosureResultsPdf());
+    if (refs.exportClosureReportCsv) refs.exportClosureReportCsv.addEventListener("click", () => exportClosureReportData("csv"));
+    if (refs.exportClosureReportPdf) refs.exportClosureReportPdf.addEventListener("click", () => exportClosureReportPdf());
 
     bindBottomSheetEvents();
     bindTrendEvents();
@@ -718,21 +739,30 @@ function bindEvents() {
     if (refs.exportInsightsExcel) refs.exportInsightsExcel.addEventListener("click", () => {
         if (state.insightsSubTab === "compare") exportComparisonData("xlsx");
         else if (state.insightsSubTab === "analysis") exportAnalysisData("xlsx");
-        else if (state.insightsSubTab === "closure") exportClosureData("xlsx");
+        else if (state.insightsSubTab === "closure") {
+            if (state.closureFilters.displayMode === "report") exportClosureReportData("xlsx");
+            else exportClosureData("xlsx");
+        }
         else if (state.insightsSubTab === "trend") exportTrendData("xlsx");
         else if (state.insightsSubTab === "gaps") exportGapsData("xlsx");
     });
     if (refs.exportInsightsCsv) refs.exportInsightsCsv.addEventListener("click", () => {
         if (state.insightsSubTab === "compare") exportComparisonData("csv");
         else if (state.insightsSubTab === "analysis") exportAnalysisData("csv");
-        else if (state.insightsSubTab === "closure") exportClosureData("csv");
+        else if (state.insightsSubTab === "closure") {
+            if (state.closureFilters.displayMode === "report") exportClosureReportData("csv");
+            else exportClosureData("csv");
+        }
         else if (state.insightsSubTab === "trend") exportTrendData("csv");
         else if (state.insightsSubTab === "gaps") exportGapsData("csv");
     });
     if (refs.exportInsightsPdf) refs.exportInsightsPdf.addEventListener("click", () => {
         if (state.insightsSubTab === "compare") exportComparisonResultsPdf();
         else if (state.insightsSubTab === "analysis") exportAnalysisResultsPdf();
-        else if (state.insightsSubTab === "closure") exportClosureResultsPdf();
+        else if (state.insightsSubTab === "closure") {
+            if (state.closureFilters.displayMode === "report") exportClosureReportPdf();
+            else exportClosureResultsPdf();
+        }
         else if (state.insightsSubTab === "trend") exportTrendResultsPdf();
         else if (state.insightsSubTab === "gaps") exportGapsResultsPdf();
     });
@@ -817,6 +847,25 @@ function bindClosureEvents() {
 
     if (refs.closureSelfStudyFilter) refs.closureSelfStudyFilter.addEventListener("change", (event) => {
         state.closureFilters.selfStudyTarget = event.target.value;
+        renderClosureControls();
+        renderClosureSection();
+    });
+
+    if (refs.closureDisplayTabs) refs.closureDisplayTabs.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-closure-display]");
+        if (!button) return;
+        state.closureFilters.displayMode = button.dataset.closureDisplay;
+        renderClosureControls();
+        renderClosureSection();
+    });
+
+    if (refs.closureReportOptionToggles) refs.closureReportOptionToggles.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-report-option]");
+        if (!button) return;
+        const optionKey = button.dataset.reportOption;
+        if (optionKey === "responses") state.closureFilters.reportShowResponses = !state.closureFilters.reportShowResponses;
+        if (optionKey === "statement") state.closureFilters.reportShowStatement = !state.closureFilters.reportShowStatement;
+        if (optionKey === "source") state.closureFilters.reportShowSource = !state.closureFilters.reportShowSource;
         renderClosureControls();
         renderClosureSection();
     });
@@ -1265,9 +1314,29 @@ function renderClosureControls() {
         }
     );
 
+    if (!AVAILABLE_GENDERS.length) {
+        if (refs.closureGenderChips) refs.closureGenderChips.innerHTML = '<span class="chip-option is-active">غير متاح</span>';
+        if (refs.closureGenderHint) refs.closureGenderHint.classList.remove("hidden");
+        state.closureFilters.gender = "all";
+    } else {
+        if (refs.closureGenderHint) refs.closureGenderHint.classList.add("hidden");
+        refs.closureGenderChips = renderChipOptions(
+            refs.closureGenderChips,
+            [{ value: "all", label: "الكل" }, ...AVAILABLE_GENDERS.map((gender) => ({ value: gender, label: getGenderLabel(gender) }))],
+            state.closureFilters.gender,
+            (value) => {
+                state.closureFilters.gender = value;
+                renderClosureControls();
+                renderClosureSection();
+            }
+        );
+    }
+
     renderSubjectOptionsForClosure();
     renderSelfStudyOptionsForClosure();
     toggleTopicModePanels(refs.closureGeneralTopicPanel, refs.closureSelfStudyPanel, state.closureFilters.topicMode);
+    renderClosureDisplayTabs();
+    renderClosureReportOptionToggles();
     renderFilterChips(refs.closureActiveFilters, buildClosureFilterChips());
 }
 
@@ -1282,7 +1351,12 @@ function renderSelfStudyOptionsForClosure() {
 function getClosureBaseRecords() {
     if (!state.closureFilters.program) return [];
     const years = new Set([state.closureFilters.fromYear, state.closureFilters.toYear].filter(Boolean));
-    return ITEM_RECORDS.filter((record) => record.programId === state.closureFilters.program && years.has(record.year));
+    return ITEM_RECORDS.filter((record) =>
+        record.programId === state.closureFilters.program &&
+        years.has(record.year) &&
+        record.stakeholder === "students" &&
+        (state.closureFilters.gender === "all" || record.gender === state.closureFilters.gender)
+    );
 }
 
 function normalizeClosureYearPair(changedKey = "") {
@@ -1324,6 +1398,7 @@ function buildClosureFilterChips() {
         { label: "الفترة", value: state.closureFilters.fromYear && state.closureFilters.toYear ? `${state.closureFilters.fromYear}هـ ← ${state.closureFilters.toYear}هـ` : "غير مكتملة" },
         { label: "نوع الموضوع", value: getTopicModeLabel(state.closureFilters.topicMode) },
         { label: "التحديد", value: getTopicSelectionLabel(state.closureFilters) },
+        { label: "الجنس", value: getGenderFilterLabel(state.closureFilters.gender) },
         { label: "المطابقة", value: getClosureLevelLabel(state.closureFilters.level) },
         { label: "الحد الأدنى", value: formatClosureThreshold(state.closureFilters.minImprovement) },
     ];
@@ -1340,6 +1415,29 @@ function getClosureLevelLabel(level) {
 function getClosureThreshold() {
     const rawValue = Number(state.closureFilters.minImprovement);
     return Number.isFinite(rawValue) ? Math.max(0, rawValue) : 2;
+}
+
+function renderClosureDisplayTabs() {
+    if (!refs.closureDisplayTabs) return;
+    refs.closureDisplayTabs.querySelectorAll("[data-closure-display]").forEach((button) => {
+        button.classList.toggle("is-active", button.dataset.closureDisplay === state.closureFilters.displayMode);
+    });
+}
+
+function renderClosureReportOptionToggles() {
+    if (!refs.closureReportOptionToggles) return;
+    const options = [
+        { key: "responses", label: "عدد المقيمين", active: state.closureFilters.reportShowResponses },
+        { key: "statement", label: "العبارة", active: state.closureFilters.reportShowStatement },
+        { key: "source", label: "المصدر", active: state.closureFilters.reportShowSource },
+    ];
+    refs.closureReportOptionToggles.innerHTML = options.map((option) => `
+        <button
+            class="chip-option${option.active ? " is-active" : ""}"
+            type="button"
+            data-report-option="${option.key}"
+        >${escapeHtml(option.label)}</button>
+    `).join("");
 }
 
 function renderCustomControls() {
@@ -2492,7 +2590,18 @@ function renderClosureSection() {
     }
 
     drawClosureChart(payload.qualifyingRows);
+    renderClosureDetailTable(payload);
+    renderClosureReportTable(payload);
+    syncClosureDisplayCards();
+}
 
+function syncClosureDisplayCards() {
+    const isReport = state.closureFilters.displayMode === "report";
+    if (refs.closureTableCard) refs.closureTableCard.classList.toggle("hidden", isReport);
+    if (refs.closureReportCard) refs.closureReportCard.classList.toggle("hidden", !isReport);
+}
+
+function renderClosureDetailTable(payload) {
     if (payload.ready && payload.qualifyingRows.length) {
         if (refs.closureTableCard) refs.closureTableCard.classList.remove("hidden");
         if (refs.closureTableHead) {
@@ -2543,6 +2652,47 @@ function renderClosureSection() {
     }
 }
 
+function renderClosureReportTable(payload) {
+    if (!refs.closureReportHead || !refs.closureReportBody) return;
+
+    if (payload.ready && payload.qualifyingRows.length) {
+        refs.closureReportHead.innerHTML = `
+            <tr>
+                <th>البند أو الموضوع</th>
+                <th>${escapeHtml(payload.fromYearLabel)}</th>
+                <th>${escapeHtml(payload.toYearLabel)}</th>
+                <th>التحسن</th>
+            </tr>
+        `;
+        refs.closureReportBody.innerHTML = payload.qualifyingRows.map((row) => `
+            <tr>
+                <td>${buildClosureReportFocusCellHtml(row)}</td>
+                <td>${buildClosureReportYearCellHtml(row.fromRow, row.fromAverage, row.fromPercent, row.fromResponses)}</td>
+                <td>${buildClosureReportYearCellHtml(row.toRow, row.toAverage, row.toPercent, row.toResponses)}</td>
+                <td>${buildClosureReportImprovementCellHtml(row)}</td>
+            </tr>
+        `).join("");
+        if (refs.closureReportMeta) {
+            refs.closureReportMeta.textContent = `${toArabicNumber(payload.qualifyingRows.length)} صفًا جاهزًا للتوثيق والطباعة`;
+        }
+        if (refs.closureReportSummary) {
+            refs.closureReportSummary.innerHTML = buildClosureReportSummaryHtml(payload);
+        }
+        if (refs.closureReportEmpty) refs.closureReportEmpty.classList.add("hidden");
+        if (refs.closureReportPrintArea) refs.closureReportPrintArea.classList.remove("hidden");
+    } else {
+        refs.closureReportHead.innerHTML = "";
+        refs.closureReportBody.innerHTML = "";
+        if (refs.closureReportMeta) refs.closureReportMeta.textContent = payload.ready ? "0 صفوف تقرير" : "اختر نطاق المقارنة";
+        if (refs.closureReportSummary) refs.closureReportSummary.innerHTML = "";
+        if (refs.closureReportEmpty) {
+            refs.closureReportEmpty.textContent = payload.emptyMessage;
+            refs.closureReportEmpty.classList.remove("hidden");
+        }
+        if (refs.closureReportPrintArea) refs.closureReportPrintArea.classList.add("hidden");
+    }
+}
+
 function getClosureComparisonPayload() {
     const matchMode = ["item", "expanded", "veryExpanded"].includes(state.closureFilters.level)
         ? state.closureFilters.level
@@ -2565,12 +2715,14 @@ function getClosureComparisonPayload() {
         record.programId === state.closureFilters.program &&
         record.year === state.closureFilters.fromYear &&
         record.stakeholder === "students" &&
+        (state.closureFilters.gender === "all" || record.gender === state.closureFilters.gender) &&
         matchesTopicFilter(record, state.closureFilters)
     );
     const toRecords = ITEM_RECORDS.filter((record) =>
         record.programId === state.closureFilters.program &&
         record.year === state.closureFilters.toYear &&
         record.stakeholder === "students" &&
+        (state.closureFilters.gender === "all" || record.gender === state.closureFilters.gender) &&
         matchesTopicFilter(record, state.closureFilters)
     );
 
@@ -2613,7 +2765,7 @@ function getClosureComparisonPayload() {
         averageImprovement,
         topRow,
         emptyMessage,
-        metaText: `${formatProgramLabel(program)} · ${fromYearLabel} ← ${toYearLabel} · ${getClosureLevelLabel(matchMode)} · ${getTopicSelectionLabel(state.closureFilters)}`,
+        metaText: `${formatProgramLabel(program)} · ${fromYearLabel} ← ${toYearLabel} · ${getGenderFilterLabel(state.closureFilters.gender)} · ${getClosureLevelLabel(matchMode)} · ${getTopicSelectionLabel(state.closureFilters)}`,
         cards: [
             {
                 label: "المؤشرات القابلة للمقارنة",
@@ -2978,6 +3130,66 @@ function buildClosureYearTableCellHtml(sourceRow, yearLabel, average, percent, r
             <span class="cell-subtitle">البند: ${escapeHtml(sourceRow.title || "—")}</span>
             <span class="cell-subtitle">المتوسط: ${escapeHtml(formatScore(average))} · النسبة: ${escapeHtml(formatPercent(percent))}</span>
             <span class="cell-subtitle">عدد المقيمين: ${toArabicNumber(responses)}</span>
+        </div>
+    `;
+}
+
+function buildClosureReportSummaryHtml(payload) {
+    const items = [
+        `البرنامج: ${formatProgramLabel(payload.program)}`,
+        `الفترة: ${payload.fromYearLabel} ← ${payload.toYearLabel}`,
+        `الجنس: ${getGenderFilterLabel(state.closureFilters.gender)}`,
+        `المطابقة: ${getClosureLevelLabel(payload.level)}`,
+        `الحد الأدنى: ${formatClosureThreshold(payload.threshold)}`,
+        `المصدر: ${CLOSURE_REPORT_SOURCE_LABEL}`,
+    ];
+
+    return items.map((item) => `<span class="report-summary-pill">${escapeHtml(item)}</span>`).join("");
+}
+
+function buildClosureReportFocusCellHtml(row) {
+    const topicLabel = row.fromRow.parentTitle || row.toRow.parentTitle || "—";
+    const surveyLabel = row.fromRow.surveyTitle || row.toRow.surveyTitle || "—";
+
+    return `
+        <div class="report-focus-cell">
+            <span class="report-focus-title">${escapeHtml(row.title)}</span>
+            <span class="report-focus-meta">الموضوع: ${escapeHtml(topicLabel)}</span>
+            <span class="report-focus-meta">الاستطلاع: ${escapeHtml(surveyLabel)}</span>
+            <span class="report-focus-meta">نوع المطابقة: ${escapeHtml(getClosureMatchModeLabel(row.matchMode))}</span>
+        </div>
+    `;
+}
+
+function buildClosureReportYearCellHtml(sourceRow, average, percent, responses) {
+    const detailRows = [];
+
+    if (state.closureFilters.reportShowResponses) {
+        detailRows.push(`عدد المقيمين: ${toArabicNumber(responses)}`);
+    }
+
+    if (state.closureFilters.reportShowStatement) {
+        detailRows.push(`العبارة: ${sourceRow.title || "—"}`);
+    }
+
+    if (state.closureFilters.reportShowSource) {
+        detailRows.push(`المصدر: ${CLOSURE_REPORT_SOURCE_LABEL}`);
+    }
+
+    return `
+        <div class="report-year-cell">
+            <span class="report-score-pill">${escapeHtml(formatScore(average))}</span>
+            ${detailRows.map((detail) => `<span class="report-year-detail">${escapeHtml(detail)}</span>`).join("")}
+        </div>
+    `;
+}
+
+function buildClosureReportImprovementCellHtml(row) {
+    return `
+        <div class="report-improvement-cell">
+            <span class="report-score-pill is-improvement">${escapeHtml(formatClosureImprovement(row.deltaHundred))}</span>
+            <span class="report-year-detail">${escapeHtml(formatScore(row.fromAverage))} → ${escapeHtml(formatScore(row.toAverage))}</span>
+            <span class="report-year-detail">${escapeHtml(formatPercent(row.fromPercent))} → ${escapeHtml(formatPercent(row.toPercent))}</span>
         </div>
     `;
 }
@@ -4421,6 +4633,61 @@ function buildClosureExportPayload() {
     };
 }
 
+function buildClosureReportExportModel() {
+    const payload = getClosureComparisonPayload();
+    if (!payload.ready) {
+        window.alert("اختر برنامجًا وسنتين أولًا.");
+        return null;
+    }
+    if (!payload.qualifyingRows.length) {
+        window.alert("لا توجد مؤشرات تحسن مؤثرة قابلة للتوثيق في النطاق الحالي.");
+        return null;
+    }
+
+    const headers = [
+        "البند أو الموضوع",
+        payload.fromYearLabel,
+        payload.toYearLabel,
+        "التحسن (من 100)",
+    ];
+    const data = payload.qualifyingRows.map((row) => [
+        buildClosureReportFocusExportText(row),
+        buildClosureReportYearExportText(row.fromRow, row.fromAverage, row.fromPercent, row.fromResponses),
+        buildClosureReportYearExportText(row.toRow, row.toAverage, row.toPercent, row.toResponses),
+        formatClosureImprovement(row.deltaHundred),
+    ]);
+    const filename = `تقرير-اغلاق-دائرة-الجودة-${sanitizeFileName(payload.program.name)}-${payload.fromYear}-${payload.toYear}`;
+
+    return { payload, headers, data, filename };
+}
+
+function buildClosureReportFocusExportText(row) {
+    const topicLabel = row.fromRow.parentTitle || row.toRow.parentTitle || "—";
+    const surveyLabel = row.fromRow.surveyTitle || row.toRow.surveyTitle || "—";
+    return [
+        `البند: ${row.title}`,
+        `الموضوع: ${topicLabel}`,
+        `الاستطلاع: ${surveyLabel}`,
+        `نوع المطابقة: ${getClosureMatchModeLabel(row.matchMode)}`,
+    ].join(" | ");
+}
+
+function buildClosureReportYearExportText(sourceRow, average, percent, responses) {
+    const values = [formatScore(average)];
+
+    if (state.closureFilters.reportShowResponses) {
+        values.push(`عدد المقيمين: ${toArabicNumber(responses)}`);
+    }
+    if (state.closureFilters.reportShowStatement) {
+        values.push(`العبارة: ${sourceRow.title || "—"}`);
+    }
+    if (state.closureFilters.reportShowSource) {
+        values.push(`المصدر: ${CLOSURE_REPORT_SOURCE_LABEL}`);
+    }
+
+    return values.join(" | ");
+}
+
 function buildTrendExportPayload() {
     const programId = state.trendFilters.program;
     if (!programId || programId === "all") {
@@ -4604,6 +4871,12 @@ function exportClosureResultsPdf() {
     return exportPayloadAsPdfCard(buildClosureExportPayload());
 }
 
+async function exportClosureReportPdf() {
+    const reportModel = buildClosureReportExportModel();
+    if (!reportModel) return;
+    await exportSectionAsPdf("closureReportPrintArea", `${reportModel.filename}.pdf`);
+}
+
 function exportTrendResultsPdf() {
     return exportPayloadAsPdfCard(buildTrendExportPayload());
 }
@@ -4752,6 +5025,18 @@ function exportClosureData(type) {
     }
 
     exportExcel(`${filename}.xlsx`, "إغلاق دائرة الجودة", headers, data);
+}
+
+function exportClosureReportData(type) {
+    const reportModel = buildClosureReportExportModel();
+    if (!reportModel) return;
+
+    if (type === "csv") {
+        exportCsv(`${reportModel.filename}.csv`, reportModel.headers, reportModel.data);
+        return;
+    }
+
+    exportExcel(`${reportModel.filename}.xlsx`, "تقرير الإغلاق", reportModel.headers, reportModel.data);
 }
 
 function exportTrendData(type) {

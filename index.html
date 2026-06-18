@@ -494,6 +494,11 @@
                                 <span class="chip-filter-label">نوع الموضوع</span>
                                 <div id="closureTopicModeChips" class="chip-filter-options" data-filter="topicMode"></div>
                             </div>
+                            <div class="chip-filter">
+                                <span class="chip-filter-label">الجنس</span>
+                                <div id="closureGenderChips" class="chip-filter-options" data-filter="gender"></div>
+                                <small id="closureGenderHint" class="field-hint hidden">الجنس غير مفكك في الملف الشامل الحالي.</small>
+                            </div>
                         </div>
 
                         <div id="closureGeneralTopicPanel" class="filters-grid filters-grid-single">
@@ -556,6 +561,11 @@
                         </article>
                     </div>
 
+                    <div id="closureDisplayTabs" class="sub-tabs">
+                        <button class="sub-tab is-active" type="button" data-closure-display="details">تفاصيل الربط</button>
+                        <button class="sub-tab" type="button" data-closure-display="report">عرض التقرير</button>
+                    </div>
+
                     <article id="closureTableCard" class="card">
                         <div class="card-head">
                             <h3>جدول إغلاق دائرة الجودة</h3>
@@ -568,6 +578,38 @@
                             </table>
                         </div>
                         <div id="closureEmpty" class="empty-state hidden">اختر برنامجًا وسنتين لعرض دلائل إغلاق دائرة الجودة.</div>
+                    </article>
+
+                    <article id="closureReportCard" class="card hidden">
+                        <div class="card-head">
+                            <div>
+                                <h3>عرض التقرير</h3>
+                                <p id="closureReportMeta" class="meta-text"></p>
+                            </div>
+                            <div class="action-group" data-export-ignore="true">
+                                <button id="exportClosureReportCsv" class="btn" type="button">CSV</button>
+                                <button id="exportClosureReportPdf" class="btn btn-primary" type="button">PDF</button>
+                            </div>
+                        </div>
+
+                        <div class="chip-filter-group report-options" data-export-ignore="true">
+                            <div class="chip-filter">
+                                <span class="chip-filter-label">تفاصيل عمودي السنتين</span>
+                                <div id="closureReportOptionToggles" class="chip-filter-options"></div>
+                            </div>
+                        </div>
+
+                        <div id="closureReportEmpty" class="empty-state hidden">اختر برنامجًا وسنتين لعرض التقرير.</div>
+
+                        <div id="closureReportPrintArea">
+                            <div id="closureReportSummary" class="report-summary-bar"></div>
+                            <div class="table-wrap report-table-wrap">
+                                <table class="data-table report-data-table">
+                                    <thead id="closureReportHead"></thead>
+                                    <tbody id="closureReportBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
                     </article>
                 </div>
 
