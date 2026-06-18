@@ -4689,7 +4689,7 @@ function buildClosureReportYearExportText(sourceRow, average, percent, responses
 }
 
 function buildClosureReportPdfTitle(payload) {
-    return `هذا التقرير هو تقرير متابعة التحسن لبرنامج ${payload.program.name} (${payload.program.degree}) لسنتي ${payload.fromYear}هـ و${payload.toYear}هـ`;
+    return `تقرير متابعة التحسن لبرنامج ${payload.program.name} (${payload.program.degree}) لسنتي ${payload.fromYear}هـ و${payload.toYear}هـ`;
 }
 
 function buildClosureReportPdfShell(payload) {
@@ -4697,9 +4697,6 @@ function buildClosureReportPdfShell(payload) {
         `البرنامج: ${formatProgramLabel(payload.program)}`,
         `الفترة: ${payload.fromYearLabel} ← ${payload.toYearLabel}`,
         `الجنس: ${getGenderFilterLabel(state.closureFilters.gender)}`,
-        `نوع المطابقة: ${getClosureLevelLabel(payload.level)}`,
-        `الحد الأدنى: ${formatClosureThreshold(payload.threshold)}`,
-        `المصدر: ${CLOSURE_REPORT_SOURCE_LABEL}`,
     ];
     const metrics = [
         { label: "المؤشرات المؤهلة", value: toArabicNumber(payload.qualifyingRows.length) },
@@ -4722,12 +4719,10 @@ function buildClosureReportPdfShell(payload) {
                     <div>
                         <h1>${escapeHtml(buildClosureReportPdfTitle(payload))}</h1>
                         <p style="margin-top: 8px; font-size: 0.82rem;">المصدر: استطلاعات المنظومة الجامعية</p>
-                        <p>يعرض هذا التقرير مؤشرات التحسن المؤهلة فقط، ويستبعد أي تحسن أقل من ${escapeHtml(formatClosureThreshold(payload.threshold))} ولا يُظهر حالات التراجع.</p>
                     </div>
-                    <div class="pdf-export-date">${escapeHtml(new Date().toLocaleString("ar-SA"))}</div>
                 </div>
-                <div class="pdf-export-badges">${headerBadges.map((item) => `<span class="pdf-export-badge">${escapeHtml(item)}</span>`).join("")}</div>
-                <div class="pdf-export-metrics">${metrics.map((item) => `
+                <div class="pdf-export-badges" style="margin-top: 8px;">${headerBadges.map((item) => `<span class="pdf-export-badge">${escapeHtml(item)}</span>`).join("")}</div>
+                <div class="pdf-export-metrics" style="margin-top: 10px;">${metrics.map((item) => `
                     <div class="pdf-export-metric">
                         <span class="pdf-export-metric-label">${escapeHtml(item.label)}</span>
                         <strong>${escapeHtml(item.value)}</strong>
