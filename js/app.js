@@ -4688,6 +4688,94 @@ function buildClosureReportYearExportText(sourceRow, average, percent, responses
     return values.join(" | ");
 }
 
+function buildClosureReportPdfTitle(payload) {
+    return `هذا التقرير هو تقرير متابعة التحسن لبرنامج ${payload.program.name} (${payload.program.degree}) لسنتي ${payload.fromYear}هـ و${payload.toYear}هـ`;
+}
+
+function buildClosureReportPdfShell(payload) {
+    const headerBadges = [
+        `البرنامج: ${formatProgramLabel(payload.program)}`,
+        `الفترة: ${payload.fromYearLabel} ← ${payload.toYearLabel}`,
+        `الجنس: ${getGenderFilterLabel(state.closureFilters.gender)}`,
+        `نوع المطابقة: ${getClosureLevelLabel(payload.level)}`,
+        `الحد الأدنى: ${formatClosureThreshold(payload.threshold)}`,
+        `المصدر: ${CLOSURE_REPORT_SOURCE_LABEL}`,
+    ];
+    const metrics = [
+        { label: "المؤشرات المؤهلة", value: toArabicNumber(payload.qualifyingRows.length) },
+        { label: "المؤشرات القابلة للمقارنة", value: toArabicNumber(payload.comparableRows.length) },
+        { label: "أكبر تحسن", value: payload.topRow ? formatClosureImprovement(payload.topRow.deltaHundred) : "—" },
+    ];
+    const rowsHtml = payload.qualifyingRows.map((row) => `
+        <tr data-closure-pdf-row>
+            <td>${buildClosureReportFocusCellHtml(row)}</td>
+            <td>${buildClosureReportYearCellHtml(row.fromRow, row.fromAverage, row.fromPercent, row.fromResponses)}</td>
+            <td>${buildClosureReportYearCellHtml(row.toRow, row.toAverage, row.toPercent, row.toResponses)}</td>
+            <td>${buildClosureReportImprovementCellHtml(row)}</td>
+        </tr>
+    `).join("");
+
+    return `
+        <div class="pdf-export-card" style="gap: 18px; padding: 28px;">
+            <div data-closure-pdf-header>
+                <div class="pdf-export-head">
+                    <div>
+                        <h1>${escapeHtml(buildClosureReportPdfTitle(payload))}</h1>
+                        <p style="margin-top: 8px; font-size: 0.82rem;">المصدر: استطلاعات المنظومة الجامعية</p>
+                        <p>يعرض هذا التقرير مؤشرات التحسن المؤهلة فقط، ويستبعد أي تحسن أقل من ${escapeHtml(formatClosureThreshold(payload.threshold))} ولا يُظهر حالات التراجع.</p>
+                    </div>
+                    <div class="pdf-export-date">${escapeHtml(new Date().toLocaleString("ar-SA"))}</div>
+                </div>
+                <div class="pdf-export-badges">${headerBadges.map((item) => `<span class="pdf-export-badge">${escapeHtml(item)}</span>`).join("")}</div>
+                <div class="pdf-export-metrics">${metrics.map((item) => `
+                    <div class="pdf-export-metric">
+                        <span class="pdf-export-metric-label">${escapeHtml(item.label)}</span>
+                        <strong>${escapeHtml(item.value)}</strong>
+                    </div>
+                `).join("")}</div>
+            </div>
+
+            <div class="table-wrap report-table-wrap" style="overflow: visible; border: 1px solid rgba(18, 57, 54, 0.1); border-radius: 18px;">
+                <table class="data-table" style="width: 100%; table-layout: fixed; border-collapse: collapse; background: #ffffff;">
+                    <thead data-closure-pdf-table-head>
+                        <tr>
+                            <th style="width: 32%;">البند أو الموضوع</th>
+                            <th style="width: 24%;">${escapeHtml(payload.fromYearLabel)}</th>
+                            <th style="width: 24%;">${escapeHtml(payload.toYearLabel)}</th>
+                            <th style="width: 20%;">التحسن</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+function waitForNextPaint() {
+    return new Promise((resolve) => {
+        window.requestAnimationFrame(() => {
+            window.requestAnimationFrame(resolve);
+        });
+    });
+}
+
+async function captureElementAsPdfImage(element, targetWidth) {
+    const canvas = await window.html2canvas(element, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+        scrollX: 0,
+        scrollY: 0,
+    });
+
+    return {
+        imageData: canvas.toDataURL("image/png"),
+        width: targetWidth,
+        height: (canvas.height * targetWidth) / canvas.width,
+    };
+}
+
 function buildTrendExportPayload() {
     const programId = state.trendFilters.program;
     if (!programId || programId === "all") {
@@ -4874,7 +4962,78 @@ function exportClosureResultsPdf() {
 async function exportClosureReportPdf() {
     const reportModel = buildClosureReportExportModel();
     if (!reportModel) return;
-    await exportSectionAsPdf("closureReportPrintArea", `${reportModel.filename}.pdf`);
+    if (!window.html2canvas || !window.jspdf || !window.jspdf.jsPDF) {
+        window.alert("أدوات PDF غير متاحة حاليًا.");
+        return;
+    }
+
+    const exportShell = document.createElement("div");
+    exportShell.className = "pdf-export-shell";
+    exportShell.style.width = "1280px";
+    exportShell.innerHTML = buildClosureReportPdfShell(reportModel.payload);
+    document.body.appendChild(exportShell);
+
+    try {
+        await waitForNextPaint();
+
+        const headerElement = exportShell.querySelector("[data-closure-pdf-header]");
+        const tableHeadElement = exportShell.querySelector("[data-closure-pdf-table-head]");
+        const rowElements = Array.from(exportShell.querySelectorAll("[data-closure-pdf-row]"));
+        if (!headerElement || !tableHeadElement || !rowElements.length) {
+            window.alert("تعذر تجهيز التقرير للطباعة.");
+            return;
+        }
+
+        const pdf = new window.jspdf.jsPDF("l", "pt", "a4");
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const marginX = 26;
+        const marginTop = 26;
+        const marginBottom = 22;
+        const sectionGap = 10;
+        const contentWidth = pageWidth - (marginX * 2);
+        let cursorY = marginTop;
+
+        const headerImage = await captureElementAsPdfImage(headerElement, contentWidth);
+        pdf.addImage(headerImage.imageData, "PNG", marginX, cursorY, contentWidth, headerImage.height, undefined, "FAST");
+        cursorY += headerImage.height + sectionGap;
+
+        const tableHeadImage = await captureElementAsPdfImage(tableHeadElement, contentWidth);
+        if (cursorY + tableHeadImage.height > pageHeight - marginBottom) {
+            pdf.addPage();
+            cursorY = marginTop;
+        }
+        pdf.addImage(tableHeadImage.imageData, "PNG", marginX, cursorY, contentWidth, tableHeadImage.height, undefined, "FAST");
+        cursorY += tableHeadImage.height;
+
+        for (const rowElement of rowElements) {
+            const rowImage = await captureElementAsPdfImage(rowElement, contentWidth);
+            const remainingHeight = pageHeight - marginBottom - cursorY;
+
+            if (rowImage.height > remainingHeight) {
+                pdf.addPage();
+                cursorY = marginTop;
+                pdf.addImage(tableHeadImage.imageData, "PNG", marginX, cursorY, contentWidth, tableHeadImage.height, undefined, "FAST");
+                cursorY += tableHeadImage.height;
+            }
+
+            let renderWidth = contentWidth;
+            let renderHeight = rowImage.height;
+            const maxRowHeight = pageHeight - marginBottom - cursorY;
+            if (renderHeight > maxRowHeight && maxRowHeight > 0) {
+                const scale = maxRowHeight / renderHeight;
+                renderWidth *= scale;
+                renderHeight *= scale;
+            }
+
+            pdf.addImage(rowImage.imageData, "PNG", marginX, cursorY, renderWidth, renderHeight, undefined, "FAST");
+            cursorY += renderHeight;
+        }
+
+        pdf.save(`${reportModel.filename}.pdf`);
+    } finally {
+        exportShell.remove();
+    }
 }
 
 function exportTrendResultsPdf() {
