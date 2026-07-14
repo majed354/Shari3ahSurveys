@@ -200,6 +200,7 @@ function cacheRefs() {
     refs.overviewSection = document.getElementById("overviewSection");
     refs.exploreSection = document.getElementById("exploreSection");
     refs.insightsSection = document.getElementById("insightsSection");
+    refs.courseEvaluationsSection = document.getElementById("courseEvaluationsSection");
     refs.searchSection = document.getElementById("searchSection");
     refs.searchMeta = document.getElementById("searchMeta");
     refs.searchInput = document.getElementById("searchInput");
@@ -999,6 +1000,7 @@ function renderViewState() {
     if (refs.overviewSection) refs.overviewSection.classList.toggle("hidden", state.view !== "overview");
     if (refs.exploreSection) refs.exploreSection.classList.toggle("hidden", state.view !== "explore");
     if (refs.insightsSection) refs.insightsSection.classList.toggle("hidden", state.view !== "insights");
+    if (refs.courseEvaluationsSection) refs.courseEvaluationsSection.classList.toggle("hidden", state.view !== "course-evaluations");
     if (refs.customSection) refs.customSection.classList.toggle("hidden", state.view !== "custom");
     if (refs.searchSection) refs.searchSection.classList.toggle("hidden", state.view !== "search");
 }
@@ -1010,6 +1012,9 @@ function renderCurrentView() {
     if (state.view === "search") {
         renderSearchControls();
         if (refs.searchInput) refs.searchInput.focus();
+    }
+    if (state.view === "course-evaluations" && window.CourseEvaluationsApp) {
+        window.CourseEvaluationsApp.render();
     }
     if (state.view === "insights") {
         if (state.insightsSubTab === "analysis") renderAnalysisSection();

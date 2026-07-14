@@ -1,3 +1,14 @@
 .DS_Store
 ~$*
 *.backup.xlsx
+__pycache__/
+*.py[cod]
+
+# Raw/local student-evaluation sources (contain sensitive data and are not site assets)
+/أكواد تقييم الطلاب/
+/استطلاعات الطلاب حول كافة المقررات في برامج كلية الشريعة 1445-1447.xlsx
+/استطلاعات الطلاب حول كافة المقررات في برامج كلية الشريعة 1445-1447.zip
+/استطلاعات الدراسة الذاتية المحدث.pre-unified-backup.xlsx
+/tp-102-ssrp-ar-1.pdf
+/tpg-102-ssrp-pg-ar.pdf
+/فهرسة_الاستطلاعات_بالمحكات_المحدثة.xlsx

@@ -54,6 +54,7 @@
                 <button class="nav-btn" type="button" data-view="search" aria-current="false">البحث</button>
                 <button class="nav-btn is-active" type="button" data-view="overview" aria-current="page">لوحة المتابعة</button>
                 <button class="nav-btn" type="button" data-view="explore" aria-current="false">استكشاف البرامج</button>
+                <button class="nav-btn" type="button" data-view="course-evaluations" aria-current="false">تقييم المقررات</button>
                 <button class="nav-btn" type="button" data-view="insights" aria-current="false">التحليل والمقارنة</button>
                 <button class="nav-btn" type="button" data-view="custom" aria-current="false">استطلاع مخصص</button>
             </nav>
@@ -847,6 +848,16 @@
                     <div id="searchResultsList" class="search-results-list hidden"></div>
                 </div>
             </section>
+
+            <section id="courseEvaluationsSection" class="view-section hidden">
+                <div class="section-head">
+                    <div>
+                        <h2>تقييمات الطلاب التفصيلية للمقررات</h2>
+                        <p class="meta-text">جداول التقرير السنوي والتقييم غير المباشر وتقرير التميز في التدريس، مع مراعاة قوة الأدلة وحماية أسماء الأعضاء.</p>
+                    </div>
+                </div>
+                <div id="courseEvaluationsApp"></div>
+            </section>
         </main>
 
         <footer class="footer">
@@ -873,6 +884,8 @@
 
     <script src="js/surveys-data.js"></script>
     <script src="js/self-study-data.js"></script>
+    <script src="js/course-evaluations-data.js"></script>
+    <script src="js/course-evaluations.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
