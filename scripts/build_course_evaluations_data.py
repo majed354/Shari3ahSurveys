@@ -16,10 +16,6 @@ from pathlib import Path
 from statistics import median
 from xml.etree import ElementTree as ET
 
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_PATH = ROOT / "js" / "course-evaluations-data.js"
@@ -600,36 +596,41 @@ def build_course_records(sections: list[dict[str, object]], catalog: dict[str, d
     groups: dict[tuple[str, ...], dict[str, object]] = {}
     code_statuses = Counter()
     for section in sections:
-        key = (
-            str(section["year"]), str(section["degree"]), str(section["program"]),
-            str(section["course"]),
-        )
-        if key not in groups:
-            groups[key] = {
-                "year": section["year"],
-                "degree": section["degree"],
-                "program": section["program"],
-                "courseName": section["course"],
-                "campuses": set(),
-                "respondents": 0,
-                "sections": 0,
-                "scoreNumerator": 0.0,
-                "scoreDenominator": 0.0,
-                "dimensions": {key: [0.0, 0.0] for key, _ in DIMENSIONS},
-                "researchCourse": False,
-            }
-        group = groups[key]
-        responses = int(section["responses"])
-        group["campuses"].add(section["campus"])
-        group["respondents"] += responses
-        group["sections"] += 1
-        group["scoreNumerator"] += float(section["score"]) * responses
-        group["scoreDenominator"] += responses
-        group["researchCourse"] = bool(group["researchCourse"] or section["researchCourse"])
-        for dimension, value in section["dimensionScores"].items():
-            if value is not None:
-                group["dimensions"][dimension][0] += float(value) * responses
-                group["dimensions"][dimension][1] += responses
+        for semester_key in (str(section["semester"]), "all"):
+            key = (
+                str(section["year"]),
+                semester_key,
+                str(section["degree"]),
+                str(section["program"]),
+                str(section["course"]),
+            )
+            if key not in groups:
+                groups[key] = {
+                    "year": section["year"],
+                    "semester": semester_key,
+                    "degree": section["degree"],
+                    "program": section["program"],
+                    "courseName": section["course"],
+                    "campuses": set(),
+                    "respondents": 0,
+                    "sections": 0,
+                    "scoreNumerator": 0.0,
+                    "scoreDenominator": 0.0,
+                    "dimensions": {dimension_key: [0.0, 0.0] for dimension_key, _ in DIMENSIONS},
+                    "researchCourse": False,
+                }
+            group = groups[key]
+            responses = int(section["responses"])
+            group["campuses"].add(section["campus"])
+            group["respondents"] += responses
+            group["sections"] += 1
+            group["scoreNumerator"] += float(section["score"]) * responses
+            group["scoreDenominator"] += responses
+            group["researchCourse"] = bool(group["researchCourse"] or section["researchCourse"])
+            for dimension, value in section["dimensionScores"].items():
+                if value is not None:
+                    group["dimensions"][dimension][0] += float(value) * responses
+                    group["dimensions"][dimension][1] += responses
 
     records: list[dict[str, object]] = []
     for group in groups.values():
@@ -653,11 +654,28 @@ def build_course_records(sections: list[dict[str, object]], catalog: dict[str, d
             "evidence": evidence_band(respondents),
             "recommendation": recommendation(score, dimension_scores),
         })
-    records.sort(key=lambda row: (str(row["year"]), str(row["program"]), normalize_arabic(row["courseName"])))
+    def semester_sort_key(value: object) -> tuple[int, str]:
+        semester = str(value)
+        if semester == "all":
+            return (99_999, semester)
+        try:
+            return (int(semester), semester)
+        except ValueError:
+            return (99_998, semester)
+
+    records.sort(
+        key=lambda row: (
+            str(row["year"]),
+            semester_sort_key(row["semester"]),
+            str(row["program"]),
+            normalize_arabic(row["courseName"]),
+        )
+    )
     counters = Counter()
     for record in records:
-        counters[str(record["year"])] += 1
-        record["reportId"] = f"CE-{record['year']}-{counters[str(record['year'])]:04d}"
+        counter_key = f"{record['year']}||{record['semester']}"
+        counters[counter_key] += 1
+        record["reportId"] = f"CE-{record['year']}-{record['semester']}-{counters[counter_key]:04d}"
     return records, dict(code_statuses)
 
 
@@ -814,6 +832,10 @@ def build_public_excellence_leaders(
 
 
 def encrypt_private_payload(payload: dict[str, object], pin: str) -> dict[str, object]:
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
     salt = os.urandom(16)
     iv = os.urandom(12)
     key = PBKDF2HMAC(
@@ -928,6 +950,13 @@ def main() -> None:
     degrees = sorted({str(section["degree"]) for section in sections})
     programs = sorted({str(section["program"]) for section in sections})
     years = sorted({str(section["year"]) for section in sections}, reverse=True)
+    semesters_by_year = {
+        year: sorted(
+            {str(section["semester"]) for section in sections if str(section["year"]) == year},
+            key=lambda semester: int(semester) if str(semester).isdigit() else str(semester),
+        )
+        for year in years
+    }
     program_department_counts: dict[str, Counter[str]] = defaultdict(Counter)
     for section in sections:
         department = clean_text(section.get("department"))
@@ -969,6 +998,7 @@ def main() -> None:
             "sourceLabel": "استطلاعات الطلاب التفصيلية لمقررات كلية الشريعة والأنظمة 1445-1447هـ",
             "sourceModified": datetime.fromtimestamp(source.stat().st_mtime).astimezone().isoformat(timespec="seconds"),
             "years": years,
+            "semestersByYear": semesters_by_year,
             "degrees": degrees,
             "programs": programs,
             "departments": departments,

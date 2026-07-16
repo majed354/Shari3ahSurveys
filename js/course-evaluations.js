@@ -13,6 +13,7 @@
         initialized: false,
         tab: "annual",
         year: (meta.years || [])[0] || "all",
+        semester: "all",
         degree: "all",
         program: "all",
         department: "all",
@@ -71,6 +72,32 @@
         return meta.programDefaultDepartments?.[program] || "all";
     }
 
+    function availableSemesters() {
+        if (state.year === "all") return [];
+        const values = meta.semestersByYear?.[state.year];
+        return Array.isArray(values) ? values : [];
+    }
+
+    function semesterFieldVisible() {
+        return state.tab === "annual" || state.tab === "indirect";
+    }
+
+    function ensureSemesterSelection() {
+        const semesters = availableSemesters();
+        if (!semesters.includes(state.semester)) state.semester = "all";
+    }
+
+    function activeCourseSemester() {
+        if (state.year === "all") return "all";
+        return state.semester === "all" ? "all" : state.semester;
+    }
+
+    function coursePeriodLabel() {
+        if (state.year === "all") return "كل السنوات";
+        if (state.semester === "all") return `${state.year}هـ - كل الفصول`;
+        return `${state.year}هـ - الفصل ${state.semester}`;
+    }
+
     function createShell(root) {
         root.innerHTML = `
             <div class="ce-tabs" role="tablist" aria-label="تقارير تقييم المقررات">
@@ -85,6 +112,10 @@
                     <div class="field-group">
                         <label for="ceYear">السنة</label>
                         <select id="ceYear">${optionList(meta.years || [], state.year, "كل السنوات")}</select>
+                    </div>
+                    <div class="field-group" data-ce-semester-field>
+                        <label for="ceSemester">الفصل</label>
+                        <select id="ceSemester">${optionList(availableSemesters(), state.semester, "كل الفصول")}</select>
                     </div>
                     <div class="field-group">
                         <label for="ceDegree">الدرجة</label>
@@ -150,6 +181,19 @@
                 renderAll();
                 return;
             }
+            if (event.target.id === "ceYear") {
+                state.year = event.target.value;
+                state.semester = "all";
+                state.page = 1;
+                renderAll();
+                return;
+            }
+            if (event.target.id === "ceSemester") {
+                state.semester = event.target.value;
+                state.page = 1;
+                renderContent();
+                return;
+            }
             if (event.target.id === "ceDepartment") {
                 state.department = event.target.value;
                 state.departmentAuto = false;
@@ -157,7 +201,7 @@
                 renderContent();
                 return;
             }
-            const map = { ceYear: "year", ceDegree: "degree" };
+            const map = { ceDegree: "degree" };
             if (map[event.target.id]) {
                 state[map[event.target.id]] = event.target.value;
                 state.page = 1;
@@ -191,6 +235,7 @@
 
     function resetFilters() {
         state.year = (meta.years || [])[0] || "all";
+        state.semester = "all";
         state.degree = "all";
         state.program = "all";
         state.department = "all";
@@ -208,7 +253,14 @@
             button.classList.toggle("is-active", active);
             button.setAttribute("aria-selected", active ? "true" : "false");
         });
+        ensureSemesterSelection();
         $("#ceYear", root).innerHTML = optionList(meta.years || [], state.year, "كل السنوات");
+        const semesterField = $("[data-ce-semester-field]", root);
+        const semesterSelect = $("#ceSemester", root);
+        const semesterOptions = availableSemesters();
+        semesterSelect.innerHTML = optionList(semesterOptions, state.semester, "كل الفصول");
+        semesterSelect.disabled = !semesterOptions.length;
+        if (semesterField) semesterField.classList.toggle("hidden", !semesterFieldVisible());
         $("#ceDegree", root).innerHTML = optionList(meta.degrees || [], state.degree);
         $("#ceProgram", root).innerHTML = optionList(meta.programs || [], state.program);
         $("#ceDepartment", root).innerHTML = optionList(meta.departments || [], state.department, "كل الأقسام");
@@ -224,8 +276,10 @@
 
     function filterCourseRows() {
         const query = state.query.toLocaleLowerCase("ar");
+        const semester = activeCourseSemester();
         return courseRecords.filter((row) => {
             if (state.year !== "all" && String(row.year) !== state.year) return false;
+            if (String(row.semester || "all") !== semester) return false;
             if (state.degree !== "all" && String(row.degree) !== state.degree) return false;
             if (state.program !== "all" && String(row.program) !== state.program) return false;
             if (query && ![row.courseName, row.courseCode, row.program].join(" ").toLocaleLowerCase("ar").includes(query)) return false;
@@ -313,7 +367,7 @@
                 </tbody></table></div>
                 ${pagination(rows.length, page.pages)}
             </article>`;
-        setNotice("سنة 1446 تعرض بيانات 1446 فقط. تُجمع شعب المقرر للعضو في السنة والبرنامج أولًا، ثم تُستبعد المجموعة إذا بقي مجموعها طالبًا أو طالبين.", "info");
+        setNotice(`الفترة الحالية: ${coursePeriodLabel()}. تُجمع شعب المقرر للعضو في السنة والبرنامج أولًا، ثم تُستبعد المجموعة إذا بقي مجموعها طالبًا أو طالبين.`, "info");
     }
 
     function renderIndirect(content) {
@@ -615,6 +669,8 @@
 
     function exportAnnual() {
         exportWorkbook(filterCourseRows().map((row) => ({
+            "السنة": row.year,
+            "الفصل": row.semester === "all" ? "كل الفصول" : row.semester,
             "رمز المقرر": row.courseCode || "",
             "اسم المقرر": row.courseName,
             "عدد الطلاب الذين قيموا المقرر": row.respondents,
@@ -631,6 +687,8 @@
         }
         exportWorkbook(filterCourseRows().map((row) => {
             const output = {
+                "السنة": row.year,
+                "الفصل": row.semester === "all" ? "كل الفصول" : row.semester,
                 "رمز المقرر": row.courseCode || "",
                 "اسم المقرر": row.courseName,
                 "عدد الطلاب": row.respondents,
