@@ -52,6 +52,8 @@ const SELF_STUDY_PACKAGE = window.SELF_STUDY_DATA || {};
 const SOURCE_LABEL = SURVEYS_PACKAGE.sourceLabel || "منصة ذكاء الأعمال";
 const EXTRACTED_DATA = SURVEYS_PACKAGE.extractedData || {};
 const SELF_STUDY_LINKS = SELF_STUDY_PACKAGE.itemLinks || {};
+const SELF_STUDY_PROGRAM_PHRASE_LINKS = SELF_STUDY_PACKAGE.programPhraseLinks || {};
+const SELF_STUDY_PHRASE_LINKS = SELF_STUDY_PACKAGE.phraseLinks || {};
 const AVAILABLE_PROGRAM_YEARS = SURVEYS_PACKAGE.availableProgramYears || {};
 const ITEM_RECORDS = buildItemRecords();
 const CLOSURE_REPORT_SOURCE_LABEL = "المنظومة الجامعية";
@@ -1076,7 +1078,7 @@ function renderSummaryCards() {
     const summaryCards = [
         { label: "عدد البرامج", value: toArabicNumber(TOTAL_PROGRAMS), note: "البرامج المتاحة في الملف الشامل" },
         { label: "عدد السنوات", value: toArabicNumber(ALL_AVAILABLE_YEARS.length), note: ALL_AVAILABLE_YEARS.map((year) => `${year}هـ`).join(" - ") },
-        { label: "عدد الاستطلاعات", value: toArabicNumber(SUMMARY_SURVEY_COUNT), note: "الاستطلاعات الطلابية المستوردة" },
+        { label: "عدد الاستطلاعات", value: toArabicNumber(SUMMARY_SURVEY_COUNT), note: "الاستطلاعات المتاحة حاليًا" },
         { label: "مصدر الاستطلاعات", value: SOURCE_LABEL, note: "يمكن إضافة مصادر أخرى لاحقًا" },
     ];
 
@@ -2278,7 +2280,9 @@ function renderExploreSection() {
         .filter((row) => row.average != null)
         .sort((first, second) => {
             if (second.average !== first.average) return second.average - first.average;
-            if (second.respondentCount !== first.respondentCount) return second.respondentCount - first.respondentCount;
+            const secondCount = isKnownResponseCount(second.respondentCount) ? Number(second.respondentCount) : -1;
+            const firstCount = isKnownResponseCount(first.respondentCount) ? Number(first.respondentCount) : -1;
+            if (secondCount !== firstCount) return secondCount - firstCount;
             return first.title.localeCompare(second.title, "ar");
         })
         .slice(0, 10);
@@ -2290,7 +2294,7 @@ function renderExploreSection() {
         {
             label: "المتوسط العام",
             value: formatScore(sectionAverage),
-            note: records.length ? formatResponseCount(records.reduce((sum, r) => sum + r.responses, 0)) : "لا توجد بيانات",
+            note: records.length ? formatResponseCountFromItems(records, (record) => record.responses) : "لا توجد بيانات",
             tone: toneForScore(sectionAverage),
         },
         {
@@ -2369,7 +2373,7 @@ function renderExploreSection() {
                 </td>
                 <td>${escapeHtml(row.type)}</td>
                 <td>${escapeHtml(row.genderLabel)}</td>
-                <td>${toArabicNumber(row.respondentCount)}</td>
+                <td>${formatCountValue(row.respondentCount)}</td>
                 <td>${renderScorePill(row.average)}</td>
                 <td>${renderStatusPill(row.average)}</td>
             </tr>
@@ -2431,7 +2435,7 @@ function renderCompareSection() {
         const group = slotGroups.find((item) => item.slot === slot);
         const active = Boolean(slot.program && slot.year && group);
         const average = active ? averageScore(group.surveyRows) : null;
-        const totalResponses = active ? group.surveyRows.reduce((sum, row) => sum + row.respondentCount, 0) : 0;
+        const totalResponses = active ? getTotalResponses(group.surveyRows, (row) => row.respondentCount) : null;
         return {
             label: `الخانة ${toArabicNumber(index + 1)}`,
             value: active ? formatScore(average) : "—",
@@ -3134,7 +3138,7 @@ function buildClosureYearTableCellHtml(sourceRow, yearLabel, average, percent, r
             <span class="cell-subtitle">رقم العبارة: ${escapeHtml(getItemNumberLabel(sourceRow))}</span>
             <span class="cell-subtitle">البند: ${escapeHtml(sourceRow.title || "—")}</span>
             <span class="cell-subtitle">المتوسط: ${escapeHtml(formatScore(average))} · النسبة: ${escapeHtml(formatPercent(percent))}</span>
-            <span class="cell-subtitle">عدد المقيمين: ${toArabicNumber(responses)}</span>
+            <span class="cell-subtitle">عدد المقيمين: ${escapeHtml(formatCountValue(responses))}</span>
         </div>
     `;
 }
@@ -3170,7 +3174,7 @@ function buildClosureReportYearCellHtml(sourceRow, average, percent, responses) 
     const detailRows = [];
 
     if (state.closureFilters.reportShowResponses) {
-        detailRows.push(`عدد المقيمين: ${toArabicNumber(responses)}`);
+        detailRows.push(`عدد المقيمين: ${formatCountValue(responses)}`);
     }
 
     if (state.closureFilters.reportShowStatement) {
@@ -3210,7 +3214,7 @@ function renderClosureHighlights(container, rows, emptyText) {
         <button class="insight-item insight-item-button" type="button" data-closure-detail-index="${index}">
             <div class="insight-item-title">${toArabicNumber(index + 1)}. ${escapeHtml(row.title)}</div>
             <div class="insight-item-meta">${escapeHtml(row.sectionLabel)} · ${escapeHtml(row.subtitle)}</div>
-            <div class="insight-item-meta">${escapeHtml(formatPercent(row.fromPercent))} → ${escapeHtml(formatPercent(row.toPercent))} · ${toArabicNumber(row.fromResponses)} / ${toArabicNumber(row.toResponses)} استجابة</div>
+            <div class="insight-item-meta">${escapeHtml(formatPercent(row.fromPercent))} → ${escapeHtml(formatPercent(row.toPercent))} · ${escapeHtml(formatCountValue(row.fromResponses))} / ${escapeHtml(formatCountValue(row.toResponses))} استجابة</div>
             <div class="insight-item-value">${escapeHtml(formatClosureImprovement(row.deltaHundred))}</div>
             <div class="insight-item-foot">
                 <span>اضغط لعرض تفاصيل البند في كل سنة</span>
@@ -3306,7 +3310,7 @@ function buildClosureYearCardHtml(sourceRow, yearLabel, average, percent, respon
                 </div>
                 <div class="detail-sheet-stat">
                     <span class="detail-sheet-stat-label">عدد المقيمين</span>
-                    <span class="detail-sheet-stat-value">${toArabicNumber(responses)}</span>
+                    <span class="detail-sheet-stat-value">${escapeHtml(formatCountValue(responses))}</span>
                 </div>
             </div>
             <div class="detail-sheet-fields">
@@ -3386,7 +3390,7 @@ function renderCustomSection() {
         : allRows;
     const selectedRows = allRows.filter((row) => state.customSelected.has(row.uid));
     const selectedAverage = averageScore(selectedRows);
-    const totalSelectedResponses = selectedRows.reduce((sum, row) => sum + row.respondentCount, 0);
+    const totalSelectedResponses = getTotalResponses(selectedRows, (row) => row.respondentCount);
 
     refs.customMeta.textContent = `${buildSingleFilterScopeLabel(state.customFilters)} · ${toArabicNumber(rows.length)} عبارة متاحة`;
     refs.customAvailableMeta.textContent = `${toArabicNumber(rows.length)} عبارة`;
@@ -3438,7 +3442,7 @@ function renderCustomSection() {
                 <span class="cell-subtitle">${escapeHtml(row.topicLabel)}</span>
             </td>
             <td>${escapeHtml(getGenderFilterLabel(state.customFilters.gender))}</td>
-            <td>${toArabicNumber(row.respondentCount)}</td>
+            <td>${formatCountValue(row.respondentCount)}</td>
             <td>${renderScorePill(row.average)}</td>
         </tr>
     `).join("");
@@ -3458,9 +3462,25 @@ function buildItemRecords() {
             (survey.topics || []).forEach((topic, topicIndex) => {
                 (topic.items || []).forEach((item, itemIndex) => {
                     (item.genders || []).forEach((genderEntry, genderIndex) => {
-                        const responses = Number(genderEntry.responses || 0);
-                        const scoreTotal = Number(genderEntry.scoreTotal || 0);
-                        if (!responses) return;
+                        const responseCountKnown = Number.isFinite(Number(genderEntry.responses)) && Number(genderEntry.responses) > 0;
+                        const responses = responseCountKnown ? Number(genderEntry.responses) : null;
+                        const scoreTotal = responseCountKnown && Number.isFinite(Number(genderEntry.scoreTotal))
+                            ? Number(genderEntry.scoreTotal)
+                            : null;
+                        const explicitAverage = Number.isFinite(Number(genderEntry.average))
+                            ? Number(genderEntry.average)
+                            : null;
+                        const average = responseCountKnown && responses
+                            ? roundNumber(scoreTotal / responses)
+                            : explicitAverage;
+                        if (average == null) return;
+
+                        const aggregateWeight = responseCountKnown
+                            ? responses
+                            : Math.max(1, Number(genderEntry.measurementCount || 1));
+                        const weightedScoreTotal = responseCountKnown && scoreTotal != null
+                            ? scoreTotal
+                            : average * aggregateWeight;
 
                         records.push({
                             uid: `${datasetKey}:${survey.id}:${topicIndex}:${itemIndex}:${genderIndex}`,
@@ -3480,9 +3500,12 @@ function buildItemRecords() {
                             itemNumber: item.number || "",
                             itemLabel: item.label,
                             gender: genderEntry.gender || "",
+                            responseCountKnown,
                             responses,
                             scoreTotal,
-                            average: roundNumber(scoreTotal / responses),
+                            aggregateWeight,
+                            weightedScoreTotal,
+                            average,
                             surveyIndex,
                             topicIndex,
                             itemOrder: parseItemOrder(item.number, itemIndex),
@@ -3610,16 +3633,21 @@ function aggregateRecords(records, level) {
         }
 
         const entry = map.get(key);
-        entry._scoreTotal += record.scoreTotal;
-        entry._responseTotal += record.responses;
+        entry._weightedScoreTotal += Number(record.weightedScoreTotal || 0);
+        entry._weightTotal += Number(record.aggregateWeight || 0);
+        entry._hasUnknownResponses = entry._hasUnknownResponses || !record.responseCountKnown;
         entry._itemKeys.add(`${normalizeText(record.topicLabel)}||${record.itemNumber}||${normalizeText(record.itemLabel)}`);
         entry._topicKeys.add(normalizeText(record.topicLabel));
 
-        if (level === "item") {
-            entry.respondentCount += record.responses;
+        if (record.responseCountKnown) {
+            if (level === "item") {
+                entry.respondentCount += Number(record.responses || 0);
+            } else {
+                const itemKey = `${normalizeText(record.topicLabel)}||${record.itemNumber}||${normalizeText(record.itemLabel)}`;
+                entry._itemResponseMap.set(itemKey, (entry._itemResponseMap.get(itemKey) || 0) + Number(record.responses || 0));
+            }
         } else {
-            const itemKey = `${normalizeText(record.topicLabel)}||${record.itemNumber}||${normalizeText(record.itemLabel)}`;
-            entry._itemResponseMap.set(itemKey, (entry._itemResponseMap.get(itemKey) || 0) + record.responses);
+            entry._unknownResponseItems.add(`${normalizeText(record.topicLabel)}||${record.itemNumber}||${normalizeText(record.itemLabel)}`);
         }
     });
 
@@ -3655,11 +3683,13 @@ function createAggregateEntry(record, level, key) {
         itemOrder: record.itemOrder,
         sortRank: record.sortRank,
         respondentCount: 0,
-        _scoreTotal: 0,
-        _responseTotal: 0,
+        _weightedScoreTotal: 0,
+        _weightTotal: 0,
+        _hasUnknownResponses: false,
         _itemKeys: new Set(),
         _topicKeys: new Set(),
         _itemResponseMap: new Map(),
+        _unknownResponseItems: new Set(),
     };
 
     if (level === "topic") {
@@ -3684,9 +3714,13 @@ function createAggregateEntry(record, level, key) {
 }
 
 function finalizeAggregateEntry(entry) {
-    const respondentCount = entry.rowKind === "عبارة"
-        ? entry.respondentCount
-        : Math.max(0, ...entry._itemResponseMap.values());
+    const respondentCount = entry._hasUnknownResponses
+        ? null
+        : (
+            entry.rowKind === "عبارة"
+                ? entry.respondentCount
+                : Math.max(0, ...entry._itemResponseMap.values())
+        );
 
     return {
         uid: entry.uid,
@@ -3712,9 +3746,9 @@ function finalizeAggregateEntry(entry) {
         itemNumber: entry.itemNumber,
         itemOrder: entry.itemOrder,
         sortRank: entry.sortRank,
-        average: entry._responseTotal ? roundNumber(entry._scoreTotal / entry._responseTotal) : null,
+        average: entry._weightTotal ? roundNumber(entry._weightedScoreTotal / entry._weightTotal) : null,
         respondentCount,
-        responseTotal: entry._responseTotal,
+        responseTotal: respondentCount,
         itemCount: entry._itemKeys.size,
         topicCount: entry._topicKeys.size,
     };
@@ -3769,7 +3803,7 @@ function buildAnalysisProgramRows(surveyRows) {
                 program,
                 average: averageScore(programSurveyRows),
                 count: programSurveyRows.length,
-                totalResponses: programSurveyRows.reduce((sum, row) => sum + row.respondentCount, 0),
+                totalResponses: getTotalResponses(programSurveyRows, (row) => row.respondentCount),
                 sectionAverages: SECTION_META.map((section) => ({
                     id: section.id,
                     label: section.shortLabel,
@@ -3810,7 +3844,7 @@ function buildAnalysisTable(programRows) {
                     <span class="cell-subtitle">${escapeHtml(item.program.degree)}</span>
                 </td>
                 <td>${toArabicNumber(item.count)}</td>
-                <td>${toArabicNumber(item.totalResponses)}</td>
+                <td>${formatCountValue(item.totalResponses)}</td>
                 ${item.sectionAverages.map((section) => `<td>${section.average == null ? "—" : renderScorePill(section.average)}</td>`).join("")}
             </tr>
         `).join(""),
@@ -4497,7 +4531,7 @@ function buildExploreExportPayload() {
         metrics: [
             { label: "عدد السجلات", value: toArabicNumber(records.length) },
             { label: "عدد الاستطلاعات", value: toArabicNumber(surveyRows.length) },
-            { label: "إجمالي الاستجابات", value: toArabicNumber(records.reduce((sum, row) => sum + row.responses, 0)) },
+            { label: "إجمالي الاستجابات", value: formatCountValue(getTotalResponses(records, (row) => row.responses)) },
         ],
         headers: ["البرنامج", "الدرجة", "السنة", "المحور", "الاستطلاع", "العبارة", "الجنس", "عدد الاستجابات", "المتوسط"],
         data: records.map((row) => [
@@ -4577,7 +4611,7 @@ function buildAnalysisExportPayload() {
         ],
         metrics: [
             { label: "عدد الاستطلاعات", value: toArabicNumber(surveyRows.length) },
-            { label: "إجمالي الاستجابات", value: toArabicNumber(surveyRows.reduce((sum, row) => sum + row.respondentCount, 0)) },
+            { label: "إجمالي الاستجابات", value: formatCountValue(getTotalResponses(surveyRows, (row) => row.respondentCount)) },
         ],
         headers: ["المحور", "الاستطلاع", "عدد الاستجابات", "المتوسط"],
         data: surveyRows.map((row) => [
@@ -4632,8 +4666,8 @@ function buildClosureExportPayload() {
             formatPercent(row.fromPercent),
             formatPercent(row.toPercent),
             formatClosureImprovement(row.deltaHundred),
-            toArabicNumber(row.fromResponses),
-            toArabicNumber(row.toResponses),
+            formatCountValue(row.fromResponses),
+            formatCountValue(row.toResponses),
         ]),
     };
 }
@@ -4681,7 +4715,7 @@ function buildClosureReportYearExportText(sourceRow, average, percent, responses
     const values = [formatScore(average)];
 
     if (state.closureFilters.reportShowResponses) {
-        values.push(`عدد المقيمين: ${toArabicNumber(responses)}`);
+        values.push(`عدد المقيمين: ${formatCountValue(responses)}`);
     }
     if (state.closureFilters.reportShowStatement) {
         values.push(`العبارة: ${sourceRow.title || "—"}`);
@@ -4870,7 +4904,7 @@ function buildCustomExportPayload() {
         filters: buildSingleFilterChips(state.customFilters).map((chip) => `${chip.label}: ${chip.value}`),
         metrics: [
             { label: "عدد العناصر", value: toArabicNumber(selectedRows.length) },
-            { label: "إجمالي الاستجابات", value: toArabicNumber(selectedRows.reduce((sum, row) => sum + row.respondentCount, 0)) },
+            { label: "إجمالي الاستجابات", value: formatCountValue(getTotalResponses(selectedRows, (row) => row.respondentCount)) },
         ],
         headers: ["المحور", "الاستطلاع", "العبارة", "الموضوع", "البرنامج", "السنة", "عدد الاستجابات", "المتوسط"],
         data: selectedRows.map((row) => [
@@ -4908,7 +4942,7 @@ function buildSearchExportPayload(limitToDisplay = false) {
         ],
         metrics: [
             { label: "النتائج المصدرة", value: toArabicNumber(records.length) },
-            { label: "إجمالي الاستجابات", value: toArabicNumber(records.reduce((sum, row) => sum + row.responses, 0)) },
+            { label: "إجمالي الاستجابات", value: formatCountValue(getTotalResponses(records, (row) => row.responses)) },
         ],
         note: payload.truncated && limitToDisplay ? `اقتصر تصدير PDF على أول ${toArabicNumber(records.length)} نتيجة من أصل ${toArabicNumber(payload.results.length)} نتيجة.` : "",
         headers: ["البرنامج", "الدرجة", "السنة", "الاستطلاع", "الموضوع", "العبارة", "الجنس", "عدد الاستجابات", "المتوسط", "المحكات"],
@@ -5059,7 +5093,7 @@ function exportExploreData(type) {
         row.surveyTitle,
         row.itemLabel,
         getGenderLabel(row.gender),
-        row.responses,
+        isKnownResponseCount(row.responses) ? row.responses : "غير متاح",
         formatScore(row.average),
     ]);
 
@@ -5098,7 +5132,7 @@ function exportComparisonData(type) {
         row.meta.title,
         ...row.values.flatMap((value) => [
             value ? formatScore(value.average) : "",
-            value ? value.respondentCount : "",
+            value ? (isKnownResponseCount(value.respondentCount) ? value.respondentCount : "غير متاح") : "",
         ]),
     ]);
 
@@ -5128,7 +5162,7 @@ function exportAnalysisData(type) {
     const data = surveyRows.map((row) => [
         row.sectionLabel,
         row.title,
-        row.respondentCount,
+        isKnownResponseCount(row.respondentCount) ? row.respondentCount : "غير متاح",
         formatScore(row.average),
     ]);
 
@@ -5173,8 +5207,8 @@ function exportClosureData(type) {
         formatPercent(row.fromPercent),
         formatPercent(row.toPercent),
         formatClosureImprovement(row.deltaHundred),
-        row.fromResponses,
-        row.toResponses,
+        isKnownResponseCount(row.fromResponses) ? row.fromResponses : "غير متاح",
+        isKnownResponseCount(row.toResponses) ? row.toResponses : "غير متاح",
     ]);
     const filename = `اغلاق-دائرة-الجودة-${sanitizeFileName(payload.program.name)}-${payload.fromYear}-${payload.toYear}`;
 
@@ -5275,7 +5309,7 @@ function exportCustomData(type) {
     const headers = ["المحور", "الاستطلاع", "العبارة", "الموضوع", "البرنامج", "السنة", "عدد الاستجابات", "المتوسط"];
     const data = selectedRows.map((row) => [
         row.sectionLabel, row.surveyTitle, row.title, row.topicLabel,
-        row.programName, `${row.year}هـ`, row.respondentCount, formatScore(row.average),
+        row.programName, `${row.year}هـ`, isKnownResponseCount(row.respondentCount) ? row.respondentCount : "غير متاح", formatScore(row.average),
     ]);
     const filename = "استطلاع-مخصص";
     if (type === "csv") { exportCsv(`${filename}.csv`, headers, data); return; }
@@ -5388,11 +5422,38 @@ function getSearchResultGenderLabel(gender) {
 
 function getSelfStudyEntries(programId, year, surveyTitle, itemLabel) {
     const key = buildSelfStudyItemKey(programId, year, surveyTitle, itemLabel);
-    return SELF_STUDY_LINKS[key] || [];
+    const exactEntries = SELF_STUDY_LINKS[key] || [];
+    const programPhraseEntries = SELF_STUDY_PROGRAM_PHRASE_LINKS[buildSelfStudyProgramPhraseKey(programId, itemLabel)] || [];
+    const phraseEntries = SELF_STUDY_PHRASE_LINKS[normalizeText(itemLabel)] || [];
+    return mergeSelfStudyEntries(exactEntries, programPhraseEntries, phraseEntries);
 }
 
 function buildSelfStudyItemKey(programId, year, surveyTitle, itemLabel) {
     return [programId, year, surveyTitle, itemLabel].map((value) => normalizeText(value)).join("||");
+}
+
+function buildSelfStudyProgramPhraseKey(programId, itemLabel) {
+    return [programId, itemLabel].map((value) => normalizeText(value)).join("||");
+}
+
+function mergeSelfStudyEntries(...groups) {
+    const seen = new Set();
+    const entries = [];
+
+    groups.flat().forEach((entry) => {
+        const key = [
+            normalizeText(entry.criterionCode),
+            normalizeText(entry.criterionText),
+            normalizeText(entry.supportedSide),
+            normalizeText(entry.standard),
+            normalizeText(entry.section),
+        ].join("||");
+        if (seen.has(key)) return;
+        seen.add(key);
+        entries.push(entry);
+    });
+
+    return entries;
 }
 
 function buildSelfStudyCriterionValue(entry) {
@@ -5514,6 +5575,30 @@ function averageScore(rows) {
     return roundNumber(rows.reduce((sum, row) => sum + Number(row.average || 0), 0) / rows.length);
 }
 
+function isKnownResponseCount(value) {
+    return Number.isFinite(Number(value)) && Number(value) >= 0;
+}
+
+function getTotalResponses(items, accessor = (item) => item.responses) {
+    if (!items.length) return null;
+    let total = 0;
+    for (const item of items) {
+        const value = accessor(item);
+        if (!isKnownResponseCount(value)) return null;
+        total += Number(value);
+    }
+    return total;
+}
+
+function formatCountValue(value) {
+    return isKnownResponseCount(value) ? toArabicNumber(value) : "غير متاح";
+}
+
+function formatResponseCountFromItems(items, accessor = (item) => item.responses) {
+    const total = getTotalResponses(items, accessor);
+    return total == null ? "عدد غير متاح" : formatResponseCount(total);
+}
+
 function getExtremeRow(rows, direction) {
     if (!rows.length) return null;
     const sorted = [...rows].sort((first, second) => direction === "max" ? second.average - first.average : first.average - second.average);
@@ -5585,6 +5670,7 @@ function renderComparisonCell(value) {
 }
 
 function formatResponseCount(value) {
+    if (!isKnownResponseCount(value)) return "عدد غير متاح";
     return `${toArabicNumber(value)} استجابة`;
 }
 

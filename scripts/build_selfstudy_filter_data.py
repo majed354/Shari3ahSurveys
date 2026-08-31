@@ -180,16 +180,29 @@ def make_item_key(program_id: str, year: str, survey_title: str, phrase_text: st
     )
 
 
+def make_program_phrase_key(program_id: str, phrase_text: str) -> str:
+    return "||".join(
+        [
+            normalize_text(program_id),
+            normalize_text(phrase_text),
+        ]
+    )
+
+
 def build_payload() -> Dict[str, object]:
     with zipfile.ZipFile(WORKBOOK_PATH) as archive:
         shared_strings = read_shared_strings(archive)
         sheets = load_workbook(archive, shared_strings)
 
     item_links: "OrderedDict[str, List[Dict[str, str]]]" = OrderedDict()
+    program_phrase_links: "OrderedDict[str, List[Dict[str, str]]]" = OrderedDict()
+    phrase_links: "OrderedDict[str, List[Dict[str, str]]]" = OrderedDict()
     unique_entries = 0
 
     for row in iter_detailed_rows(sheets):
         item_key = make_item_key(row["programId"], row["year"], row["surveyTitle"], row["phraseText"])
+        program_phrase_key = make_program_phrase_key(row["programId"], row["phraseText"])
+        phrase_key = normalize_text(row["phraseText"])
         entry = {
             "standard": row["standard"],
             "section": row["section"],
@@ -203,7 +216,15 @@ def build_payload() -> Dict[str, object]:
             links.append(entry)
             unique_entries += 1
 
-    for links in item_links.values():
+        program_links = program_phrase_links.setdefault(program_phrase_key, [])
+        if entry not in program_links:
+            program_links.append(entry)
+
+        phrase_entries = phrase_links.setdefault(phrase_key, [])
+        if entry not in phrase_entries:
+            phrase_entries.append(entry)
+
+    for links in list(item_links.values()) + list(program_phrase_links.values()) + list(phrase_links.values()):
         links.sort(
             key=lambda item: (
                 item["criterionCode"],
@@ -221,6 +242,8 @@ def build_payload() -> Dict[str, object]:
         "linkedItemCount": len(item_links),
         "linkEntryCount": unique_entries,
         "itemLinks": item_links,
+        "programPhraseLinks": program_phrase_links,
+        "phraseLinks": phrase_links,
     }
 
 
