@@ -17,6 +17,7 @@ NS = {"a": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
 ROOT = Path(__file__).resolve().parents[1]
 LEGACY_WORKBOOK_PATH = ROOT / "استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx"
 SUPPLEMENTAL_DATA_DIR = ROOT / "data" / "bi-1447"
+GRADUATE_SAMPLE_DATA_DIR = ROOT / "data" / "graduate-samples"
 OUTPUT_PATH = ROOT / "js" / "surveys-data.js"
 
 PROGRAM_ID_MAP = {
@@ -90,6 +91,37 @@ FACULTY_1447_SOURCES = [
     {"path": SUPPLEMENTAL_DATA_DIR / "الكادر - شريعة.xlsx", "department": "الشريعة"},
 ]
 
+GRADUATE_SAMPLE_SOURCES = [
+    {"path": GRADUATE_SAMPLE_DATA_DIR / "نتائج استطلاعات البكالوريوس.xlsx", "track": "bachelor"},
+    {"path": GRADUATE_SAMPLE_DATA_DIR / "نتائج استطلاعات الدراسات العليا.xlsx", "track": "postgraduate"},
+]
+
+GRADUATE_SAMPLE_METRICS_BY_TRACK = {
+    "bachelor": ("performance_rate", "employment_rate", "eval_employers"),
+    "postgraduate": ("eval_supervision", "eval_services", "eval_employers"),
+}
+
+GRADUATE_SAMPLE_SURVEY_DEFINITIONS = {
+    "eval_supervision": {
+        "title": "تقييم جودة الإشراف العلمي للخريجين — استطلاع عينة",
+        "sectionId": "learning",
+        "topicLabel": "جودة الإشراف العلمي",
+        "itemLabel": "التقييم العام لجودة الإشراف أثناء الرسالة أو المشروع البحثي",
+    },
+    "eval_services": {
+        "title": "رضا خريجي الدراسات العليا عن الخدمات — استطلاع عينة",
+        "sectionId": "students",
+        "topicLabel": "الخدمات المقدمة",
+        "itemLabel": "الرضا العام عن مستوى الخدمات المقدمة",
+    },
+    "eval_employers": {
+        "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+        "sectionId": "market",
+        "topicLabel": "الأداء الوظيفي للخريجين",
+        "itemLabel": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+    },
+}
+
 DEPARTMENT_PROGRAMS = {
     "الأنظمة": ["p01", "p06"],
     "الدراسات الإسلامية": ["p02", "p07"],
@@ -137,6 +169,12 @@ FACULTY_1447_SOURCE_NOTE = (
     "استيراد مفسر من ملفات استطلاعات الكادر الأكاديمي 1447هـ بمنصة ذكاء الأعمال. "
     "هذا المصدر قسميّ النطاق ولا يتضمن اسم البرنامج ولا عدد المقيمين؛ "
     "لذا أُلحق بكل برامج القسم مع الحفاظ على الجهة = أعضاء هيئة التدريس."
+)
+
+GRADUATE_SAMPLE_SOURCE_NOTE = (
+    "استيراد من استطلاعات الخريجين التكميلية لعامي 1445-1446هـ. "
+    "هذه النتائج مبنية على عينة، وتُستخدم فقط للمؤشرات التي لا يتوفر لها استطلاع أصلي في المستودع. "
+    "استُبعد تقييم جودة البرنامج لأن استطلاع تقويم البرنامج الأصلي هو المصدر المعتمد له."
 )
 
 NAME_ONLY_PROGRAMS: Dict[str, List[str]] = defaultdict(list)
@@ -257,6 +295,41 @@ def numeric(value: str) -> int:
         return int(float(clean_text(value).replace("٫", ".")))
     except (TypeError, ValueError):
         return 0
+
+
+def normalize_arabic_digits(value: object) -> str:
+    return clean_text(value).translate(str.maketrans("٠١٢٣٤٥٦٧٨٩٫", "0123456789."))
+
+
+def parse_graduate_year(value: object) -> str:
+    match = re.search(r"14\d{2}", normalize_arabic_digits(value))
+    return match.group(0) if match else ""
+
+
+def parse_range_midpoint(value: object) -> float | None:
+    numbers = [float(item) for item in re.findall(r"\d+(?:\.\d+)?", normalize_arabic_digits(value))]
+    if not numbers:
+        return None
+    if len(numbers) == 1:
+        return numbers[0]
+    return sum(numbers[:2]) / 2
+
+
+def resolve_graduate_sample_program_id(program_label: object, track: str) -> str | None:
+    label = clean_text(program_label)
+    if track == "bachelor":
+        return PROGRAM_ID_MAP.get((label, "البكالوريوس"))
+
+    match = re.match(r"^(ماجستير|دكتوراه)\s+(.+)$", label)
+    if not match:
+        return None
+    degree = "الماجستير" if match.group(1) == "ماجستير" else "الدكتوراه"
+    return PROGRAM_ID_MAP.get((clean_text(match.group(2)), degree))
+
+
+def compact_number(value: float) -> int | float:
+    rounded = round(float(value), 4)
+    return int(rounded) if rounded.is_integer() else rounded
 
 
 def decimal_number(value: str) -> float | None:
@@ -653,8 +726,9 @@ def add_item_measurement(
     gender: str,
     source_note: str,
     responses: int | None = None,
-    score_total: int | None = None,
+    score_total: float | None = None,
     average: float | None = None,
+    survey_type: str = "",
 ) -> None:
     for program_id in sorted_program_ids(program_ids):
         dataset_key = f"{program_id}::{year}"
@@ -669,6 +743,7 @@ def add_item_measurement(
                 "title": survey_title,
                 "stakeholder": stakeholder,
                 "sectionId": section_id,
+                "surveyType": survey_type,
                 "_topics": OrderedDict(),
             },
         )
@@ -868,11 +943,155 @@ def import_faculty_1447_surveys(
             )
 
 
+def import_graduate_sample_surveys(
+    datasets: "OrderedDict[str, Dict[str, object]]",
+    available_program_years: Dict[str, set],
+    available_genders: set,
+    skipped_programs: set,
+) -> Dict[str, Dict[str, object]]:
+    grouped: Dict[str, Dict[str, object]] = OrderedDict()
+
+    for source in GRADUATE_SAMPLE_SOURCES:
+        path = source["path"]
+        track = source["track"]
+        if not path.exists():
+            continue
+
+        rows = read_first_sheet_rows(path)
+        if not rows:
+            continue
+
+        header = {label: column for column, label in rows[0].items()}
+        program_col = header.get("ما اسم البرنامج")
+        year_col = header.get("سنة التخرج من البرنامج الأكاديمي")
+        status_col = header.get("وضعك الحالي بعد التخرج هو:")
+        employer_col = header.get(
+            "(للموظفين فقط): ما درجة تقييم رئيسك في العمل لك، أو كم تقيّم نفسك في عملك الحالي (التقييم من ٥)"
+        )
+        if not program_col or not year_col:
+            continue
+
+        for row in rows[1:]:
+            program_label = clean_text(row.get(program_col))
+            program_id = resolve_graduate_sample_program_id(program_label, track)
+            year = parse_graduate_year(row.get(year_col))
+            if not program_id or not year:
+                skipped_programs.add((program_label, "غير محدد", path.name))
+                continue
+
+            dataset_key = f"{program_id}::{year}"
+            group = grouped.setdefault(
+                dataset_key,
+                {
+                    "programId": program_id,
+                    "year": year,
+                    "track": track,
+                    "sourceFiles": set(),
+                    "values": defaultdict(list),
+                    "employmentKnown": 0,
+                    "employmentPositive": 0,
+                },
+            )
+            group["sourceFiles"].add(path.name)
+
+            employer_value = parse_range_midpoint(row.get(employer_col)) if employer_col else None
+            if employer_value is not None:
+                group["values"]["eval_employers"].append(employer_value)
+
+            if track == "bachelor":
+                performance_col = header.get(
+                    "ما درجتك في الاختبارات الوطنية/مهنية بعد التخرج؟ (إذا كنت قد أجريت اختبارًا)"
+                )
+                performance_value = parse_range_midpoint(row.get(performance_col)) if performance_col else None
+                if performance_value is not None:
+                    group["values"]["performance_rate"].append(performance_value)
+
+                status = clean_text(row.get(status_col)) if status_col else ""
+                if status:
+                    group["employmentKnown"] += 1
+                    if "موظف" in status or "دراسات عليا" in status:
+                        group["employmentPositive"] += 1
+            else:
+                supervision_col = header.get("ما تقييمك العام لجودة الإشراف أثناء الرسالة أو المشروع البحثي")
+                services_col = header.get("ما مدى رضاك عن مستوى الخدمات المقدمة عموما")
+                supervision_value = decimal_number(row.get(supervision_col)) if supervision_col else None
+                services_value = decimal_number(row.get(services_col)) if services_col else None
+                if supervision_value is not None:
+                    group["values"]["eval_supervision"].append(supervision_value)
+                if services_value is not None:
+                    group["values"]["eval_services"].append(services_value)
+
+    graduate_sample_kpis: Dict[str, Dict[str, object]] = OrderedDict()
+    for dataset_key, group in grouped.items():
+        metrics: Dict[str, Dict[str, object]] = OrderedDict()
+        allowed_metrics = GRADUATE_SAMPLE_METRICS_BY_TRACK[group["track"]]
+
+        for metric_key in allowed_metrics:
+            if metric_key == "employment_rate":
+                known = int(group["employmentKnown"])
+                if known:
+                    metrics[metric_key] = {
+                        "value": round_score((int(group["employmentPositive"]) / known) * 100),
+                        "sampleCount": known,
+                        "positiveCount": int(group["employmentPositive"]),
+                        "sourceType": "sample",
+                        "sourceLabel": "استطلاع عينة",
+                    }
+                continue
+
+            values = list(group["values"].get(metric_key, []))
+            if not values:
+                continue
+            metrics[metric_key] = {
+                "value": round_score(sum(values) / len(values)),
+                "sampleCount": len(values),
+                "sourceType": "sample",
+                "sourceLabel": "استطلاع عينة",
+            }
+
+            survey_definition = GRADUATE_SAMPLE_SURVEY_DEFINITIONS.get(metric_key)
+            if survey_definition:
+                add_item_measurement(
+                    datasets,
+                    available_program_years,
+                    available_genders,
+                    program_ids=[group["programId"]],
+                    year=group["year"],
+                    survey_title=survey_definition["title"],
+                    stakeholder="alumni",
+                    section_id=survey_definition["sectionId"],
+                    topic_label=survey_definition["topicLabel"],
+                    item_number="1",
+                    item_label=survey_definition["itemLabel"],
+                    gender="",
+                    source_note=(
+                        f"{GRADUATE_SAMPLE_SOURCE_NOTE} المصدر الفرعي: "
+                        f"{'، '.join(sorted(group['sourceFiles']))}."
+                    ),
+                    responses=len(values),
+                    score_total=sum(values),
+                    survey_type="sample",
+                )
+
+        if metrics:
+            graduate_sample_kpis[dataset_key] = {
+                "programId": group["programId"],
+                "year": group["year"],
+                "sourceType": "sample",
+                "sourceLabel": "استطلاع عينة",
+                "sourceFiles": sorted(group["sourceFiles"]),
+                "metrics": metrics,
+            }
+
+    return graduate_sample_kpis
+
+
 def finalize_payload(
     datasets: "OrderedDict[str, Dict[str, object]]",
     available_program_years: Dict[str, set],
     available_genders: set,
     skipped_programs: set,
+    graduate_sample_kpis: Dict[str, Dict[str, object]],
 ) -> Dict[str, object]:
     extracted_data: "OrderedDict[str, Dict[str, object]]" = OrderedDict()
     survey_count = 0
@@ -896,7 +1115,7 @@ def finalize_payload(
                         final_entry = {"gender": gender_entry["gender"]}
                         if responses and score_total is not None:
                             final_entry["responses"] = int(responses)
-                            final_entry["scoreTotal"] = int(score_total)
+                            final_entry["scoreTotal"] = compact_number(score_total)
                         elif average_samples:
                             final_entry["average"] = round_score(average_total / average_samples)
                             final_entry["measurementCount"] = average_samples
@@ -932,6 +1151,7 @@ def finalize_payload(
                     "title": survey["title"],
                     "stakeholder": survey["stakeholder"],
                     "sectionId": survey["sectionId"],
+                    **({"surveyType": survey["surveyType"]} if survey.get("surveyType") else {}),
                     "topics": topics,
                 }
             )
@@ -944,12 +1164,13 @@ def finalize_payload(
         survey_count += len(surveys)
 
     return {
-        "sourceLabel": "منصة ذكاء الأعمال",
+        "sourceLabel": "منصة ذكاء الأعمال واستطلاعات الخريجين",
         "sourceFile": LEGACY_WORKBOOK_PATH.name,
         "sourceFiles": [
             LEGACY_WORKBOOK_PATH.name,
             *[item["path"].name for item in STUDENT_1447_SOURCES if item["path"].exists()],
             *[item["path"].name for item in FACULTY_1447_SOURCES if item["path"].exists()],
+            *[item["path"].name for item in GRADUATE_SAMPLE_SOURCES if item["path"].exists()],
         ],
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "datasetCount": len(extracted_data),
@@ -964,9 +1185,11 @@ def finalize_payload(
             {"program": program, "degree": degree, "source": source}
             for program, degree, source in sorted(skipped_programs)
         ],
+        "graduateSampleKpis": graduate_sample_kpis,
         "notes": [
             "بيانات 1445-1446 تحتفظ بعدد المقيمين الأصلي من منصة ذكاء الأعمال.",
             "بيانات 1447 العامة والبيانات القسمية للكادر الأكاديمي لا تتضمن عدد المقيمين، لذلك يعرض الموقع المتوسط فقط ويجعل عدد المقيمين غير متاح عند الحاجة.",
+            "نتائج استطلاعات الخريجين المضافة نتائج عينة، وتقتصر على المؤشرات التي لا يغطيها استطلاع أصلي في المستودع؛ ولا تُستخدم بدل استطلاع تقويم البرنامج.",
         ],
         "extractedData": extracted_data,
     }
@@ -1002,7 +1225,20 @@ def build_payload() -> Dict[str, object]:
         available_genders,
     )
 
-    return finalize_payload(datasets, available_program_years, available_genders, skipped_programs)
+    graduate_sample_kpis = import_graduate_sample_surveys(
+        datasets,
+        available_program_years,
+        available_genders,
+        skipped_programs,
+    )
+
+    return finalize_payload(
+        datasets,
+        available_program_years,
+        available_genders,
+        skipped_programs,
+        graduate_sample_kpis,
+    )
 
 
 def main() -> None:

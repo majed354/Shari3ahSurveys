@@ -1,5 +1,5 @@
 window.SURVEYS_DATA = {
-  "sourceLabel": "منصة ذكاء الأعمال",
+  "sourceLabel": "منصة ذكاء الأعمال واستطلاعات الخريجين",
   "sourceFile": "استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx",
   "sourceFiles": [
     "استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx",
@@ -8,12 +8,14 @@ window.SURVEYS_DATA = {
     "استبيانات الكادر - أنظمة.xlsx",
     "استبيانات الكادر - قراءات.xlsx",
     "الكادر - ثقافة.xlsx",
-    "الكادر - شريعة.xlsx"
+    "الكادر - شريعة.xlsx",
+    "نتائج استطلاعات البكالوريوس.xlsx",
+    "نتائج استطلاعات الدراسات العليا.xlsx"
   ],
-  "generatedAt": "2026-08-31T01:42:49.429553+00:00",
+  "generatedAt": "2026-09-13T09:19:39.964027+00:00",
   "datasetCount": 45,
-  "surveyCount": 695,
-  "itemRecordCount": 20690,
+  "surveyCount": 744,
+  "itemRecordCount": 20739,
   "availableGenders": [
     "إناث",
     "ذكر"
@@ -142,14 +144,710 @@ window.SURVEYS_DATA = {
       "source": "تقييمات الطلاب 472.xlsx"
     }
   ],
+  "graduateSampleKpis": {
+    "p01::1445": {
+      "programId": "p01",
+      "year": "1445",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات البكالوريوس.xlsx"
+      ],
+      "metrics": {
+        "performance_rate": {
+          "value": 81.1667,
+          "sampleCount": 6,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "employment_rate": {
+          "value": 42.8571,
+          "sampleCount": 7,
+          "positiveCount": 3,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_employers": {
+          "value": 4.75,
+          "sampleCount": 3,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p02::1445": {
+      "programId": "p02",
+      "year": "1445",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات البكالوريوس.xlsx"
+      ],
+      "metrics": {
+        "performance_rate": {
+          "value": 63.25,
+          "sampleCount": 4,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "employment_rate": {
+          "value": 28.5714,
+          "sampleCount": 7,
+          "positiveCount": 2,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_employers": {
+          "value": 4.245,
+          "sampleCount": 1,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p02::1446": {
+      "programId": "p02",
+      "year": "1446",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات البكالوريوس.xlsx"
+      ],
+      "metrics": {
+        "performance_rate": {
+          "value": 67.0,
+          "sampleCount": 2,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "employment_rate": {
+          "value": 0.0,
+          "sampleCount": 2,
+          "positiveCount": 0,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p03::1445": {
+      "programId": "p03",
+      "year": "1445",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات البكالوريوس.xlsx"
+      ],
+      "metrics": {
+        "performance_rate": {
+          "value": 78.875,
+          "sampleCount": 8,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "employment_rate": {
+          "value": 30.0,
+          "sampleCount": 10,
+          "positiveCount": 3,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_employers": {
+          "value": 4.75,
+          "sampleCount": 2,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p04::1446": {
+      "programId": "p04",
+      "year": "1446",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات البكالوريوس.xlsx"
+      ],
+      "metrics": {
+        "performance_rate": {
+          "value": 68.6667,
+          "sampleCount": 3,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "employment_rate": {
+          "value": 7.6923,
+          "sampleCount": 13,
+          "positiveCount": 1,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p04::1445": {
+      "programId": "p04",
+      "year": "1445",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات البكالوريوس.xlsx"
+      ],
+      "metrics": {
+        "performance_rate": {
+          "value": 68.6667,
+          "sampleCount": 3,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "employment_rate": {
+          "value": 20.0,
+          "sampleCount": 5,
+          "positiveCount": 1,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p05::1445": {
+      "programId": "p05",
+      "year": "1445",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات البكالوريوس.xlsx"
+      ],
+      "metrics": {
+        "performance_rate": {
+          "value": 69.5,
+          "sampleCount": 2,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "employment_rate": {
+          "value": 33.3333,
+          "sampleCount": 6,
+          "positiveCount": 2,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_employers": {
+          "value": 4.75,
+          "sampleCount": 1,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p01::1446": {
+      "programId": "p01",
+      "year": "1446",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات البكالوريوس.xlsx"
+      ],
+      "metrics": {
+        "performance_rate": {
+          "value": 83.8333,
+          "sampleCount": 3,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "employment_rate": {
+          "value": 0.0,
+          "sampleCount": 6,
+          "positiveCount": 0,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p03::1446": {
+      "programId": "p03",
+      "year": "1446",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات البكالوريوس.xlsx"
+      ],
+      "metrics": {
+        "performance_rate": {
+          "value": 84.75,
+          "sampleCount": 2,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "employment_rate": {
+          "value": 60.0,
+          "sampleCount": 5,
+          "positiveCount": 3,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_employers": {
+          "value": 4.245,
+          "sampleCount": 2,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p05::1446": {
+      "programId": "p05",
+      "year": "1446",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات البكالوريوس.xlsx"
+      ],
+      "metrics": {
+        "employment_rate": {
+          "value": 0.0,
+          "sampleCount": 1,
+          "positiveCount": 0,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p09::1445": {
+      "programId": "p09",
+      "year": "1445",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات الدراسات العليا.xlsx"
+      ],
+      "metrics": {
+        "eval_supervision": {
+          "value": 3.2857,
+          "sampleCount": 7,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_services": {
+          "value": 2.8571,
+          "sampleCount": 7,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_employers": {
+          "value": 4.447,
+          "sampleCount": 5,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p08::1445": {
+      "programId": "p08",
+      "year": "1445",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات الدراسات العليا.xlsx"
+      ],
+      "metrics": {
+        "eval_supervision": {
+          "value": 3.5,
+          "sampleCount": 2,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_services": {
+          "value": 3.0,
+          "sampleCount": 2,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_employers": {
+          "value": 4.245,
+          "sampleCount": 1,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p10::1445": {
+      "programId": "p10",
+      "year": "1445",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات الدراسات العليا.xlsx"
+      ],
+      "metrics": {
+        "eval_supervision": {
+          "value": 3.875,
+          "sampleCount": 8,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_services": {
+          "value": 4.0,
+          "sampleCount": 8,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_employers": {
+          "value": 4.75,
+          "sampleCount": 4,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p06::1445": {
+      "programId": "p06",
+      "year": "1445",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات الدراسات العليا.xlsx"
+      ],
+      "metrics": {
+        "eval_supervision": {
+          "value": 2.6667,
+          "sampleCount": 6,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_services": {
+          "value": 2.3333,
+          "sampleCount": 6,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_employers": {
+          "value": 4.75,
+          "sampleCount": 2,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p14::1445": {
+      "programId": "p14",
+      "year": "1445",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات الدراسات العليا.xlsx"
+      ],
+      "metrics": {
+        "eval_supervision": {
+          "value": 4.2,
+          "sampleCount": 5,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_services": {
+          "value": 4.0,
+          "sampleCount": 5,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_employers": {
+          "value": 4.75,
+          "sampleCount": 3,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p11::1446": {
+      "programId": "p11",
+      "year": "1446",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات الدراسات العليا.xlsx"
+      ],
+      "metrics": {
+        "eval_supervision": {
+          "value": 3.4545,
+          "sampleCount": 11,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_services": {
+          "value": 4.5455,
+          "sampleCount": 11,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_employers": {
+          "value": 4.5817,
+          "sampleCount": 3,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p08::1446": {
+      "programId": "p08",
+      "year": "1446",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات الدراسات العليا.xlsx"
+      ],
+      "metrics": {
+        "eval_supervision": {
+          "value": 2.0,
+          "sampleCount": 2,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_services": {
+          "value": 2.5,
+          "sampleCount": 2,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_employers": {
+          "value": 4.75,
+          "sampleCount": 1,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p06::1446": {
+      "programId": "p06",
+      "year": "1446",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات الدراسات العليا.xlsx"
+      ],
+      "metrics": {
+        "eval_supervision": {
+          "value": 4.0,
+          "sampleCount": 11,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_services": {
+          "value": 3.4545,
+          "sampleCount": 11,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_employers": {
+          "value": 4.649,
+          "sampleCount": 5,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p12::1446": {
+      "programId": "p12",
+      "year": "1446",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات الدراسات العليا.xlsx"
+      ],
+      "metrics": {
+        "eval_supervision": {
+          "value": 4.0,
+          "sampleCount": 1,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_services": {
+          "value": 2.0,
+          "sampleCount": 1,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_employers": {
+          "value": 4.245,
+          "sampleCount": 1,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p09::1446": {
+      "programId": "p09",
+      "year": "1446",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات الدراسات العليا.xlsx"
+      ],
+      "metrics": {
+        "eval_supervision": {
+          "value": 4.25,
+          "sampleCount": 8,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_services": {
+          "value": 4.125,
+          "sampleCount": 8,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_employers": {
+          "value": 4.75,
+          "sampleCount": 2,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p15::1446": {
+      "programId": "p15",
+      "year": "1446",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات الدراسات العليا.xlsx"
+      ],
+      "metrics": {
+        "eval_supervision": {
+          "value": 5.0,
+          "sampleCount": 2,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_services": {
+          "value": 4.0,
+          "sampleCount": 2,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_employers": {
+          "value": 4.75,
+          "sampleCount": 1,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p15::1445": {
+      "programId": "p15",
+      "year": "1445",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات الدراسات العليا.xlsx"
+      ],
+      "metrics": {
+        "eval_supervision": {
+          "value": 5.0,
+          "sampleCount": 1,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_services": {
+          "value": 1.0,
+          "sampleCount": 1,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_employers": {
+          "value": 4.75,
+          "sampleCount": 1,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p13::1446": {
+      "programId": "p13",
+      "year": "1446",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات الدراسات العليا.xlsx"
+      ],
+      "metrics": {
+        "eval_supervision": {
+          "value": 2.0,
+          "sampleCount": 1,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_services": {
+          "value": 3.0,
+          "sampleCount": 1,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p10::1446": {
+      "programId": "p10",
+      "year": "1446",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات الدراسات العليا.xlsx"
+      ],
+      "metrics": {
+        "eval_supervision": {
+          "value": 4.1,
+          "sampleCount": 10,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_services": {
+          "value": 4.4,
+          "sampleCount": 10,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_employers": {
+          "value": 4.75,
+          "sampleCount": 2,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    },
+    "p14::1446": {
+      "programId": "p14",
+      "year": "1446",
+      "sourceType": "sample",
+      "sourceLabel": "استطلاع عينة",
+      "sourceFiles": [
+        "نتائج استطلاعات الدراسات العليا.xlsx"
+      ],
+      "metrics": {
+        "eval_supervision": {
+          "value": 4.5,
+          "sampleCount": 4,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_services": {
+          "value": 5.0,
+          "sampleCount": 4,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        },
+        "eval_employers": {
+          "value": 4.75,
+          "sampleCount": 3,
+          "sourceType": "sample",
+          "sourceLabel": "استطلاع عينة"
+        }
+      }
+    }
+  },
   "notes": [
     "بيانات 1445-1446 تحتفظ بعدد المقيمين الأصلي من منصة ذكاء الأعمال.",
-    "بيانات 1447 العامة والبيانات القسمية للكادر الأكاديمي لا تتضمن عدد المقيمين، لذلك يعرض الموقع المتوسط فقط ويجعل عدد المقيمين غير متاح عند الحاجة."
+    "بيانات 1447 العامة والبيانات القسمية للكادر الأكاديمي لا تتضمن عدد المقيمين، لذلك يعرض الموقع المتوسط فقط ويجعل عدد المقيمين غير متاح عند الحاجة.",
+    "نتائج استطلاعات الخريجين المضافة نتائج عينة، وتقتصر على المؤشرات التي لا يغطيها استطلاع أصلي في المستودع؛ ولا تُستخدم بدل استطلاع تقويم البرنامج."
   ],
   "extractedData": {
     "p03::1445": {
       "mode": "survey-items",
-      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين.",
+      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين. | استيراد من استطلاعات الخريجين التكميلية لعامي 1445-1446هـ. هذه النتائج مبنية على عينة، وتُستخدم فقط للمؤشرات التي لا يتوفر لها استطلاع أصلي في المستودع. استُبعد تقييم جودة البرنامج لأن استطلاع تقويم البرنامج الأصلي هو المصدر المعتمد له. المصدر الفرعي: نتائج استطلاعات البكالوريوس.xlsx.",
       "surveys": [
         {
           "id": "f2726b34e76e",
@@ -3017,12 +3715,37 @@ window.SURVEYS_DATA = {
               ]
             }
           ]
+        },
+        {
+          "id": "1a9dd37b9887",
+          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "market",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الأداء الوظيفي للخريجين",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 2,
+                      "scoreTotal": 9.5
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
     "p05::1445": {
       "mode": "survey-items",
-      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين.",
+      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين. | استيراد من استطلاعات الخريجين التكميلية لعامي 1445-1446هـ. هذه النتائج مبنية على عينة، وتُستخدم فقط للمؤشرات التي لا يتوفر لها استطلاع أصلي في المستودع. استُبعد تقييم جودة البرنامج لأن استطلاع تقويم البرنامج الأصلي هو المصدر المعتمد له. المصدر الفرعي: نتائج استطلاعات البكالوريوس.xlsx.",
       "surveys": [
         {
           "id": "6911b8dca63b",
@@ -5884,6 +6607,31 @@ window.SURVEYS_DATA = {
                       "gender": "ذكر",
                       "responses": 6,
                       "scoreTotal": 26
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "86f7e60641d1",
+          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "market",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الأداء الوظيفي للخريجين",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 1,
+                      "scoreTotal": 4.75
                     }
                   ]
                 }
@@ -8768,7 +9516,7 @@ window.SURVEYS_DATA = {
     },
     "p01::1445": {
       "mode": "survey-items",
-      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين.",
+      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين. | استيراد من استطلاعات الخريجين التكميلية لعامي 1445-1446هـ. هذه النتائج مبنية على عينة، وتُستخدم فقط للمؤشرات التي لا يتوفر لها استطلاع أصلي في المستودع. استُبعد تقييم جودة البرنامج لأن استطلاع تقويم البرنامج الأصلي هو المصدر المعتمد له. المصدر الفرعي: نتائج استطلاعات البكالوريوس.xlsx.",
       "surveys": [
         {
           "id": "94bb6a803237",
@@ -11636,12 +12384,37 @@ window.SURVEYS_DATA = {
               ]
             }
           ]
+        },
+        {
+          "id": "49523fa1382c",
+          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "market",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الأداء الوظيفي للخريجين",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 3,
+                      "scoreTotal": 14.25
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
     "p02::1445": {
       "mode": "survey-items",
-      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين.",
+      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين. | استيراد من استطلاعات الخريجين التكميلية لعامي 1445-1446هـ. هذه النتائج مبنية على عينة، وتُستخدم فقط للمؤشرات التي لا يتوفر لها استطلاع أصلي في المستودع. استُبعد تقييم جودة البرنامج لأن استطلاع تقويم البرنامج الأصلي هو المصدر المعتمد له. المصدر الفرعي: نتائج استطلاعات البكالوريوس.xlsx.",
       "surveys": [
         {
           "id": "4a01e06190fd",
@@ -14509,12 +15282,37 @@ window.SURVEYS_DATA = {
               ]
             }
           ]
+        },
+        {
+          "id": "ffc9f1febe40",
+          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "market",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الأداء الوظيفي للخريجين",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 1,
+                      "scoreTotal": 4.245
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
     "p09::1445": {
       "mode": "survey-items",
-      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين.",
+      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين. | استيراد من استطلاعات الخريجين التكميلية لعامي 1445-1446هـ. هذه النتائج مبنية على عينة، وتُستخدم فقط للمؤشرات التي لا يتوفر لها استطلاع أصلي في المستودع. استُبعد تقييم جودة البرنامج لأن استطلاع تقويم البرنامج الأصلي هو المصدر المعتمد له. المصدر الفرعي: نتائج استطلاعات الدراسات العليا.xlsx.",
       "surveys": [
         {
           "id": "e9cd148e3177",
@@ -16850,12 +17648,87 @@ window.SURVEYS_DATA = {
               ]
             }
           ]
+        },
+        {
+          "id": "ae989b0b1f76",
+          "title": "تقييم جودة الإشراف العلمي للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "learning",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "جودة الإشراف العلمي",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "التقييم العام لجودة الإشراف أثناء الرسالة أو المشروع البحثي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 7,
+                      "scoreTotal": 23
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ac0672e25c28",
+          "title": "رضا خريجي الدراسات العليا عن الخدمات — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "students",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الخدمات المقدمة",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "الرضا العام عن مستوى الخدمات المقدمة",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 7,
+                      "scoreTotal": 20
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "655d45987344",
+          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "market",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الأداء الوظيفي للخريجين",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 5,
+                      "scoreTotal": 22.235
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
     "p08::1445": {
       "mode": "survey-items",
-      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين.",
+      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين. | استيراد من استطلاعات الخريجين التكميلية لعامي 1445-1446هـ. هذه النتائج مبنية على عينة، وتُستخدم فقط للمؤشرات التي لا يتوفر لها استطلاع أصلي في المستودع. استُبعد تقييم جودة البرنامج لأن استطلاع تقويم البرنامج الأصلي هو المصدر المعتمد له. المصدر الفرعي: نتائج استطلاعات الدراسات العليا.xlsx.",
       "surveys": [
         {
           "id": "55bdb6369e90",
@@ -18945,6 +19818,81 @@ window.SURVEYS_DATA = {
                       "gender": "ذكر",
                       "responses": 10,
                       "scoreTotal": 38
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "dba33fca4eb0",
+          "title": "تقييم جودة الإشراف العلمي للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "learning",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "جودة الإشراف العلمي",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "التقييم العام لجودة الإشراف أثناء الرسالة أو المشروع البحثي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 2,
+                      "scoreTotal": 7
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "14b51f1527c1",
+          "title": "رضا خريجي الدراسات العليا عن الخدمات — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "students",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الخدمات المقدمة",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "الرضا العام عن مستوى الخدمات المقدمة",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 2,
+                      "scoreTotal": 6
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "fbf96f1ba1d3",
+          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "market",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الأداء الوظيفي للخريجين",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 1,
+                      "scoreTotal": 4.245
                     }
                   ]
                 }
@@ -21297,7 +22245,7 @@ window.SURVEYS_DATA = {
     },
     "p10::1445": {
       "mode": "survey-items",
-      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين.",
+      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين. | استيراد من استطلاعات الخريجين التكميلية لعامي 1445-1446هـ. هذه النتائج مبنية على عينة، وتُستخدم فقط للمؤشرات التي لا يتوفر لها استطلاع أصلي في المستودع. استُبعد تقييم جودة البرنامج لأن استطلاع تقويم البرنامج الأصلي هو المصدر المعتمد له. المصدر الفرعي: نتائج استطلاعات الدراسات العليا.xlsx.",
       "surveys": [
         {
           "id": "8e698fb3bfa8",
@@ -23633,12 +24581,87 @@ window.SURVEYS_DATA = {
               ]
             }
           ]
+        },
+        {
+          "id": "78418c476ed2",
+          "title": "تقييم جودة الإشراف العلمي للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "learning",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "جودة الإشراف العلمي",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "التقييم العام لجودة الإشراف أثناء الرسالة أو المشروع البحثي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 8,
+                      "scoreTotal": 31
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "4782fff36f74",
+          "title": "رضا خريجي الدراسات العليا عن الخدمات — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "students",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الخدمات المقدمة",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "الرضا العام عن مستوى الخدمات المقدمة",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 8,
+                      "scoreTotal": 32
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "4804bfab7b33",
+          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "market",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الأداء الوظيفي للخريجين",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 4,
+                      "scoreTotal": 19
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
     "p06::1445": {
       "mode": "survey-items",
-      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين.",
+      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين. | استيراد من استطلاعات الخريجين التكميلية لعامي 1445-1446هـ. هذه النتائج مبنية على عينة، وتُستخدم فقط للمؤشرات التي لا يتوفر لها استطلاع أصلي في المستودع. استُبعد تقييم جودة البرنامج لأن استطلاع تقويم البرنامج الأصلي هو المصدر المعتمد له. المصدر الفرعي: نتائج استطلاعات الدراسات العليا.xlsx.",
       "surveys": [
         {
           "id": "c32398945a4f",
@@ -25968,6 +26991,81 @@ window.SURVEYS_DATA = {
                       "gender": "ذكر",
                       "responses": 25,
                       "scoreTotal": 76
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "37bf9076b3fa",
+          "title": "تقييم جودة الإشراف العلمي للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "learning",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "جودة الإشراف العلمي",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "التقييم العام لجودة الإشراف أثناء الرسالة أو المشروع البحثي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 6,
+                      "scoreTotal": 16
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "fccde94f664b",
+          "title": "رضا خريجي الدراسات العليا عن الخدمات — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "students",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الخدمات المقدمة",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "الرضا العام عن مستوى الخدمات المقدمة",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 6,
+                      "scoreTotal": 14
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "6db8f0be1f99",
+          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "market",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الأداء الوظيفي للخريجين",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 2,
+                      "scoreTotal": 9.5
                     }
                   ]
                 }
@@ -31627,7 +32725,7 @@ window.SURVEYS_DATA = {
     },
     "p15::1445": {
       "mode": "survey-items",
-      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين.",
+      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين. | استيراد من استطلاعات الخريجين التكميلية لعامي 1445-1446هـ. هذه النتائج مبنية على عينة، وتُستخدم فقط للمؤشرات التي لا يتوفر لها استطلاع أصلي في المستودع. استُبعد تقييم جودة البرنامج لأن استطلاع تقويم البرنامج الأصلي هو المصدر المعتمد له. المصدر الفرعي: نتائج استطلاعات الدراسات العليا.xlsx.",
       "surveys": [
         {
           "id": "0a51b6958461",
@@ -33376,12 +34474,87 @@ window.SURVEYS_DATA = {
               ]
             }
           ]
+        },
+        {
+          "id": "a65e8e2eb7ff",
+          "title": "تقييم جودة الإشراف العلمي للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "learning",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "جودة الإشراف العلمي",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "التقييم العام لجودة الإشراف أثناء الرسالة أو المشروع البحثي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 1,
+                      "scoreTotal": 5
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "1cf2f504df5e",
+          "title": "رضا خريجي الدراسات العليا عن الخدمات — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "students",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الخدمات المقدمة",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "الرضا العام عن مستوى الخدمات المقدمة",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 1,
+                      "scoreTotal": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "8cd8251ffda2",
+          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "market",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الأداء الوظيفي للخريجين",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 1,
+                      "scoreTotal": 4.75
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
     "p14::1445": {
       "mode": "survey-items",
-      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين.",
+      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين. | استيراد من استطلاعات الخريجين التكميلية لعامي 1445-1446هـ. هذه النتائج مبنية على عينة، وتُستخدم فقط للمؤشرات التي لا يتوفر لها استطلاع أصلي في المستودع. استُبعد تقييم جودة البرنامج لأن استطلاع تقويم البرنامج الأصلي هو المصدر المعتمد له. المصدر الفرعي: نتائج استطلاعات الدراسات العليا.xlsx.",
       "surveys": [
         {
           "id": "e74262d37b83",
@@ -35013,12 +36186,87 @@ window.SURVEYS_DATA = {
               ]
             }
           ]
+        },
+        {
+          "id": "f30fbfb70b6a",
+          "title": "تقييم جودة الإشراف العلمي للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "learning",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "جودة الإشراف العلمي",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "التقييم العام لجودة الإشراف أثناء الرسالة أو المشروع البحثي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 5,
+                      "scoreTotal": 21
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "0833bd9ddd9a",
+          "title": "رضا خريجي الدراسات العليا عن الخدمات — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "students",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الخدمات المقدمة",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "الرضا العام عن مستوى الخدمات المقدمة",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 5,
+                      "scoreTotal": 20
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "b538e43b1146",
+          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "market",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الأداء الوظيفي للخريجين",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 3,
+                      "scoreTotal": 14.25
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
     "p03::1446": {
       "mode": "survey-items",
-      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين.",
+      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين. | استيراد من استطلاعات الخريجين التكميلية لعامي 1445-1446هـ. هذه النتائج مبنية على عينة، وتُستخدم فقط للمؤشرات التي لا يتوفر لها استطلاع أصلي في المستودع. استُبعد تقييم جودة البرنامج لأن استطلاع تقويم البرنامج الأصلي هو المصدر المعتمد له. المصدر الفرعي: نتائج استطلاعات البكالوريوس.xlsx.",
       "surveys": [
         {
           "id": "4fd4c80abd44",
@@ -40363,6 +41611,31 @@ window.SURVEYS_DATA = {
                       "gender": "ذكر",
                       "responses": 11,
                       "scoreTotal": 40
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ccd6be067f97",
+          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "market",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الأداء الوظيفي للخريجين",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 2,
+                      "scoreTotal": 8.49
                     }
                   ]
                 }
@@ -60657,7 +61930,7 @@ window.SURVEYS_DATA = {
     },
     "p09::1446": {
       "mode": "survey-items",
-      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين.",
+      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين. | استيراد من استطلاعات الخريجين التكميلية لعامي 1445-1446هـ. هذه النتائج مبنية على عينة، وتُستخدم فقط للمؤشرات التي لا يتوفر لها استطلاع أصلي في المستودع. استُبعد تقييم جودة البرنامج لأن استطلاع تقويم البرنامج الأصلي هو المصدر المعتمد له. المصدر الفرعي: نتائج استطلاعات الدراسات العليا.xlsx.",
       "surveys": [
         {
           "id": "f4079f01636a",
@@ -65468,12 +66741,87 @@ window.SURVEYS_DATA = {
               ]
             }
           ]
+        },
+        {
+          "id": "09ffe1e9fb3e",
+          "title": "تقييم جودة الإشراف العلمي للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "learning",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "جودة الإشراف العلمي",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "التقييم العام لجودة الإشراف أثناء الرسالة أو المشروع البحثي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 8,
+                      "scoreTotal": 34
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "88fb02dc92ff",
+          "title": "رضا خريجي الدراسات العليا عن الخدمات — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "students",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الخدمات المقدمة",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "الرضا العام عن مستوى الخدمات المقدمة",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 8,
+                      "scoreTotal": 33
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "080d2e6f42e3",
+          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "market",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الأداء الوظيفي للخريجين",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 2,
+                      "scoreTotal": 9.5
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
     "p08::1446": {
       "mode": "survey-items",
-      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين.",
+      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين. | استيراد من استطلاعات الخريجين التكميلية لعامي 1445-1446هـ. هذه النتائج مبنية على عينة، وتُستخدم فقط للمؤشرات التي لا يتوفر لها استطلاع أصلي في المستودع. استُبعد تقييم جودة البرنامج لأن استطلاع تقويم البرنامج الأصلي هو المصدر المعتمد له. المصدر الفرعي: نتائج استطلاعات الدراسات العليا.xlsx.",
       "surveys": [
         {
           "id": "c160517c8bea",
@@ -69748,12 +71096,87 @@ window.SURVEYS_DATA = {
               ]
             }
           ]
+        },
+        {
+          "id": "80632e6f65b9",
+          "title": "تقييم جودة الإشراف العلمي للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "learning",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "جودة الإشراف العلمي",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "التقييم العام لجودة الإشراف أثناء الرسالة أو المشروع البحثي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 2,
+                      "scoreTotal": 4
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "08fe849d00a5",
+          "title": "رضا خريجي الدراسات العليا عن الخدمات — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "students",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الخدمات المقدمة",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "الرضا العام عن مستوى الخدمات المقدمة",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 2,
+                      "scoreTotal": 5
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "67f123e31ed4",
+          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "market",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الأداء الوظيفي للخريجين",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 1,
+                      "scoreTotal": 4.75
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
     "p11::1446": {
       "mode": "survey-items",
-      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين.",
+      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين. | استيراد من استطلاعات الخريجين التكميلية لعامي 1445-1446هـ. هذه النتائج مبنية على عينة، وتُستخدم فقط للمؤشرات التي لا يتوفر لها استطلاع أصلي في المستودع. استُبعد تقييم جودة البرنامج لأن استطلاع تقويم البرنامج الأصلي هو المصدر المعتمد له. المصدر الفرعي: نتائج استطلاعات الدراسات العليا.xlsx.",
       "surveys": [
         {
           "id": "d4be277f56e4",
@@ -74290,12 +75713,87 @@ window.SURVEYS_DATA = {
               ]
             }
           ]
+        },
+        {
+          "id": "66be6e1b19a2",
+          "title": "تقييم جودة الإشراف العلمي للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "learning",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "جودة الإشراف العلمي",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "التقييم العام لجودة الإشراف أثناء الرسالة أو المشروع البحثي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 11,
+                      "scoreTotal": 38
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "d7bd5fe43c6c",
+          "title": "رضا خريجي الدراسات العليا عن الخدمات — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "students",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الخدمات المقدمة",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "الرضا العام عن مستوى الخدمات المقدمة",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 11,
+                      "scoreTotal": 50
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ada8b38c4d91",
+          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "market",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الأداء الوظيفي للخريجين",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 3,
+                      "scoreTotal": 13.745
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
     "p10::1446": {
       "mode": "survey-items",
-      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين.",
+      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين. | استيراد من استطلاعات الخريجين التكميلية لعامي 1445-1446هـ. هذه النتائج مبنية على عينة، وتُستخدم فقط للمؤشرات التي لا يتوفر لها استطلاع أصلي في المستودع. استُبعد تقييم جودة البرنامج لأن استطلاع تقويم البرنامج الأصلي هو المصدر المعتمد له. المصدر الفرعي: نتائج استطلاعات الدراسات العليا.xlsx.",
       "surveys": [
         {
           "id": "f306051a6b1c",
@@ -78019,12 +79517,87 @@ window.SURVEYS_DATA = {
               ]
             }
           ]
+        },
+        {
+          "id": "e1ebce199031",
+          "title": "تقييم جودة الإشراف العلمي للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "learning",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "جودة الإشراف العلمي",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "التقييم العام لجودة الإشراف أثناء الرسالة أو المشروع البحثي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 10,
+                      "scoreTotal": 41
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ff3745e7cb26",
+          "title": "رضا خريجي الدراسات العليا عن الخدمات — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "students",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الخدمات المقدمة",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "الرضا العام عن مستوى الخدمات المقدمة",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 10,
+                      "scoreTotal": 44
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "b45cb88916c8",
+          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "market",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الأداء الوظيفي للخريجين",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 2,
+                      "scoreTotal": 9.5
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
     "p06::1446": {
       "mode": "survey-items",
-      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين.",
+      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين. | استيراد من استطلاعات الخريجين التكميلية لعامي 1445-1446هـ. هذه النتائج مبنية على عينة، وتُستخدم فقط للمؤشرات التي لا يتوفر لها استطلاع أصلي في المستودع. استُبعد تقييم جودة البرنامج لأن استطلاع تقويم البرنامج الأصلي هو المصدر المعتمد له. المصدر الفرعي: نتائج استطلاعات الدراسات العليا.xlsx.",
       "surveys": [
         {
           "id": "6782a0e6b5d9",
@@ -82244,6 +83817,81 @@ window.SURVEYS_DATA = {
                       "gender": "ذكر",
                       "responses": 11,
                       "scoreTotal": 28
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "bc80249d0006",
+          "title": "تقييم جودة الإشراف العلمي للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "learning",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "جودة الإشراف العلمي",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "التقييم العام لجودة الإشراف أثناء الرسالة أو المشروع البحثي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 11,
+                      "scoreTotal": 44
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "8a3ed67e9dc6",
+          "title": "رضا خريجي الدراسات العليا عن الخدمات — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "students",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الخدمات المقدمة",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "الرضا العام عن مستوى الخدمات المقدمة",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 11,
+                      "scoreTotal": 38
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "fc1575b7f984",
+          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "market",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الأداء الوظيفي للخريجين",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 5,
+                      "scoreTotal": 23.245
                     }
                   ]
                 }
@@ -86951,7 +88599,7 @@ window.SURVEYS_DATA = {
     },
     "p12::1446": {
       "mode": "survey-items",
-      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين.",
+      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين. | استيراد من استطلاعات الخريجين التكميلية لعامي 1445-1446هـ. هذه النتائج مبنية على عينة، وتُستخدم فقط للمؤشرات التي لا يتوفر لها استطلاع أصلي في المستودع. استُبعد تقييم جودة البرنامج لأن استطلاع تقويم البرنامج الأصلي هو المصدر المعتمد له. المصدر الفرعي: نتائج استطلاعات الدراسات العليا.xlsx.",
       "surveys": [
         {
           "id": "1cc4da7adb12",
@@ -90700,12 +92348,87 @@ window.SURVEYS_DATA = {
               ]
             }
           ]
+        },
+        {
+          "id": "8b540a0e401c",
+          "title": "تقييم جودة الإشراف العلمي للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "learning",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "جودة الإشراف العلمي",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "التقييم العام لجودة الإشراف أثناء الرسالة أو المشروع البحثي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 1,
+                      "scoreTotal": 4
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cc32e1eec493",
+          "title": "رضا خريجي الدراسات العليا عن الخدمات — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "students",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الخدمات المقدمة",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "الرضا العام عن مستوى الخدمات المقدمة",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 1,
+                      "scoreTotal": 2
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "72126e862ad2",
+          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "market",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الأداء الوظيفي للخريجين",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 1,
+                      "scoreTotal": 4.245
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
     "p13::1446": {
       "mode": "survey-items",
-      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين.",
+      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين. | استيراد من استطلاعات الخريجين التكميلية لعامي 1445-1446هـ. هذه النتائج مبنية على عينة، وتُستخدم فقط للمؤشرات التي لا يتوفر لها استطلاع أصلي في المستودع. استُبعد تقييم جودة البرنامج لأن استطلاع تقويم البرنامج الأصلي هو المصدر المعتمد له. المصدر الفرعي: نتائج استطلاعات الدراسات العليا.xlsx.",
       "surveys": [
         {
           "id": "7c3419b86829",
@@ -94885,12 +96608,62 @@ window.SURVEYS_DATA = {
               ]
             }
           ]
+        },
+        {
+          "id": "add66c34828f",
+          "title": "تقييم جودة الإشراف العلمي للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "learning",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "جودة الإشراف العلمي",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "التقييم العام لجودة الإشراف أثناء الرسالة أو المشروع البحثي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 1,
+                      "scoreTotal": 2
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "11ec3630b79c",
+          "title": "رضا خريجي الدراسات العليا عن الخدمات — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "students",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الخدمات المقدمة",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "الرضا العام عن مستوى الخدمات المقدمة",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 1,
+                      "scoreTotal": 3
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
     "p15::1446": {
       "mode": "survey-items",
-      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين.",
+      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين. | استيراد من استطلاعات الخريجين التكميلية لعامي 1445-1446هـ. هذه النتائج مبنية على عينة، وتُستخدم فقط للمؤشرات التي لا يتوفر لها استطلاع أصلي في المستودع. استُبعد تقييم جودة البرنامج لأن استطلاع تقويم البرنامج الأصلي هو المصدر المعتمد له. المصدر الفرعي: نتائج استطلاعات الدراسات العليا.xlsx.",
       "surveys": [
         {
           "id": "56dd8b114da6",
@@ -98624,12 +100397,87 @@ window.SURVEYS_DATA = {
               ]
             }
           ]
+        },
+        {
+          "id": "566a9fb757b3",
+          "title": "تقييم جودة الإشراف العلمي للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "learning",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "جودة الإشراف العلمي",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "التقييم العام لجودة الإشراف أثناء الرسالة أو المشروع البحثي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 2,
+                      "scoreTotal": 10
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "6121fef52abe",
+          "title": "رضا خريجي الدراسات العليا عن الخدمات — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "students",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الخدمات المقدمة",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "الرضا العام عن مستوى الخدمات المقدمة",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 2,
+                      "scoreTotal": 8
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "669a7c4da5a4",
+          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "market",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الأداء الوظيفي للخريجين",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 1,
+                      "scoreTotal": 4.75
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
     "p14::1446": {
       "mode": "survey-items",
-      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين.",
+      "source": "استيراد مباشر من ملف استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx المستخرج من منصة ذكاء الأعمال. يتضمن بيانات الطلاب مع عدد المقيمين. | استيراد من استطلاعات الخريجين التكميلية لعامي 1445-1446هـ. هذه النتائج مبنية على عينة، وتُستخدم فقط للمؤشرات التي لا يتوفر لها استطلاع أصلي في المستودع. استُبعد تقييم جودة البرنامج لأن استطلاع تقويم البرنامج الأصلي هو المصدر المعتمد له. المصدر الفرعي: نتائج استطلاعات الدراسات العليا.xlsx.",
       "surveys": [
         {
           "id": "baa7e96cc347",
@@ -103038,6 +104886,81 @@ window.SURVEYS_DATA = {
                       "gender": "ذكر",
                       "responses": 1,
                       "scoreTotal": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "b95ca1159f6d",
+          "title": "تقييم جودة الإشراف العلمي للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "learning",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "جودة الإشراف العلمي",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "التقييم العام لجودة الإشراف أثناء الرسالة أو المشروع البحثي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 4,
+                      "scoreTotal": 18
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "c7f3a1e6f8ad",
+          "title": "رضا خريجي الدراسات العليا عن الخدمات — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "students",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الخدمات المقدمة",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "الرضا العام عن مستوى الخدمات المقدمة",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 4,
+                      "scoreTotal": 20
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "867bae7dfe5f",
+          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "stakeholder": "alumni",
+          "sectionId": "market",
+          "surveyType": "sample",
+          "topics": [
+            {
+              "label": "الأداء الوظيفي للخريجين",
+              "items": [
+                {
+                  "number": "1",
+                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "genders": [
+                    {
+                      "gender": "",
+                      "responses": 3,
+                      "scoreTotal": 14.25
                     }
                   ]
                 }
