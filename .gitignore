@@ -12,3 +12,6 @@ __pycache__/
 /tp-102-ssrp-ar-1.pdf
 /tpg-102-ssrp-pg-ar.pdf
 /فهرسة_الاستطلاعات_بالمحكات_المحدثة.xlsx
+
+# University exports include named staff evaluations; publish course aggregates only.
+getjobid*.xls

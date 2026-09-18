@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>تفاصيل تقييم المقررات — 1447</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { margin: 0; padding: 24px; background: #f5f8f7; color: #173d35; }
+    main { max-width: 1200px; margin: auto; }
+    h1 { margin: 16px 0; }
+    .item-tools { display: flex; gap: 16px; flex-wrap: wrap; align-items: end; margin: 24px 0; }
+    .item-tools label { display: grid; gap: 6px; min-width: 170px; flex: 1; }
+    select, input { padding: 12px; border: 1px solid #b7ccc4; border-radius: 8px; background: white; color: inherit; font: inherit; }
+    details { background: white; border: 1px solid #cdded7; border-radius: 12px; margin: 12px 0; padding: 16px; }
+    summary { cursor: pointer; font-size: 1.1rem; font-weight: 700; }
+    .item-context { margin: 8px 0 16px; font-size: .92rem; color: #4d645d; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { padding: 12px 10px; border-bottom: 1px solid #e3ece7; text-align: right; vertical-align: top; }
+    th { background: #edf5f1; }
+    td:first-child { min-width: 260px; }
+    .missing-statement { color: #805308; }
+    .item-note { line-height: 1.9; background: #e7f1ec; padding: 16px; border-radius: 10px; }
+    .item-pagination { display: flex; justify-content: center; gap: 16px; align-items: center; margin: 24px 0; }
+    a { color: #00624e; }
+    button:disabled { opacity: .45; cursor: default; }
+    #itemStatus { min-height: 28px; }
+    @media (max-width: 600px) { body { padding: 12px; } h1 { font-size: 1.6rem; } }
+  </style>
+</head>
+<body>
+<main>
+  <a href="index.html">العودة إلى ساحة الاستطلاعات</a>
+  <h1>تفاصيل تقييم المقررات — 1447هـ</h1>
+  <p>عبارات التقييم وأعداد الإجابات ونتائجها للفصلين الأول والثاني.</p>
+  <p class="item-note">تُعرض النتائج بحسب المقرر والقسم كما وردت في المصدر. لا تحدد هذه الملفات البرنامج أو شطر الطلاب والطالبات، لذلك لا تُنسب النتائج تلقائيًا إلى برنامج أو شطر بعينه. تُحسب المتوسطات من أعداد الإجابات الفعلية، ولا تعني أعداد الإجابات عبر العبارات عددًا من الطلاب الفريدين.</p>
+  <div class="item-tools">
+    <label for="itemSemester">الفصل<select id="itemSemester"><option value="all">الفصلان</option><option value="471">الأول — 471</option><option value="472">الثاني — 472</option></select></label>
+    <label for="itemDepartment">القسم<select id="itemDepartment"><option value="all">جميع الأقسام</option></select></label>
+    <label for="itemQuery">اسم المقرر<input id="itemQuery" type="search" placeholder="ابحث باسم المقرر"></label>
+    <a class="btn btn-primary" href="data/course-evaluations/1447/course-item-scores.json" download>تنزيل بيانات العبارات</a>
+  </div>
+  <p id="itemStatus" role="status" aria-live="polite">جارٍ تحميل التقييمات…</p>
+  <div id="itemRecords"></div>
+  <div class="item-pagination"><button class="btn" id="itemPrevious" disabled>السابق</button><span id="itemPage"></span><button class="btn" id="itemNext" disabled>التالي</button></div>
+  <p class="item-note">توجد عبارة بلا نص ظاهر في التقارير الأصلية؛ تظهر بدرجتها مع التنبيه إلى نقص النص، ولا يُفترض تصنيفها المعرفي أو المهاري أو القيمي. حُجبت أسماء أعضاء هيئة التدريس ونتائجهم الفردية من هذه البيانات العامة.</p>
+</main>
+<script src="js/course-item-evaluations.js"></script>
+</body>
+</html>
