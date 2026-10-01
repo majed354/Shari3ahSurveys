@@ -1,0 +1,590 @@
+{
+  "sourceSha256": "d541d20f4ed48d822534bfa161981a4969ca9590863a61ebf05cb3e0e1ba40c7",
+  "verificationMethod": "Independent openpyxl extraction of original 1447 rows; sum five bins per item/campus before mean; no importer aggregation used",
+  "samples": [
+    {
+      "semester": "471",
+      "degree": "البكالوريوس",
+      "specialty": "الدراسات الإسلامية",
+      "courseName": "التفسير الموضوعي",
+      "cohorts": {
+        "male": {
+          "counts": [
+            191,
+            61,
+            230,
+            185,
+            197
+          ],
+          "responses": 864,
+          "numerator": 2728,
+          "mean": 3.157407,
+          "firstItemCounts": [
+            7,
+            4,
+            9,
+            8,
+            8
+          ]
+        },
+        "female": {
+          "counts": [
+            171,
+            106,
+            677,
+            685,
+            473
+          ],
+          "responses": 2112,
+          "numerator": 7519,
+          "mean": 3.560133,
+          "firstItemCounts": [
+            7,
+            3,
+            30,
+            28,
+            20
+          ]
+        },
+        "total": {
+          "counts": [
+            362,
+            167,
+            907,
+            870,
+            670
+          ],
+          "responses": 2976,
+          "numerator": 10247,
+          "mean": 3.443212
+        }
+      }
+    },
+    {
+      "semester": "471",
+      "degree": "البكالوريوس",
+      "specialty": "القرآن وعلومه",
+      "courseName": "تلاوة وحفظ (6)",
+      "cohorts": {
+        "male": {
+          "counts": [
+            0,
+            0,
+            24,
+            0,
+            48
+          ],
+          "responses": 72,
+          "numerator": 312,
+          "mean": 4.333333,
+          "firstItemCounts": [
+            0,
+            0,
+            1,
+            0,
+            2
+          ]
+        },
+        "female": {
+          "counts": [
+            0,
+            24,
+            72,
+            216,
+            48
+          ],
+          "responses": 360,
+          "numerator": 1368,
+          "mean": 3.8,
+          "firstItemCounts": [
+            0,
+            1,
+            3,
+            9,
+            2
+          ]
+        },
+        "total": {
+          "counts": [
+            0,
+            24,
+            96,
+            216,
+            96
+          ],
+          "responses": 432,
+          "numerator": 1680,
+          "mean": 3.888889
+        }
+      }
+    },
+    {
+      "semester": "471",
+      "degree": "البكالوريوس",
+      "specialty": "القرآن وعلومه",
+      "courseName": "تلاوة وحفظ (7)",
+      "cohorts": {
+        "male": {
+          "counts": [
+            48,
+            25,
+            75,
+            139,
+            265
+          ],
+          "responses": 552,
+          "numerator": 2204,
+          "mean": 3.992754,
+          "firstItemCounts": [
+            2,
+            1,
+            4,
+            4,
+            12
+          ]
+        },
+        "female": {
+          "counts": [
+            51,
+            12,
+            160,
+            459,
+            158
+          ],
+          "responses": 840,
+          "numerator": 3181,
+          "mean": 3.786905,
+          "firstItemCounts": [
+            2,
+            0,
+            7,
+            19,
+            7
+          ]
+        },
+        "total": {
+          "counts": [
+            99,
+            37,
+            235,
+            598,
+            423
+          ],
+          "responses": 1392,
+          "numerator": 5385,
+          "mean": 3.868534
+        }
+      }
+    },
+    {
+      "semester": "471",
+      "degree": "البكالوريوس",
+      "specialty": "القرآن وعلومه",
+      "courseName": "تلاوة وحفظ (8)",
+      "cohorts": {
+        "male": null,
+        "female": {
+          "counts": [
+            5,
+            45,
+            334,
+            484,
+            308
+          ],
+          "responses": 1176,
+          "numerator": 4573,
+          "mean": 3.888605,
+          "firstItemCounts": [
+            0,
+            2,
+            14,
+            20,
+            13
+          ]
+        },
+        "total": {
+          "counts": [
+            5,
+            45,
+            334,
+            484,
+            308
+          ],
+          "responses": 1176,
+          "numerator": 4573,
+          "mean": 3.888605
+        }
+      }
+    },
+    {
+      "semester": "471",
+      "degree": "الماجستير",
+      "specialty": "الدراسات القرآنية المعاصرة",
+      "courseName": "أصول التفسير",
+      "cohorts": {
+        "male": {
+          "counts": [
+            0,
+            1,
+            30,
+            85,
+            172
+          ],
+          "responses": 288,
+          "numerator": 1292,
+          "mean": 4.486111,
+          "firstItemCounts": [
+            0,
+            0,
+            1,
+            3,
+            8
+          ]
+        },
+        "female": {
+          "counts": [
+            1,
+            0,
+            2,
+            35,
+            178
+          ],
+          "responses": 216,
+          "numerator": 1037,
+          "mean": 4.800926,
+          "firstItemCounts": [
+            0,
+            0,
+            0,
+            1,
+            8
+          ]
+        },
+        "total": {
+          "counts": [
+            1,
+            1,
+            32,
+            120,
+            350
+          ],
+          "responses": 504,
+          "numerator": 2329,
+          "mean": 4.621032
+        }
+      }
+    },
+    {
+      "semester": "471",
+      "degree": "الماجستير",
+      "specialty": "الدراسات القرآنية المعاصرة",
+      "courseName": "التفسير الموضوعي",
+      "cohorts": {
+        "male": {
+          "counts": [
+            0,
+            0,
+            56,
+            112,
+            72
+          ],
+          "responses": 240,
+          "numerator": 976,
+          "mean": 4.066667,
+          "firstItemCounts": [
+            0,
+            0,
+            2,
+            5,
+            3
+          ]
+        },
+        "female": null,
+        "total": {
+          "counts": [
+            0,
+            0,
+            56,
+            112,
+            72
+          ],
+          "responses": 240,
+          "numerator": 976,
+          "mean": 4.066667
+        }
+      }
+    },
+    {
+      "semester": "472",
+      "degree": "البكالوريوس",
+      "specialty": "الدراسات الإسلامية",
+      "courseName": "التفسير الموضوعي",
+      "cohorts": {
+        "male": {
+          "counts": [
+            175,
+            109,
+            116,
+            150,
+            146
+          ],
+          "responses": 696,
+          "numerator": 2071,
+          "mean": 2.975575,
+          "firstItemCounts": [
+            8,
+            4,
+            5,
+            6,
+            6
+          ]
+        },
+        "female": {
+          "counts": [
+            50,
+            53,
+            126,
+            227,
+            120
+          ],
+          "responses": 576,
+          "numerator": 2042,
+          "mean": 3.545139,
+          "firstItemCounts": [
+            2,
+            3,
+            4,
+            10,
+            5
+          ]
+        },
+        "total": {
+          "counts": [
+            225,
+            162,
+            242,
+            377,
+            266
+          ],
+          "responses": 1272,
+          "numerator": 4113,
+          "mean": 3.233491
+        }
+      }
+    },
+    {
+      "semester": "472",
+      "degree": "البكالوريوس",
+      "specialty": "القرآن وعلومه",
+      "courseName": "تلاوة وحفظ (6)",
+      "cohorts": {
+        "male": {
+          "counts": [
+            18,
+            1,
+            25,
+            126,
+            310
+          ],
+          "responses": 480,
+          "numerator": 2149,
+          "mean": 4.477083,
+          "firstItemCounts": [
+            1,
+            0,
+            1,
+            5,
+            13
+          ]
+        },
+        "female": {
+          "counts": [
+            72,
+            8,
+            340,
+            228,
+            216
+          ],
+          "responses": 864,
+          "numerator": 3100,
+          "mean": 3.587963,
+          "firstItemCounts": [
+            3,
+            2,
+            13,
+            9,
+            9
+          ]
+        },
+        "total": {
+          "counts": [
+            90,
+            9,
+            365,
+            354,
+            526
+          ],
+          "responses": 1344,
+          "numerator": 5249,
+          "mean": 3.905506
+        }
+      }
+    },
+    {
+      "semester": "472",
+      "degree": "البكالوريوس",
+      "specialty": "القرآن وعلومه",
+      "courseName": "تلاوة وحفظ (7)",
+      "cohorts": {
+        "male": null,
+        "female": {
+          "counts": [
+            72,
+            24,
+            264,
+            144,
+            72
+          ],
+          "responses": 576,
+          "numerator": 1848,
+          "mean": 3.208333,
+          "firstItemCounts": [
+            3,
+            1,
+            11,
+            6,
+            3
+          ]
+        },
+        "total": {
+          "counts": [
+            72,
+            24,
+            264,
+            144,
+            72
+          ],
+          "responses": 576,
+          "numerator": 1848,
+          "mean": 3.208333
+        }
+      }
+    },
+    {
+      "semester": "472",
+      "degree": "البكالوريوس",
+      "specialty": "القرآن وعلومه",
+      "courseName": "تلاوة وحفظ (8)",
+      "cohorts": {
+        "male": {
+          "counts": [
+            24,
+            0,
+            48,
+            96,
+            144
+          ],
+          "responses": 312,
+          "numerator": 1272,
+          "mean": 4.076923,
+          "firstItemCounts": [
+            1,
+            0,
+            2,
+            4,
+            6
+          ]
+        },
+        "female": {
+          "counts": [
+            101,
+            18,
+            168,
+            409,
+            144
+          ],
+          "responses": 840,
+          "numerator": 2997,
+          "mean": 3.567857,
+          "firstItemCounts": [
+            5,
+            1,
+            7,
+            16,
+            6
+          ]
+        },
+        "total": {
+          "counts": [
+            125,
+            18,
+            216,
+            505,
+            288
+          ],
+          "responses": 1152,
+          "numerator": 4269,
+          "mean": 3.705729
+        }
+      }
+    },
+    {
+      "semester": "472",
+      "degree": "الماجستير",
+      "specialty": "الدراسات القرآنية المعاصرة",
+      "courseName": "التفسير التحليلي",
+      "cohorts": {
+        "male": {
+          "counts": [
+            0,
+            5,
+            16,
+            87,
+            204
+          ],
+          "responses": 312,
+          "numerator": 1426,
+          "mean": 4.570513,
+          "firstItemCounts": [
+            0,
+            0,
+            1,
+            3,
+            9
+          ]
+        },
+        "female": {
+          "counts": [
+            25,
+            1,
+            2,
+            41,
+            147
+          ],
+          "responses": 216,
+          "numerator": 932,
+          "mean": 4.314815,
+          "firstItemCounts": [
+            1,
+            0,
+            0,
+            1,
+            7
+          ]
+        },
+        "total": {
+          "counts": [
+            25,
+            6,
+            18,
+            128,
+            351
+          ],
+          "responses": 528,
+          "numerator": 2358,
+          "mean": 4.465909
+        }
+      }
+    }
+  ]
+}

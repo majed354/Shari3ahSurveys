@@ -6,6 +6,8 @@ __pycache__/
 
 # Raw/local student-evaluation sources (contain sensitive data and are not site assets)
 /أكواد تقييم الطلاب/
+/أكواد تقييم الطلاب/
+/data/course-evaluations/v2/*.tmp
 /استطلاعات الطلاب حول كافة المقررات في برامج كلية الشريعة 1445-1447.xlsx
 /استطلاعات الطلاب حول كافة المقررات في برامج كلية الشريعة 1445-1447.zip
 /استطلاعات الدراسة الذاتية المحدث.pre-unified-backup.xlsx
