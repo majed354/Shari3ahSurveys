@@ -203,6 +203,7 @@ function cacheRefs() {
     refs.exploreSection = document.getElementById("exploreSection");
     refs.insightsSection = document.getElementById("insightsSection");
     refs.courseEvaluationsSection = document.getElementById("courseEvaluationsSection");
+    refs.programQualitySection = document.getElementById("programQualitySection");
     refs.searchSection = document.getElementById("searchSection");
     refs.searchMeta = document.getElementById("searchMeta");
     refs.searchInput = document.getElementById("searchInput");
@@ -1003,6 +1004,7 @@ function renderViewState() {
     if (refs.exploreSection) refs.exploreSection.classList.toggle("hidden", state.view !== "explore");
     if (refs.insightsSection) refs.insightsSection.classList.toggle("hidden", state.view !== "insights");
     if (refs.courseEvaluationsSection) refs.courseEvaluationsSection.classList.toggle("hidden", state.view !== "course-evaluations");
+    if (refs.programQualitySection) refs.programQualitySection.classList.toggle("hidden", state.view !== "program-quality");
     if (refs.customSection) refs.customSection.classList.toggle("hidden", state.view !== "custom");
     if (refs.searchSection) refs.searchSection.classList.toggle("hidden", state.view !== "search");
 }
@@ -1017,6 +1019,9 @@ function renderCurrentView() {
     }
     if (state.view === "course-evaluations" && window.CourseEvaluationsApp) {
         window.CourseEvaluationsApp.render();
+    }
+    if (state.view === "program-quality" && window.ProgramQualityApp) {
+        window.ProgramQualityApp.render({ programs: PROGRAMS.filter((program) => program.id !== "all").map((program) => ({ ...program, label: formatProgramLabel(program) })) });
     }
     if (state.view === "insights") {
         if (state.insightsSubTab === "analysis") renderAnalysisSection();

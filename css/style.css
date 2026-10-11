@@ -2231,6 +2231,10 @@ body.sheet-open {
     margin-bottom: 12px;
 }
 
+.ce-filters-grid.pq-filters-grid { grid-template-columns: minmax(90px, 0.6fr) minmax(110px, 0.8fr) minmax(180px, 1.5fr) minmax(130px, 0.8fr); }
+.pq-comparison-field { grid-column: span 2; align-self: center; }
+.pq-filters-grid .ce-item-compare input { width: 20px; min-height: 20px; padding: 0; }
+
 .ce-filters-grid {
     display: grid;
     grid-template-columns: minmax(100px, 0.7fr) minmax(120px, 1fr) minmax(120px, 1fr) minmax(0, 1.5fr) minmax(200px, 1.6fr) auto;
@@ -2580,12 +2584,15 @@ body.sheet-open {
 }
 
 @media (max-width: 1350px) {
+    .ce-filters-grid.pq-filters-grid { grid-template-columns: repeat(3, 1fr); }
     .ce-filters-grid { grid-template-columns: repeat(3, 1fr); }
     .ce-search-field { grid-column: span 2; }
     .ce-rule-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 700px) {
+    .ce-filters-grid.pq-filters-grid { grid-template-columns: 1fr; }
+    .pq-comparison-field { grid-column: auto; }
     .ce-filters-grid,
     .ce-method-grid,
     .ce-rule-grid,

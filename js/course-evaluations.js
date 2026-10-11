@@ -635,14 +635,16 @@
         return `<span class="ce-item-change ce-item-change--${tone}" aria-label="${label} بمقدار ${Math.abs(rounded).toFixed(2)} نقطة"><bdi dir="ltr">${rounded > 0 ? "↑ +" : rounded < 0 ? "↓ −" : "="}${Math.abs(rounded).toFixed(2)}</bdi></span>`;
     }
 
-    function itemTable(report, rows = report.rows) {
+    function itemTable(report, rows = report.rows, options = {}) {
+        const metadata = options.metadata || ((row) => `${row.topic} · البند ${row.number}${row.instrument === "legacy" ? " · نموذج تقويم المقرر" : ""}`);
+        const countLabel = options.countLabel || ((row, previous) => `${(previous ? row.previousCourseCount : row.courseCount).toLocaleString("ar-SA")} مقررًا`);
         return `<table class="data-table ce-item-table${report.comparison ? " ce-item-table--comparison" : ""}"><thead><tr>
             <th>البند</th>${report.comparison ? '<th>الفئة</th>' : ""}<th>متوسط ${escapeHtml(report.previousYear)}هـ</th><th>متوسط ${escapeHtml(report.year)}هـ</th><th>التغير السنوي</th><th>${report.comparison ? "الفرق عن المتوسط العام للفئة" : "الفرق عن المتوسط العام الحالي"}</th>
             </tr></thead><tbody>${rows.map((row, index) => `<tr class="${report.comparison && index % 3 === 0 ? "ce-item-group-start" : ""}">
-            ${!report.comparison || index % 3 === 0 ? `<td class="ce-item-statement"${report.comparison ? ' rowspan="3"' : ""}><strong>${escapeHtml(row.statement)}</strong><small>${escapeHtml(row.topic)} · البند ${escapeHtml(row.number)}${row.instrument === "legacy" ? " · نموذج تقويم المقرر" : ""}</small></td>` : ""}
+            ${!report.comparison || index % 3 === 0 ? `<td class="ce-item-statement"${report.comparison ? ' rowspan="3"' : ""}><strong>${escapeHtml(row.statement)}</strong><small>${escapeHtml(metadata(row))}</small></td>` : ""}
             ${report.comparison ? `<th scope="row" class="ce-item-cohort">${itemCohortLabel(row.cohort)}</th>` : ""}
-            <td>${itemScore(row.previous)}<small>${row.previousCourseCount.toLocaleString("ar-SA")} مقررًا</small></td>
-            <td>${itemScore(row.current)}<small>${row.courseCount.toLocaleString("ar-SA")} مقررًا</small></td>
+            <td>${itemScore(row.previous)}<small>${escapeHtml(countLabel(row, true))}</small></td>
+            <td>${itemScore(row.current)}<small>${escapeHtml(countLabel(row, false))}</small></td>
             <td>${itemDifference(row.annualChange)}</td><td>${itemDifference(row.overallDifference)}</td>
             </tr>`).join("") || `<tr><td colspan="${report.comparison ? 6 : 5}"><div class="empty-state">لا توجد بنود مطابقة للفلاتر أو البحث.</div></td></tr>`}</tbody></table>`;
     }
@@ -723,15 +725,19 @@
         setTimeout(() => URL.revokeObjectURL(url), 0);
     }
 
-    async function exportItemQualityPdf() {
-        const report = itemQualityReport();
+    async function exportItemQualityPdf(options = {}) {
+        const report = options.report || itemQualityReport();
         if (!report?.rows.length) return;
         if (!window.jspdf?.jsPDF) {
             alert("تعذر تحميل أداة PDF. أعد تحميل الصفحة ثم حاول مرة أخرى.");
             return;
         }
-        const scope = { ...state };
-        const button = $("[data-ce-action='pdf-items']");
+        const scope = { ...(options.scope || state) };
+        const button = options.button || $("[data-ce-action='pdf-items']");
+        const title = options.title || "متوسط جودة البنود";
+        const weighting = options.weighting || "كل مقرر له الوزن نفسه";
+        const metadata = options.metadata || ((row) => `${row.topic} · البند ${row.number}${row.instrument === "legacy" ? " · نموذج تقويم المقرر" : ""}`);
+        const countLabel = options.countLabel || ((row, previous) => `${(previous ? row.previousCourseCount : row.courseCount).toLocaleString("ar-SA")} مقررًا`);
         if (button) { button.disabled = true; button.textContent = "جارٍ التوليد…"; }
         try {
             await document.fonts.ready;
@@ -764,15 +770,15 @@
                     if (line) lines.push(line);
                     return lines;
                 };
-                text("متوسط جودة البنود", 1240, 45, 28, "#163e39", "right", true);
-                const scopeLines = wrap(itemScopeLabel(scope, report), 1190, 17);
+                text(title, 1240, 45, 28, "#163e39", "right", true);
+                const scopeLines = wrap(options.scopeLabel || itemScopeLabel(scope, report), 1190, 17);
                 scopeLines.forEach((line, i) => text(line, 1240, 78 + i * 23, 17));
                 const baselineY = 110 + (scopeLines.length - 1) * 23;
                 const baseline = report.comparison
                     ? `المتوسط العام للبنود ${report.year}هـ من 5 · ${report.cohortReports.map((entry) => `${itemCohortLabel(entry.cohort)}: ${entry.overall == null ? "غير متاح" : score(entry.overall)}`).join(" · ")}`
-                    : `المتوسط العام للبنود ${report.year}هـ: ${report.overall == null ? "غير متاح" : score(report.overall)} من 5 · كل مقرر له الوزن نفسه · الفروق بالنقاط`;
+                    : `المتوسط العام للبنود ${report.year}هـ: ${report.overall == null ? "غير متاح" : score(report.overall)} من 5 · ${weighting} · الفروق بالنقاط`;
                 text(baseline, 1240, baselineY, 18, "#163e39", "right", true);
-                if (report.comparison) text("الفروق بالنقاط · كل مقرر له الوزن نفسه · الفرق عن المتوسط العام للفئة نفسها · الترتيب حسب الإجمالي", 1240, baselineY + 25, 16);
+                if (report.comparison) text(`الفروق بالنقاط · ${weighting} · الفرق عن المتوسط العام للفئة نفسها · الترتيب حسب الإجمالي`, 1240, baselineY + 25, 16);
                 let y = baselineY + (report.comparison ? 50 : 24);
                 const cell = (right, top, width, height, background) => {
                     ctx.fillStyle = background; ctx.fillRect(right - width, top, width, height);
@@ -789,7 +795,7 @@
                 let added = 0;
                 const rowLayout = (row) => {
                     const statement = wrap(row.statement, columns[0] - 24, 20, true);
-                    const topic = wrap(`${row.topic} · البند ${row.number}${row.instrument === "legacy" ? " · نموذج تقويم المقرر" : ""}`, columns[0] - 24, 14);
+                    const topic = wrap(metadata(row), columns[0] - 24, 14);
                     return { statement, topic, height: Math.max(report.comparison ? 192 : 86, 22 + statement.length * 29 + topic.length * 21) };
                 };
                 while (index < report.rows.length) {
@@ -814,7 +820,7 @@
                         [row.previous, row.current].forEach((value, col) => {
                             const center = right - 84;
                             text(value == null ? "غير متاح" : score(value), center, rowY + rowHeight / 2 - 3, 21, value == null ? "#526862" : "#875414", "center", true);
-                            text(`${(col ? row.courseCount : row.previousCourseCount).toLocaleString("ar-SA")} مقررًا`, center, rowY + rowHeight / 2 + 23, 14, "#526862", "center");
+                            text(countLabel(row, col === 0), center, rowY + rowHeight / 2 + 23, 14, "#526862", "center");
                             right -= 168;
                         });
                         [row.annualChange, row.overallDifference].forEach((value) => {
@@ -827,15 +833,15 @@
                     });
                     y += height; index += group.length; added += 1;
                 }
-                text(`تقييمات الطلاب للمقررات · صفحة ${pageNumber}`, 1240, 870, 14, "#526862");
+                text(`${options.footer || "تقييمات الطلاب للمقررات"} · صفحة ${pageNumber}`, 1240, 870, 14, "#526862");
                 pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 6, 5, 285, 200.390625);
             }
-            pdf.save(`متوسط_جودة_البنود_${report.year}${report.comparison ? "_مقارنة_الشطرين" : ""}.pdf`);
+            pdf.save(options.filename || `متوسط_جودة_البنود_${report.year}${report.comparison ? "_مقارنة_الشطرين" : ""}.pdf`);
         } catch (error) {
             console.error("Item quality PDF:", error);
             alert("تعذر توليد PDF. أعد المحاولة.");
         } finally {
-            const currentButton = $("[data-ce-action='pdf-items']");
+            const currentButton = options.button || $("[data-ce-action='pdf-items']");
             if (currentButton) { currentButton.disabled = false; currentButton.textContent = "تحميل PDF"; }
         }
     }
@@ -1097,4 +1103,5 @@
     }
 
     window.CourseEvaluationsApp = { render };
+    window.SurveyItemReportView = { table: itemTable, pdf: exportItemQualityPdf, kpis, cohortLabel: itemCohortLabel, workbook: exportWorkbook };
 })();
