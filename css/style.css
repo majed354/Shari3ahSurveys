@@ -2187,6 +2187,9 @@ body.sheet-open {
 }
 
 /* Detailed course evaluations */
+#programQualitySection,
+#programQualityApp,
+#pqContent,
 #courseEvaluationsSection,
 #courseEvaluationsApp,
 #ceContent,
@@ -2198,7 +2201,8 @@ body.sheet-open {
     min-width: 0;
 }
 
-#courseEvaluationsSection .table-wrap {
+#courseEvaluationsSection .table-wrap,
+#programQualitySection .table-wrap {
     width: 100%;
     max-width: 100%;
 }
