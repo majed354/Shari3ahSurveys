@@ -204,6 +204,7 @@ function cacheRefs() {
     refs.insightsSection = document.getElementById("insightsSection");
     refs.courseEvaluationsSection = document.getElementById("courseEvaluationsSection");
     refs.programQualitySection = document.getElementById("programQualitySection");
+    refs.graduateSurveysSection = document.getElementById("graduateSurveysSection");
     refs.searchSection = document.getElementById("searchSection");
     refs.searchMeta = document.getElementById("searchMeta");
     refs.searchInput = document.getElementById("searchInput");
@@ -1005,6 +1006,7 @@ function renderViewState() {
     if (refs.insightsSection) refs.insightsSection.classList.toggle("hidden", state.view !== "insights");
     if (refs.courseEvaluationsSection) refs.courseEvaluationsSection.classList.toggle("hidden", state.view !== "course-evaluations");
     if (refs.programQualitySection) refs.programQualitySection.classList.toggle("hidden", state.view !== "program-quality");
+    if (refs.graduateSurveysSection) refs.graduateSurveysSection.classList.toggle("hidden", state.view !== "graduate-surveys");
     if (refs.customSection) refs.customSection.classList.toggle("hidden", state.view !== "custom");
     if (refs.searchSection) refs.searchSection.classList.toggle("hidden", state.view !== "search");
 }
@@ -1022,6 +1024,9 @@ function renderCurrentView() {
     }
     if (state.view === "program-quality" && window.ProgramQualityApp) {
         window.ProgramQualityApp.render({ programs: PROGRAMS.filter((program) => program.id !== "all").map((program) => ({ ...program, label: formatProgramLabel(program) })) });
+    }
+    if (state.view === "graduate-surveys" && window.GraduateSurveysApp) {
+        window.GraduateSurveysApp.render();
     }
     if (state.view === "insights") {
         if (state.insightsSubTab === "analysis") renderAnalysisSection();

@@ -195,6 +195,23 @@ body.sheet-open {
     gap: 10px;
 }
 
+.gs-intro p { line-height: 1.9; }
+.gs-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.gs-questionnaire { margin-top: 22px; }
+.gs-axis { margin-top: 24px; }
+.gs-axis h4 { color: var(--primary-900); font-size: 1.1rem; margin-bottom: 14px; }
+.gs-table { min-width: 850px; }
+.gs-table th[scope="row"] { min-width: 230px; max-width: 420px; white-space: normal; font-weight: 500; }
+.gs-table td { vertical-align: top; white-space: normal; }
+.gs-table summary { cursor: pointer; color: var(--primary-900); white-space: nowrap; }
+.gs-distribution { list-style: none; padding: 0; min-width: 230px; max-width: 400px; }
+.gs-distribution li { display: flex; justify-content: space-between; gap: 18px; padding: 8px 0; border-bottom: 1px solid var(--line-strong); }
+.gs-distribution strong { white-space: nowrap; }
+.gs-count-note { display: block; margin-top: 6px; color: var(--text-soft); }
+#graduateSurveysSection, #graduateSurveysApp, #gsContent, .gs-questionnaire, .gs-axis { min-width: 0; max-width: 100%; }
+#graduateSurveysApp { display: grid; gap: 16px; }
+#graduateSurveysSection .table-wrap { width: 100%; max-width: 100%; }
+
 .nav-btn,
 .btn {
     border: 1px solid var(--line-strong);
