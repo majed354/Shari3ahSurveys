@@ -2556,6 +2556,13 @@ body.sheet-open {
 .ce-item-change--down { color: #a33030; background: #fcecec; }
 .ce-item-change--equal { color: #53636b; background: #edf1f3; }
 
+@media (max-width: 900px) {
+    .ce-item-table thead { display: table-header-group; }
+    .ce-item-table tbody tr { display: table-row; padding: 0; border: 0; }
+    .ce-item-table td { display: table-cell; padding: 13px 14px; border-bottom: 1px solid rgba(18, 57, 54, 0.08); }
+    .ce-item-table td::before { display: none; }
+}
+
 .ce-exporting .ce-pagination,
 .ce-exporting .ce-detailed-block {
     display: none;
