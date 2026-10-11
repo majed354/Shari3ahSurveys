@@ -24,7 +24,7 @@ function fixture() {
 }
 const report = (payload, filters = {}) => buildReport(prepareData(payload, programs), { ...scope, ...filters });
 
-test("programme item means pool actual responses and baseline averages all current items", () => {
+test("programme item means and baseline pool actual responses according to KPI", () => {
     const result = report(fixture());
     assert.equal(result.rows[0].current, 3.5); // 140/40, not (5+3)/2.
     assert.equal(result.rows[0].responseCount, 40);
@@ -53,12 +53,14 @@ test("programme and degree filtering applies equally to current and previous yea
     assert.equal(filtered.programCount, 1);
     assert.equal(report(fixture(), { degree: "الماجستير" }).rows.length, 0);
 });
-test("ready averages never use measurementCount as respondents or weighting", () => {
+test("ready averages follow KPI measurement weights without treating them as respondents", () => {
     const payload = { extractedData: { "p01::1447": dataset(survey([item("1", "وضوح", [
         { gender: "ذكر", average: 5, measurementCount: 99 }, { gender: "إناث", average: 1, measurementCount: 1 },
     ])], { title: "استطلاع الخبرة التعليمية في البرنامج", sectionId: "learning" })) } };
     const result = report(payload, { year: "1447", compareCohorts: true });
-    assert.deepEqual(result.rows.map((row) => row.current), [5, 1, 3]);
+    assert.deepEqual(result.rows.map((row) => row.current), [5, 1, 4.96]);
+    assert.equal(result.overall, 4.96);
+    assert.equal(result.rows[2].aggregationWeight, 100);
     assert.equal(result.rows[2].responseCount, null);
     assert.equal(result.hasUnknownCounts, true);
     assert.equal(exportRows(result, scope, prepareData(payload, programs))[2]["إجابات السنة الحالية"], null);
@@ -98,12 +100,72 @@ test("identical duplicate aliases are ignored, conflicting duplicates remain una
 });
 test("KPI survey lookup excludes faculty and unrelated samples; original source stays unchanged", () => {
     const payload = fixture(), original = payload.extractedData["p01::1446"].surveys[0];
-    payload.extractedData["p01::1446"].surveys = [survey([], { title: "استطلاع الخريجين" }), survey([], { stakeholder: "faculty" }), survey([], { title: "استطلاع الخبرة التعليمية في البرنامج" }), original];
+    payload.extractedData["p01::1446"].surveys = [survey([], { title: "استطلاع الخريجين" }), survey([], { stakeholder: "faculty" }), original, survey([], { title: "استطلاع الخبرة التعليمية في البرنامج" })];
     const before = JSON.stringify(payload), result = report(payload);
     assert.equal(result.rows[0].surveyTitle, "استبانة تقويم برنامج");
     assert.equal(result.rows[0].sectionId, "management");
     assert.equal(result.rows[0].topic, "الدعم");
     assert.equal(JSON.stringify(payload), before);
+});
+
+// Independent compatibility oracle for aggregateProgramExperienceMetricFromSurvey
+// from the published KPI_TaifShare3h/main/js/app.js, checked on 2026-10-11.
+function publishedKpiValue(survey) {
+    let numerator = 0, denominator = 0;
+    for (const topic of survey.topics || []) for (const item of topic.items || []) for (const entry of item.genders || []) {
+        const responses = Number(entry.responses || 0), total = Number(entry.scoreTotal || 0);
+        if (Number.isFinite(responses) && responses > 0) {
+            numerator += Number.isFinite(total) ? total : 0; denominator += responses;
+        } else {
+            const average = Number(entry.average), weight = Number(entry.measurementCount || 0);
+            if (Number.isFinite(average) && Number.isFinite(weight) && weight > 0) { numerator += average * weight; denominator += weight; }
+        }
+    }
+    return denominator ? Math.round(numerator / denominator * 100) / 100 : null;
+}
+test("overall pools unequal item counts instead of averaging their means", () => {
+    const payload = { extractedData: { "p01::1446": dataset(survey([
+        item("1", "الأول", [entry("ذكر", 10, 50)]), item("2", "الثاني", [entry("ذكر", 90, 90)]),
+    ])) } };
+    const result = report(payload);
+    assert.equal(result.overall, 1.4); // 140/100; mean of item averages would be 3.
+    assert.deepEqual(result.rows.map((row) => row.overallDifference), [3.6, -0.4]);
+    assert.equal(result.overall, publishedKpiValue(payload.extractedData["p01::1446"].surveys[0]));
+});
+test("KPI weights of ready averages also determine overall and filtered cohort references", () => {
+    const payload = { extractedData: { "p01::1447": dataset(survey([
+        item("1", "الأول", [{ gender: "ذكر", average: 5, measurementCount: 1 }, { gender: "إناث", average: 1, measurementCount: 3 }]),
+        item("2", "الثاني", [{ gender: "ذكر", average: 3, measurementCount: 2 }]),
+    ], { title: "استطلاع الخبرة التعليمية في البرنامج", sectionId: "learning" })) } };
+    const result = report(payload, { year: "1447", compareCohorts: true });
+    assert.equal(result.overall, 2.333333);
+    assert.equal(Math.round(result.overall * 100) / 100, publishedKpiValue(payload.extractedData["p01::1447"].surveys[0]));
+    assert.deepEqual(result.cohortReports.map((row) => row.overall), [3.666667, 1, 2.333333]);
+    assert.equal(result.rows[2].current, 2);
+    assert.equal(result.rows[2].responseCount, null);
+});
+test("all published programme-year totals match the KPI formula and each cohort uses the same formula", () => {
+    const context = { window: {} };
+    vm.runInNewContext(fs.readFileSync(require.resolve("../js/surveys-data.js"), "utf8"), context);
+    const payload = context.window.SURVEYS_DATA;
+    const allPrograms = Array.from({ length: 15 }, (_, i) => ({ id: `p${String(i + 1).padStart(2, "0")}`, degree: "all", label: String(i + 1) }));
+    const data = prepareData(payload, allPrograms);
+    let compared = 0;
+    for (const [key, dataset] of Object.entries(payload.extractedData)) {
+        const [program, year] = key.split("::");
+        const source = dataset.surveys?.find((s) => ["استبانة تقويم برنامج", "استطلاع الخبرة التعليمية في البرنامج"].includes(s.title));
+        if (!source || !allPrograms.some((p) => p.id === program)) continue;
+        const result = buildReport(data, { program, year, compareCohorts: true });
+        for (const cohort of ["male", "female", "total"]) {
+            const filtered = { ...source, topics: source.topics.map((topic) => ({ ...topic, items: topic.items.map((item) => ({ ...item,
+                genders: item.genders.filter((g) => cohort === "total" || (cohort === "male" ? g.gender === "ذكر" : g.gender === "إناث")),
+            })) })) };
+            const actual = result.cohortReports.find((r) => r.cohort === cohort).overall;
+            assert.equal(actual == null ? null : Math.round(actual * 100) / 100, publishedKpiValue(filtered), `${key}:${cohort}`);
+        }
+        compared++;
+    }
+    assert.equal(compared, 35);
 });
 test("published survey payload resolves both models with original classifications and known counts", () => {
     const context = { window: {} };

@@ -9,7 +9,6 @@
     const searchable = (value) => clean(value).replace(/[\u064b-\u065fـ]/g, "").replace(/[أإآ]/g, "ا");
     const numeric = (value) => value == null || clean(value) === "" || !Number.isFinite(Number(value)) ? null : Number(value);
     const rounded = (value) => value == null ? null : Number(value.toFixed(6));
-    const mean = (values) => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
     const cohortLabel = (cohort) => ({ male: "الطلاب", female: "الطالبات", total: "الإجمالي المتاح" })[cohort];
     const sectionLabel = (id) => ({ management: "إدارة البرنامج وضمان الجودة", learning: "التعليم والتعلم" })[id] || id;
 
@@ -29,8 +28,11 @@
 
     function measurement(entry) {
         const count = numeric(entry.responses), total = numeric(entry.scoreTotal), average = numeric(entry.average);
-        if (count > 0 && total != null && total >= count && total <= count * 5) return { mode: "responses", count, total, value: total / count };
-        if (average != null && average >= 1 && average <= 5) return { mode: "averages", count: null, total: null, value: average };
+        if (count > 0 && total != null && total >= count && total <= count * 5) return { mode: "responses", count, total, weight: count, numerator: total, value: total / count };
+        const weight = numeric(entry.measurementCount);
+        // Match the published KPI aggregation, while keeping measurement weights
+        // separate from respondent counts. Alias measurements are not people.
+        if (average != null && average >= 1 && average <= 5 && weight > 0) return { mode: "averages", count: null, total: null, weight, numerator: average * weight, value: average };
         return null;
     }
 
@@ -40,9 +42,8 @@
             const [programId, year] = datasetKey.split("::");
             if (!programs.some((program) => program.id === programId)) continue;
             const surveys = (dataset.surveys || []).filter((survey) => instrument(survey.title) && (!survey.stakeholder || survey.stakeholder === "students"));
-            // Same title resolution used by KPI_TaifShare3h; prefer the original
-            // programme instrument when both instruments exist in one dataset.
-            const survey = surveys.find((entry) => instrument(entry.title) === "program_evaluation") || surveys[0];
+            // Same title lookup and source ordering as the published KPI site.
+            const survey = surveys[0];
             if (!survey) continue;
             years.add(year);
             (survey.topics || []).forEach((topic, topicIndex) => (topic.items || []).forEach((item, itemIndex) => {
@@ -74,8 +75,10 @@
         const valid = cells.filter((cell) => cell.value);
         const weighted = valid.length > 0 && valid.every((cell) => cell.value.mode === "responses");
         const responses = weighted ? valid.reduce((sum, cell) => sum + cell.value.count, 0) : null;
-        const average = weighted ? valid.reduce((sum, cell) => sum + cell.value.total, 0) / responses : mean(valid.map((cell) => cell.value.value));
+        const denominator = valid.reduce((sum, cell) => sum + cell.value.weight, 0);
+        const average = denominator ? valid.reduce((sum, cell) => sum + cell.value.numerator, 0) / denominator : null;
         return { average, responseCount: responses, programCount: new Set(valid.map((cell) => cell.programId)).size,
+            aggregationWeight: denominator || null,
             method: !valid.length ? "unavailable" : weighted ? "responses" : "averages", excluded: cells.length - valid.length };
     }
 
@@ -92,7 +95,7 @@
             if (!grouped.has(cell.id)) grouped.set(cell.id, []);
             grouped.get(cell.id).push(cell);
         });
-        return { items: new Map([...grouped].map(([id, entries]) => [id, aggregate(entries)])),
+        return { items: new Map([...grouped].map(([id, entries]) => [id, aggregate(entries)])), overall: aggregate(cells).average,
             programCount: new Set(cells.filter((cell) => cell.value).map((cell) => cell.programId)).size };
     }
 
@@ -101,10 +104,10 @@
         const cohorts = filters.compareCohorts ? ["male", "female", "total"] : [filters.cohort || "total"];
         const scopes = cohorts.map((cohort) => {
             const current = collect(data, filters, year, cohort), previous = collect(data, filters, previousYear, cohort);
-            return { cohort, current, previous, overall: mean([...current.items.values()].map((item) => item.average).filter((value) => value != null)) };
+            return { cohort, current, previous, overall: current.overall };
         });
         const ids = [...new Set(scopes.flatMap((scope) => [...scope.current.items.keys()]))];
-        const empty = { average: null, responseCount: null, programCount: 0, method: "unavailable", excluded: 0 };
+        const empty = { average: null, responseCount: null, aggregationWeight: null, programCount: 0, method: "unavailable", excluded: 0 };
         const rowsById = new Map(ids.map((id) => [id, scopes.map((scope) => {
             const current = scope.current.items.get(id) || empty, previous = scope.previous.items.get(id) || empty;
             return { ...data.definitions.get(id), cohort: scope.cohort, overall: rounded(scope.overall),
@@ -112,6 +115,7 @@
                 annualChange: current.average == null || previous.average == null ? null : rounded(current.average - previous.average),
                 overallDifference: current.average == null || scope.overall == null ? null : rounded(current.average - scope.overall),
                 responseCount: current.responseCount, previousResponseCount: previous.responseCount,
+                aggregationWeight: current.aggregationWeight, previousAggregationWeight: previous.aggregationWeight,
                 programCount: current.programCount, previousProgramCount: previous.programCount,
                 method: current.method, previousMethod: previous.method, excluded: current.excluded + previous.excluded };
         })]));
@@ -142,7 +146,7 @@
     }
 
     function exportRows(report, filters, data) {
-        const methodLabel = (method) => ({ responses: "موزون بعدد الإجابات", averages: "متوسط المتوسطات المتاحة؛ العدد غير متاح", unavailable: "غير متاح" })[method];
+        const methodLabel = (method) => ({ responses: "موزون بعدد الإجابات وفق مؤشرات الأداء", averages: "موزون بعدد القياسات وفق مؤشرات الأداء؛ عدد الإجابات غير متاح", unavailable: "غير متاح" })[method];
         return report.rows.map((row) => ({
             "البرنامج": filters.program === "all" ? "كل البرامج" : data.programs.find((program) => program.id === filters.program)?.label,
             "الدرجة": filters.degree === "all" ? "كل الدرجات" : filters.degree,
@@ -152,6 +156,7 @@
             "متوسط السنة الماضية": row.previous, "متوسط السنة الحالية": row.current,
             "التغير السنوي": row.annualChange, "الفرق عن المتوسط العام للفئة": row.overallDifference,
             "المتوسط العام الحالي للفئة": row.overall, "إجابات السنة الماضية": row.previousResponseCount, "إجابات السنة الحالية": row.responseCount,
+            "وزن تجميع السنة الماضية وفق المؤشرات": row.previousAggregationWeight, "وزن تجميع السنة الحالية وفق المؤشرات": row.aggregationWeight,
             "برامج السنة الماضية": row.previousProgramCount, "برامج السنة الحالية": row.programCount,
             "طريقة حساب السنة الماضية": methodLabel(row.previousMethod), "طريقة حساب السنة الحالية": methodLabel(row.method),
         }));

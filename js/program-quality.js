@@ -61,7 +61,7 @@
             if (action === "xlsx") view.workbook(analysis.exportRows(report, state, data), "جودة بنود البرنامج", `${filename(report)}.xlsx`);
             if (action === "csv") exportCsv(report);
             if (action === "pdf") view.pdf({ report, scope: { ...state }, button, title: "متوسط جودة بنود البرنامج",
-                weighting: report.hasUnknownCounts ? "المتوسطات المتاحة؛ أعداد بعض الإجابات غير متاحة" : "متوسطات موزونة بعدد الإجابات",
+                weighting: report.hasUnknownCounts ? "تجميع وفق أوزان مؤشرات الأداء؛ عدد الإجابات غير متاح" : "متوسطات موزونة بعدد الإجابات وفق المؤشرات",
                 metadata, countLabel: (row, previous) => {
                     const value = previous ? row.previous : row.current;
                     const count = previous ? row.previousResponseCount : row.responseCount;
@@ -90,7 +90,7 @@
             label: `المتوسط العام للبنود ${report.year}هـ · ${view.cohortLabel(cohort.cohort)}`,
             value: score(cohort.overall), note: `من 5 · ${number(cohort.programCount)} برنامجًا · ${number(cohort.itemCount)} بندًا ذا نتيجة`,
         })) : [
-            { label: `المتوسط العام للبنود ${report.year}هـ`, value: score(report.overall), note: "متوسط جميع البنود في النطاق · من 5" },
+            { label: `المتوسط العام للبنود ${report.year}هـ`, value: score(report.overall), note: "تجميع جميع البنود وفق مؤشرات الأداء · من 5" },
             { label: "البرامج في النطاق", value: number(report.programCount), note: "البرامج ذات النتائج المتاحة" },
             { label: "البنود ذات النتائج", value: number(report.itemCount), note: `${number(report.visibleItemCount)} بندًا ظاهرًا بعد البحث` },
             { label: "البنود القابلة للمقارنة", value: number(report.comparableItemCount), note: `بين ${report.previousYear} و${report.year}هـ` },
@@ -106,8 +106,9 @@
             ${sources.length ? `<p class="meta-text">مصدر النتائج: ${escape(sources.join(" · "))}</p>` : ""}
             <div class="table-wrap">${view.table(report, report.rows, { metadata, countLabel })}</div></article>`;
         const notes = ["تُعرض البنود بترتيبها ومحاورها الأصلية. تُقارن السنة الحالية بالسنة الماضية مباشرة، عند تطابق نموذج البند ومحوره ورقمه ونصه؛ وإلا تظهر «غير متاح»."];
-        if (report.hasUnknownCounts) notes.push("عند غياب أعداد الإجابات، يُحسب المتوسط من متوسطات الفئات المتاحة في البرامج المختارة بأوزان متساوية؛ ولا تُفترض أعداد للمشاركين.");
-        else notes.push("يُحسب متوسط البند من مجموع درجات الإجابات مقسومًا على عددها في البرامج والفئة المختارة؛ والإجمالي يجمع إجابات الطلاب والطالبات المتاحة.");
+        notes.push("يتبع حساب البند والمتوسط العام طريقة التجميع المنشورة في مؤشرات الأداء: مجموع الدرجات الموزونة مقسومًا على مجموع الأوزان.");
+        if (report.hasUnknownCounts) notes.push("في بيانات المتوسطات الجاهزة يُستخدم عدد القياسات وزنًا للتجميع كما في المؤشرات؛ وهو ليس عدد المشاركين، لذا تبقى أعداد الإجابات غير متاحة.");
+        else notes.push("الأوزان هي أعداد الإجابات الفعلية، والإجمالي يجمع إجابات الطلاب والطالبات المتاحة.");
         if (report.hasExcluded) notes.push("لم تُحتسب النتائج المفقودة أو المتعارضة.");
         root.querySelector("#pqNotice").textContent = notes.join(" ");
     }
