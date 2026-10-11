@@ -2284,6 +2284,11 @@ body.sheet-open {
     margin-bottom: 16px;
 }
 
+.ce-kpis .kpi-label,
+.ce-kpis .kpi-value {
+    display: block;
+}
+
 .ce-kpis .kpi-card small {
     display: block;
     margin-top: 5px;
