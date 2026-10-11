@@ -23,6 +23,7 @@
         departmentAuto: true,
         query: "",
         cohort: "total",
+        compareCohorts: false,
         itemSort: "source",
         page: 1,
         privatePayload: null,
@@ -138,6 +139,9 @@
                         <label for="ceCohort">الشطر</label>
                         <select id="ceCohort"><option value="total">الإجمالي المتاح</option><option value="male">الطلاب</option><option value="female">الطالبات</option></select>
                     </div>
+                    <div class="field-group hidden" data-ce-comparison-field>
+                        <label class="ce-item-compare" for="ceCompareCohorts"><input id="ceCompareCohorts" type="checkbox">عرض مقارنة الطلاب والطالبات</label>
+                    </div>
                     <div class="field-group ce-search-field">
                         <label for="ceQuery">بحث</label>
                         <input id="ceQuery" type="search" placeholder="اسم المقرر أو رمزه" autocomplete="off">
@@ -188,6 +192,11 @@
         });
 
         root.addEventListener("change", (event) => {
+            if (event.target.id === "ceCompareCohorts") {
+                state.compareCohorts = event.target.checked;
+                renderAll();
+                return;
+            }
             if (event.target.id === "ceProgram") {
                 state.program = event.target.value;
                 state.department = defaultDepartmentForProgram(state.program);
@@ -262,6 +271,7 @@
         state.departmentAuto = true;
         state.query = "";
         state.cohort = "total";
+        state.compareCohorts = false;
         state.itemSort = "source";
         state.page = 1;
         renderAll();
@@ -292,6 +302,9 @@
         if (departmentField) departmentField.classList.toggle("hidden", state.tab !== "excellence");
         $("[data-ce-cohort-field]", root).classList.toggle("hidden", state.tab !== "items");
         $("#ceCohort", root).value = state.cohort;
+        $("#ceCohort", root).disabled = state.compareCohorts;
+        $("[data-ce-comparison-field]", root).classList.toggle("hidden", state.tab !== "items");
+        $("#ceCompareCohorts", root).checked = state.compareCohorts;
         const queryInput = $("#ceQuery", root);
         queryInput.value = state.query;
         queryInput.placeholder = state.tab === "items" ? "نص البند أو المحور" : state.tab === "excellence" ? "اسم عضو هيئة التدريس" : "اسم المقرر أو رمزه";
@@ -351,7 +364,7 @@
     }
 
     function kpis(items) {
-        return `<div class="kpi-grid ce-kpis">
+        return `<div class="kpi-grid ce-kpis${items.length === 3 ? " ce-kpis--three" : ""}">
             ${items.map((item) => `<article class="card kpi-card"><span class="kpi-label">${escapeHtml(item.label)}</span><strong class="kpi-value">${escapeHtml(item.value)}</strong><small>${escapeHtml(item.note || "")}</small></article>`).join("")}
         </div>`;
     }
@@ -623,18 +636,23 @@
     }
 
     function itemTable(report, rows = report.rows) {
-        return `<table class="data-table ce-item-table"><thead><tr>
-            <th>البند</th><th>متوسط ${escapeHtml(report.previousYear)}هـ</th><th>متوسط ${escapeHtml(report.year)}هـ</th><th>التغير السنوي</th><th>الفرق عن المتوسط العام الحالي</th>
-            </tr></thead><tbody>${rows.map((row) => `<tr>
-            <td class="ce-item-statement"><strong>${escapeHtml(row.statement)}</strong><small>${escapeHtml(row.topic)} · البند ${escapeHtml(row.number)}${row.instrument === "legacy" ? " · نموذج تقويم المقرر" : ""}</small></td>
+        return `<table class="data-table ce-item-table${report.comparison ? " ce-item-table--comparison" : ""}"><thead><tr>
+            <th>البند</th>${report.comparison ? '<th>الفئة</th>' : ""}<th>متوسط ${escapeHtml(report.previousYear)}هـ</th><th>متوسط ${escapeHtml(report.year)}هـ</th><th>التغير السنوي</th><th>${report.comparison ? "الفرق عن المتوسط العام للفئة" : "الفرق عن المتوسط العام الحالي"}</th>
+            </tr></thead><tbody>${rows.map((row, index) => `<tr class="${report.comparison && index % 3 === 0 ? "ce-item-group-start" : ""}">
+            ${!report.comparison || index % 3 === 0 ? `<td class="ce-item-statement"${report.comparison ? ' rowspan="3"' : ""}><strong>${escapeHtml(row.statement)}</strong><small>${escapeHtml(row.topic)} · البند ${escapeHtml(row.number)}${row.instrument === "legacy" ? " · نموذج تقويم المقرر" : ""}</small></td>` : ""}
+            ${report.comparison ? `<th scope="row" class="ce-item-cohort">${itemCohortLabel(row.cohort)}</th>` : ""}
             <td>${itemScore(row.previous)}<small>${row.previousCourseCount.toLocaleString("ar-SA")} مقررًا</small></td>
             <td>${itemScore(row.current)}<small>${row.courseCount.toLocaleString("ar-SA")} مقررًا</small></td>
             <td>${itemDifference(row.annualChange)}</td><td>${itemDifference(row.overallDifference)}</td>
-            </tr>`).join("") || '<tr><td colspan="5"><div class="empty-state">لا توجد بنود مطابقة للفلاتر أو البحث.</div></td></tr>'}</tbody></table>`;
+            </tr>`).join("") || `<tr><td colspan="${report.comparison ? 6 : 5}"><div class="empty-state">لا توجد بنود مطابقة للفلاتر أو البحث.</div></td></tr>`}</tbody></table>`;
+    }
+
+    function itemCohortLabel(cohort) {
+        return { total: "الإجمالي المتاح", male: "الطلاب", female: "الطالبات" }[cohort];
     }
 
     function itemScopeLabel(scope, report) {
-        const cohort = { total: "الإجمالي المتاح", male: "الطلاب", female: "الطالبات" }[scope.cohort];
+        const cohort = report.comparison ? "مقارنة الطلاب والطالبات والإجمالي" : itemCohortLabel(scope.cohort);
         return [scope.program === "all" ? "كل البرامج" : scope.program,
             scope.degree === "all" ? "كل الدرجات" : scope.degree,
             report.semester === "all" ? "كل الفصول" : `الفصل ${report.semester}`,
@@ -652,12 +670,17 @@
         }
         const report = itemQualityReport();
         const disabled = report.rows.length ? "" : " disabled";
-        content.innerHTML = `${kpis([
+        const summary = report.comparison ? report.cohortReports.map((cohort) => ({
+            label: `المتوسط العام للبنود ${report.year}هـ · ${itemCohortLabel(cohort.cohort)}`,
+            value: cohort.overall == null ? "غير متاح" : score(cohort.overall),
+            note: `من 5 · ${cohort.courseCount.toLocaleString("ar-SA")} مقررًا · ${cohort.itemCount.toLocaleString("ar-SA")} بندًا ذا نتيجة`,
+        })) : [
             { label: `المتوسط العام للبنود ${report.year}هـ`, value: report.overall == null ? "—" : score(report.overall), note: "متوسط جميع البنود في النطاق · من 5" },
             { label: "المقررات في النطاق", value: report.courseCount.toLocaleString("ar-SA"), note: "كل مقرر له الوزن نفسه" },
             { label: "البنود ذات النتائج", value: report.itemCount.toLocaleString("ar-SA"), note: `${report.rows.length.toLocaleString("ar-SA")} بندًا ظاهرًا بعد البحث` },
             { label: "البنود القابلة للمقارنة", value: report.comparableItemCount.toLocaleString("ar-SA"), note: `بين ${report.previousYear} و${report.year}هـ` },
-        ])}
+        ];
+        content.innerHTML = `${kpis(summary)}
         <article class="card">
             <div class="card-head ce-item-head"><div><h3>متوسط جودة البنود</h3><p class="meta-text">${escapeHtml(itemScopeLabel(state, report))}</p></div>
                 <div class="action-group"><button class="btn" type="button" data-ce-action="xlsx-items"${disabled}>Excel</button><button class="btn" type="button" data-ce-action="csv-items"${disabled}>CSV</button><button class="btn btn-primary" type="button" data-ce-action="pdf-items"${disabled}>تحميل PDF</button></div>
@@ -666,13 +689,15 @@
                 ["source", "ترتيب الاستبانة"], ["lowest", "الأقل في السنة الحالية"], ["highest", "الأعلى في السنة الحالية"],
                 ["change", "الأقل تحسنًا عن السنة الماضية"], ["difference", "الأدنى مقارنة بالمتوسط العام"],
             ].map(([value, label]) => `<option value="${value}"${state.itemSort === value ? " selected" : ""}>${label}</option>`).join("")}</select></div>
-            <p class="meta-text ce-item-caption">الفروق بالنقاط على مقياس 5. المتوسط العام ثابت ضمن النطاق المختار ولا يتغير بالبحث النصي.</p>
+            <p class="meta-text ce-item-caption">الفروق بالنقاط على مقياس 5. ${report.comparison ? `${report.visibleItemCount.toLocaleString("ar-SA")} بندًا ظاهرًا، ولكل بند ثلاث فئات. يُقارن كل صف بالمتوسط العام للفئة نفسها، والترتيب العددي حسب الإجمالي. ` : ""}المتوسط العام ثابت ضمن النطاق المختار ولا يتغير بالبحث النصي.</p>
             <div class="table-wrap">${itemTable(report)}</div>
         </article>`;
         const notes = ["يُحسب متوسط البند بأوزان متساوية للمقررات بعد جمع إجابات شعب كل مقرر؛ والمقارنة السنوية مع الفصل المناظر عند تحديد فصل."];
-        if (!report.previousCourseCount) notes.push(`لا تتوافر بيانات للنطاق نفسه في ${report.previousYear}هـ.`);
+        const scopes = report.comparison ? report.cohortReports : [report];
+        if (report.comparison) notes.push("الإجمالي محسوب من إجابات الشطرين المتاحة، وليس متوسطًا بسيطًا لدرجتي الطلاب والطالبات. تظهر «غير متاح» عند غياب نتيجة للفئة أو نتيجة سابقة مطابقة.");
+        else if (!report.previousCourseCount) notes.push(`لا تتوافر بيانات للنطاق نفسه في ${report.previousYear}هـ.`);
         else if (report.comparableItemCount < report.itemCount) notes.push("تظهر «غير متاح» عند غياب نتيجة سابقة مطابقة لنص البند ونموذجه.");
-        if (report.excludedCourseItems || report.unnamedItemObservations) notes.push("تُحتسب النتائج المكتملة ذات النص المعروف فقط؛ ويظهر تحت كل متوسط عدد المقررات المحتسبة للبند.");
+        if (scopes.some((entry) => entry.excludedCourseItems || entry.unnamedItemObservations)) notes.push("تُحتسب النتائج المكتملة ذات النص المعروف فقط؛ ويظهر تحت كل متوسط عدد المقررات المحتسبة للبند.");
         setNotice(notes.join(" "));
     }
 
@@ -680,7 +705,7 @@
         const report = itemQualityReport();
         if (!report?.rows.length) return;
         const rows = window.ItemQualityAnalysis.exportRows(report, state);
-        const filename = `متوسط_جودة_البنود_${report.year}`;
+        const filename = `متوسط_جودة_البنود_${report.year}${report.comparison ? "_مقارنة_الشطرين" : ""}`;
         if (format === "xlsx") {
             exportWorkbook(rows, "متوسط جودة البنود", `${filename}.xlsx`);
             return;
@@ -713,7 +738,7 @@
             // Draw Arabic with the browser's native text shaping. Explicit row
             // pagination avoids DOM screenshot clipping when the page is scrolled.
             const pdf = new window.jspdf.jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-            const columns = [528, 168, 168, 168, 168];
+            const columns = report.comparison ? [420, 108, 168, 168, 168, 168] : [528, 168, 168, 168, 168];
             let index = 0, pageNumber = 0;
             while (index < report.rows.length) {
                 if (pageNumber++) pdf.addPage();
@@ -743,13 +768,17 @@
                 const scopeLines = wrap(itemScopeLabel(scope, report), 1190, 17);
                 scopeLines.forEach((line, i) => text(line, 1240, 78 + i * 23, 17));
                 const baselineY = 110 + (scopeLines.length - 1) * 23;
-                text(`المتوسط العام للبنود ${report.year}هـ: ${report.overall == null ? "غير متاح" : score(report.overall)} من 5 · كل مقرر له الوزن نفسه · الفروق بالنقاط`, 1240, baselineY, 18, "#163e39", "right", true);
-                let y = baselineY + 24;
+                const baseline = report.comparison
+                    ? `المتوسط العام للبنود ${report.year}هـ من 5 · ${report.cohortReports.map((entry) => `${itemCohortLabel(entry.cohort)}: ${entry.overall == null ? "غير متاح" : score(entry.overall)}`).join(" · ")}`
+                    : `المتوسط العام للبنود ${report.year}هـ: ${report.overall == null ? "غير متاح" : score(report.overall)} من 5 · كل مقرر له الوزن نفسه · الفروق بالنقاط`;
+                text(baseline, 1240, baselineY, 18, "#163e39", "right", true);
+                if (report.comparison) text("الفروق بالنقاط · كل مقرر له الوزن نفسه · الفرق عن المتوسط العام للفئة نفسها · الترتيب حسب الإجمالي", 1240, baselineY + 25, 16);
+                let y = baselineY + (report.comparison ? 50 : 24);
                 const cell = (right, top, width, height, background) => {
                     ctx.fillStyle = background; ctx.fillRect(right - width, top, width, height);
                     ctx.strokeStyle = "#dbe3df"; ctx.lineWidth = 1; ctx.strokeRect(right - width, top, width, height);
                 };
-                const headers = ["البند", `متوسط ${report.previousYear}هـ`, `متوسط ${report.year}هـ`, "التغير السنوي", "الفرق عن المتوسط العام الحالي"];
+                const headers = ["البند", ...(report.comparison ? ["الفئة"] : []), `متوسط ${report.previousYear}هـ`, `متوسط ${report.year}هـ`, "التغير السنوي", report.comparison ? "الفرق عن المتوسط العام للفئة" : "الفرق عن المتوسط العام الحالي"];
                 let right = 1240;
                 headers.forEach((header, col) => {
                     cell(right, y, columns[col], 64, "#edf4f0");
@@ -758,36 +787,50 @@
                 });
                 y += 64;
                 let added = 0;
-                while (index < report.rows.length) {
-                    const row = report.rows[index];
+                const rowLayout = (row) => {
                     const statement = wrap(row.statement, columns[0] - 24, 20, true);
                     const topic = wrap(`${row.topic} · البند ${row.number}${row.instrument === "legacy" ? " · نموذج تقويم المقرر" : ""}`, columns[0] - 24, 14);
-                    const height = Math.max(86, 22 + statement.length * 29 + topic.length * 21);
+                    return { statement, topic, height: Math.max(report.comparison ? 192 : 86, 22 + statement.length * 29 + topic.length * 21) };
+                };
+                while (index < report.rows.length) {
+                    const group = report.rows.slice(index, index + (report.comparison ? 3 : 1));
+                    const { statement, topic, height } = rowLayout(group[0]);
                     if (added && y + height > 830) break;
-                    right = 1240;
-                    columns.forEach((width) => { cell(right, y, width, height, index % 2 ? "#f4f6f7" : "#fff"); right -= width; });
+                    const background = (index / group.length) % 2 ? "#f4f6f7" : "#fff";
+                    cell(1240, y, columns[0], height, background);
                     statement.forEach((line, i) => text(line, 1228, y + 28 + i * 29, 20, "#163e39", "right", true));
                     topic.forEach((line, i) => text(line, 1228, y + 31 + statement.length * 29 + i * 21, 14, "#526862"));
-                    right = 1240 - columns[0];
-                    [row.previous, row.current].forEach((value, col) => {
-                        const center = right - 84;
-                        text(value == null ? "غير متاح" : score(value), center, y + height / 2 - 3, 21, value == null ? "#526862" : "#875414", "center", true);
-                        text(`${(col ? row.courseCount : row.previousCourseCount).toLocaleString("ar-SA")} مقررًا`, center, y + height / 2 + 23, 14, "#526862", "center");
-                        right -= 168;
+                    const rowHeight = height / group.length;
+                    group.forEach((row, rowIndex) => {
+                        const rowY = y + rowIndex * rowHeight;
+                        right = 1240 - columns[0];
+                        columns.slice(1).forEach((width) => { cell(right, rowY, width, rowHeight, background); right -= width; });
+                        right = 1240 - columns[0];
+                        if (report.comparison) {
+                            const labels = wrap(itemCohortLabel(row.cohort), 94, 17, true);
+                            labels.forEach((line, i) => text(line, right - 54, rowY + rowHeight / 2 + 7 + (i - (labels.length - 1) / 2) * 22, 17, "#163e39", "center", true));
+                            right -= 108;
+                        }
+                        [row.previous, row.current].forEach((value, col) => {
+                            const center = right - 84;
+                            text(value == null ? "غير متاح" : score(value), center, rowY + rowHeight / 2 - 3, 21, value == null ? "#526862" : "#875414", "center", true);
+                            text(`${(col ? row.courseCount : row.previousCourseCount).toLocaleString("ar-SA")} مقررًا`, center, rowY + rowHeight / 2 + 23, 14, "#526862", "center");
+                            right -= 168;
+                        });
+                        [row.annualChange, row.overallDifference].forEach((value) => {
+                            const rounded = value == null ? null : Number(value.toFixed(2));
+                            const color = rounded > 0 ? "#116344" : rounded < 0 ? "#a33030" : "#53636b";
+                            const label = rounded == null ? "غير متاح" : `${rounded > 0 ? "↑ +" : rounded < 0 ? "↓ −" : "="}${Math.abs(rounded).toFixed(2)}`;
+                            text(label, right - 84, rowY + rowHeight / 2 + 8, 20, color, "center", true);
+                            right -= 168;
+                        });
                     });
-                    [row.annualChange, row.overallDifference].forEach((value) => {
-                        const rounded = value == null ? null : Number(value.toFixed(2));
-                        const color = rounded > 0 ? "#116344" : rounded < 0 ? "#a33030" : "#53636b";
-                        const label = rounded == null ? "غير متاح" : `${rounded > 0 ? "↑ +" : rounded < 0 ? "↓ −" : "="}${Math.abs(rounded).toFixed(2)}`;
-                        text(label, right - 84, y + height / 2 + 8, 20, color, "center", true);
-                        right -= 168;
-                    });
-                    y += height; index += 1; added += 1;
+                    y += height; index += group.length; added += 1;
                 }
                 text(`تقييمات الطلاب للمقررات · صفحة ${pageNumber}`, 1240, 870, 14, "#526862");
                 pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 6, 5, 285, 200.390625);
             }
-            pdf.save(`متوسط_جودة_البنود_${report.year}.pdf`);
+            pdf.save(`متوسط_جودة_البنود_${report.year}${report.comparison ? "_مقارنة_الشطرين" : ""}.pdf`);
         } catch (error) {
             console.error("Item quality PDF:", error);
             alert("تعذر توليد PDF. أعد المحاولة.");

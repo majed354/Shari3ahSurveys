@@ -42,7 +42,21 @@
         return ["أسئلة خاصة بـبداية المقرر", "أسئلة خاصة بما حدث خلال المقرر", "تقويم المقرر", "التقويم العام"].indexOf(topic);
     }
 
-    function buildReport(data, filters = {}) {
+    function sortRows(rows, sort = "source") {
+        const field = sort === "change" ? "annualChange" : sort === "difference" ? "overallDifference" : "current";
+        return rows.sort((a, b) => {
+            if (sort !== "source") {
+                if (a[field] == null && b[field] != null) return 1;
+                if (a[field] != null && b[field] == null) return -1;
+                const diff = (a[field] || 0) - (b[field] || 0);
+                if (diff) return sort === "highest" ? -diff : diff;
+            }
+            return a.instrument.localeCompare(b.instrument) || topicOrder(a.topic) - topicOrder(b.topic)
+                || a.topic.localeCompare(b.topic, "ar") || Number(a.number) - Number(b.number);
+        });
+    }
+
+    function buildSingleReport(data, filters = {}, itemIds = null) {
         const year = String(filters.year === "all" || !filters.year ? data.years[0] : filters.year);
         const previousYear = String(Number(year) - 1);
         const semester = filters.semester || "all";
@@ -50,7 +64,10 @@
         const current = collect(data, filters, year, semester);
         const previous = collect(data, filters, previousYear, previousSemester);
         const overall = mean([...current.items.values()].map((item) => item.average).filter((value) => value != null));
-        let rows = [...current.items.entries()].map(([id, item]) => {
+        const entries = itemIds ? itemIds.map((id) => [id, current.items.get(id) || {
+            average: null, courseCount: 0, responseCount: 0, excludedCourseCount: 0,
+        }]) : [...current.items.entries()];
+        let rows = entries.map(([id, item]) => {
             const definition = data.itemDefinitions[id];
             const prior = previous.items.get(id);
             return { id, ...definition, current: rounded(item.average), previous: rounded(prior?.average ?? null),
@@ -65,28 +82,38 @@
         const excludedCourseItems = rows.reduce((sum, row) => sum + row.excludedCourseCount, 0);
         const query = searchable(filters.query);
         if (query) rows = rows.filter((row) => searchable(`${row.statement} ${row.topic}`).includes(query));
-        const sort = filters.itemSort || "source";
-        const field = sort === "change" ? "annualChange" : sort === "difference" ? "overallDifference" : "current";
-        rows.sort((a, b) => {
-            if (sort !== "source") {
-                if (a[field] == null && b[field] != null) return 1;
-                if (a[field] != null && b[field] == null) return -1;
-                const diff = (a[field] || 0) - (b[field] || 0);
-                if (diff) return sort === "highest" ? -diff : diff;
-            }
-            return a.instrument.localeCompare(b.instrument) || topicOrder(a.topic) - topicOrder(b.topic)
-                || a.topic.localeCompare(b.topic, "ar") || Number(a.number) - Number(b.number);
-        });
+        sortRows(rows, filters.itemSort);
         return { year, previousYear, semester, previousSemester, overall: rounded(overall), courseCount: current.courseCount,
             previousCourseCount: previous.courseCount, itemCount, comparableItemCount, excludedCourseItems,
             unnamedItemObservations: current.unnamed, rows };
+    }
+
+    function buildReport(data, filters = {}) {
+        if (!filters.compareCohorts) return buildSingleReport(data, filters);
+        const cohortReports = ["male", "female", "total"].map((cohort) => ({
+            cohort, ...buildSingleReport(data, { ...filters, cohort, itemSort: "source" }),
+        }));
+        const total = cohortReports[2];
+        // Keep items found in either cohort even when the pooled result is unavailable.
+        const definitions = new Map();
+        [total, ...cohortReports.slice(0, 2)].forEach((report) => report.rows.forEach((row) => definitions.set(row.id, row)));
+        // Request the same item IDs for all cohorts, preserving a prior-year
+        // result even when that cohort has no current result for the item.
+        const itemIds = [...definitions.keys()];
+        const byCohort = cohortReports.map((report) => new Map(buildSingleReport(data,
+            { ...filters, cohort: report.cohort }, itemIds).rows.map((row) => [row.id, row])));
+        const items = sortRows(itemIds.map((id) => byCohort[2].get(id)), filters.itemSort);
+        const rows = items.flatMap((item) => cohortReports.map((report, index) => ({
+            ...byCohort[index].get(item.id), cohort: report.cohort, overall: report.overall,
+        })));
+        return { ...total, comparison: true, cohortReports, visibleItemCount: items.length, rows };
     }
 
     function exportRows(report, scope) {
         return report.rows.map((row) => ({
             "البرنامج": scope.program === "all" ? "كل البرامج" : scope.program,
             "الدرجة": scope.degree === "all" ? "كل الدرجات" : scope.degree,
-            "الشطر": { total: "الإجمالي المتاح", male: "الطلاب", female: "الطالبات" }[scope.cohort || "total"],
+            "الشطر": { total: "الإجمالي المتاح", male: "الطلاب", female: "الطالبات" }[row.cohort || scope.cohort || "total"],
             "السنة الماضية": report.previousYear, "السنة الحالية": report.year,
             "الفصل الحالي": report.semester === "all" ? "كل الفصول" : report.semester,
             "الفصل السابق": report.previousSemester === "all" ? "كل الفصول" : report.previousSemester,
@@ -94,7 +121,7 @@
             "المحور": row.topic, "رقم البند داخل المحور": row.number, "البند": row.statement,
             "متوسط السنة الماضية": row.previous, "متوسط السنة الحالية": row.current,
             "التغير السنوي": row.annualChange, "الفرق عن المتوسط العام الحالي": row.overallDifference,
-            "المتوسط العام الحالي": report.overall, "مقررات البند السنة الماضية": row.previousCourseCount,
+            "المتوسط العام الحالي": report.comparison ? row.overall : report.overall, "مقررات البند السنة الماضية": row.previousCourseCount,
             "مقررات البند السنة الحالية": row.courseCount, "إجابات البند السنة الماضية": row.previousResponseCount,
             "إجابات البند السنة الحالية": row.responseCount,
             "مقررات مستبعدة من البند السنة الماضية": row.previousExcludedCourseCount,

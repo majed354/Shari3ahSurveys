@@ -2544,7 +2544,7 @@ body.sheet-open {
 .ce-item-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
 .ce-item-toolbar select { max-width: 100%; padding: 9px 12px; border: 1px solid var(--line-strong); border-radius: 10px; background: #fff; color: var(--text); font: inherit; }
 .ce-item-table { min-width: 900px; width: 100%; table-layout: fixed; }
-.ce-item-table th:first-child { width: 44%; }
+.ce-item-table thead th:first-child { width: 44%; }
 .ce-item-table thead th { white-space: normal; overflow-wrap: break-word; }
 .ce-item-table td { vertical-align: middle; }
 .ce-item-table td:not(:first-child), .ce-item-table th:not(:first-child) { text-align: center; }
@@ -2555,6 +2555,17 @@ body.sheet-open {
 .ce-item-change--up { color: #116344; background: #e6f4ed; }
 .ce-item-change--down { color: #a33030; background: #fcecec; }
 .ce-item-change--equal { color: #53636b; background: #edf1f3; }
+.ce-item-compare { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.ce-item-compare input { width: 20px; height: 20px; margin: 0; accent-color: var(--primary-900); }
+.ce-item-table--comparison { min-width: 1100px; }
+.ce-item-table--comparison thead th:first-child { width: 35%; }
+.ce-item-table--comparison thead th:nth-child(2) { width: 9%; }
+.ce-item-table--comparison .ce-item-cohort { text-align: center; vertical-align: middle; font-size: 0.9rem; }
+.ce-item-table--comparison .ce-item-group-start > * { border-top: 2px solid #ceded7; }
+
+@media (min-width: 901px) {
+    .ce-kpis--three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 
 @media (max-width: 900px) {
     .ce-item-table thead { display: table-header-group; }

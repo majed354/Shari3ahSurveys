@@ -76,3 +76,66 @@ test("earliest year and empty scopes do not substitute other years or invent zer
     assert.equal(report.previousYear, "1444");
     assert.deepEqual(report.rows, []);
 });
+
+function cohortFixture() {
+    const data = fixture();
+    data.records.push(
+        { year: "1447", semester: "all", programId: "p01", cohort: "male", courseCount: 1, items: { a: stats(5), b: stats(1) } },
+        { year: "1446", semester: "all", programId: "p01", cohort: "male", courseCount: 1, items: { a: stats(4), b: stats(2) } },
+        { year: "1446", semester: "all", programId: "p01", cohort: "female", courseCount: 1, items: { a: stats(1), b: stats(4) } },
+    );
+    return data;
+}
+
+test("cohort comparison uses three independent baselines and the source pooled total", () => {
+    const report = buildReport(cohortFixture(), { ...scope, compareCohorts: true, cohort: "female" });
+    assert.deepEqual(report.cohortReports.map((r) => [r.cohort, r.overall]), [["male", 3], ["female", 2], ["total", 3.75]]);
+    assert.deepEqual(report.rows.slice(0, 3).map((r) => [r.cohort, r.current, r.overallDifference, r.annualChange]),
+        [["male", 5, 2, 1], ["female", 2, 0, 1], ["total", 4.5, 0.75, 0.5]]);
+    assert.notEqual(report.rows[2].current, (report.rows[0].current + report.rows[1].current) / 2);
+    assert.equal(report.visibleItemCount, 2);
+    assert.equal(report.rows.length, 6);
+});
+
+test("comparison keeps triplets together when sorting and searching; baselines do not change", () => {
+    const report = buildReport(cohortFixture(), { ...scope, compareCohorts: true, itemSort: "lowest" });
+    assert.deepEqual(report.rows.map((r) => `${r.id}:${r.cohort}`), ["b:male", "b:female", "b:total", "a:male", "a:female", "a:total"]);
+    const search = buildReport(cohortFixture(), { ...scope, compareCohorts: true, query: "التغذية" });
+    assert.equal(search.visibleItemCount, 1);
+    assert.equal(search.rows.length, 3);
+    assert.deepEqual(search.cohortReports.map((r) => r.overall), [3, 2, 3.75]);
+    const output = exportRows(search, scope);
+    assert.deepEqual(output.map((r) => r["الشطر"]), ["الطلاب", "الطالبات", "الإجمالي المتاح"]);
+    assert.deepEqual(output.map((r) => r["المتوسط العام الحالي"]), [3, 2, 3.75]);
+});
+
+test("missing current cohort result preserves matching prior result and null differences", () => {
+    const report = buildReport(cohortFixture(), { ...scope, compareCohorts: true });
+    const missing = report.rows.find((r) => r.id === "b" && r.cohort === "female");
+    assert.equal(missing.current, null);
+    assert.equal(missing.previous, 4);
+    assert.equal(missing.previousCourseCount, 1);
+    assert.equal(missing.annualChange, null);
+    assert.equal(missing.overallDifference, null);
+    const data = fixture(); // Entire male cohort absent; no substitution with total.
+    const empty = buildReport(data, { ...scope, compareCohorts: true });
+    assert.equal(empty.cohortReports[0].overall, null);
+    assert.equal(exportRows(empty, scope)[0]["المتوسط العام الحالي"], null);
+    assert.equal(exportRows(empty, scope)[0]["متوسط السنة الحالية"], null);
+    assert.equal(empty.rows.some((r) => r.id === "old"), false);
+});
+
+test("comparison retains cohort-only current items and obeys period and programme filters", () => {
+    const data = cohortFixture();
+    delete data.records[0].items.b;
+    const report = buildReport(data, { ...scope, compareCohorts: true });
+    assert.equal(report.visibleItemCount, 2);
+    assert.equal(report.rows.find((r) => r.id === "b" && r.cohort === "total").current, null);
+    const semester = buildReport(data, { ...scope, compareCohorts: true, semester: "471" });
+    assert.equal(semester.previousSemester, "461");
+    assert.deepEqual(semester.rows.map((r) => r.current), [null, null, 5]);
+    assert.equal(semester.rows[2].annualChange, 2);
+    const empty = buildReport(data, { ...scope, compareCohorts: true, program: "ماجستير الفقه" });
+    assert.deepEqual(empty.rows, []);
+    assert.equal(empty.visibleItemCount, 0);
+});
