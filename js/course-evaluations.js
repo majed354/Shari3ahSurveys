@@ -78,6 +78,14 @@
         return meta.programDefaultDepartments?.[program] || "all";
     }
 
+    function availablePrograms() {
+        const programs = meta.programs || [];
+        if (state.degree === "all") return programs;
+        const matching = new Set([...courseRecords, ...publicExcellenceLeaders]
+            .filter((row) => row.degree === state.degree).map((row) => row.program));
+        return programs.filter((program) => matching.has(program));
+    }
+
     function availableSemesters() {
         if (state.year === "all") return [];
         const values = meta.semestersByYear?.[state.year];
@@ -129,7 +137,7 @@
                     </div>
                     <div class="field-group">
                         <label for="ceProgram">البرنامج</label>
-                        <select id="ceProgram">${optionList(meta.programs || [], state.program)}</select>
+                        <select id="ceProgram">${optionList(availablePrograms(), state.program)}</select>
                     </div>
                     <div class="field-group hidden" data-ce-department-field>
                         <label for="ceDepartment">قسم عضو هيئة التدريس</label>
@@ -230,11 +238,11 @@
                 renderContent();
                 return;
             }
-            const map = { ceDegree: "degree" };
-            if (map[event.target.id]) {
-                state[map[event.target.id]] = event.target.value;
+            if (event.target.id === "ceDegree") {
+                state.degree = event.target.value;
                 state.page = 1;
-                renderContent();
+                renderAll();
+                return;
             }
             if (event.target.id === "ceShowDescriptive") {
                 state.showDescriptive = event.target.checked;
@@ -280,6 +288,11 @@
     function renderAll() {
         const root = $("#courseEvaluationsApp");
         if (!root) return;
+        const programs = availablePrograms();
+        if (state.program !== "all" && !programs.includes(state.program)) {
+            state.program = "all";
+            if (state.departmentAuto) state.department = defaultDepartmentForProgram(state.program);
+        }
         root.querySelectorAll("[data-ce-tab]").forEach((button) => {
             const active = button.dataset.ceTab === state.tab;
             button.classList.toggle("is-active", active);
@@ -296,7 +309,7 @@
         semesterSelect.disabled = !semesterOptions.length;
         if (semesterField) semesterField.classList.toggle("hidden", !semesterFieldVisible());
         $("#ceDegree", root).innerHTML = optionList(meta.degrees || [], state.degree);
-        $("#ceProgram", root).innerHTML = optionList(meta.programs || [], state.program);
+        $("#ceProgram", root).innerHTML = optionList(programs, state.program);
         $("#ceDepartment", root).innerHTML = optionList(meta.departments || [], state.department, "كل الأقسام");
         const departmentField = $("[data-ce-department-field]", root);
         if (departmentField) departmentField.classList.toggle("hidden", state.tab !== "excellence");
