@@ -8,6 +8,9 @@
     const outcomeCategories = Array.isArray(meta.outcomeCategories) ? meta.outcomeCategories : [];
     const PAGE_SIZE = 75;
     const LOCK_AFTER_MS = 15 * 60 * 1000;
+    let itemQualityData = null;
+    let itemQualityRequest = null;
+    let itemQualityError = false;
 
     const state = {
         initialized: false,
@@ -19,6 +22,8 @@
         department: "all",
         departmentAuto: true,
         query: "",
+        cohort: "total",
+        itemSort: "source",
         page: 1,
         privatePayload: null,
         showDescriptive: false,
@@ -79,7 +84,7 @@
     }
 
     function semesterFieldVisible() {
-        return state.tab === "annual" || state.tab === "indirect";
+        return state.tab === "annual" || state.tab === "indirect" || state.tab === "items";
     }
 
     function ensureSemesterSelection() {
@@ -104,7 +109,7 @@
                 <button class="ce-tab is-active" type="button" data-ce-tab="annual">التقرير السنوي</button>
                 <button class="ce-tab" type="button" data-ce-tab="indirect">التقييم غير المباشر</button>
                 <button class="ce-tab" type="button" data-ce-tab="excellence">التميز في التدريس</button>
-                <button class="ce-tab" type="button" data-ce-tab="methodology">المنهجية والعدالة</button>
+                <button class="ce-tab" type="button" data-ce-tab="items">متوسط جودة البنود</button>
             </div>
 
             <article id="ceFilters" class="card ce-filter-card">
@@ -129,6 +134,10 @@
                         <label for="ceDepartment">قسم عضو هيئة التدريس</label>
                         <select id="ceDepartment">${optionList(meta.departments || [], state.department, "كل الأقسام")}</select>
                     </div>
+                    <div class="field-group hidden" data-ce-cohort-field>
+                        <label for="ceCohort">الشطر</label>
+                        <select id="ceCohort"><option value="total">الإجمالي المتاح</option><option value="male">الطلاب</option><option value="female">الطالبات</option></select>
+                    </div>
                     <div class="field-group ce-search-field">
                         <label for="ceQuery">بحث</label>
                         <input id="ceQuery" type="search" placeholder="اسم المقرر أو رمزه" autocomplete="off">
@@ -148,7 +157,9 @@
         root.addEventListener("click", async (event) => {
             const tab = event.target.closest("[data-ce-tab]");
             if (tab) {
+                if (state.tab === "items" || tab.dataset.ceTab === "items") state.query = "";
                 state.tab = tab.dataset.ceTab;
+                if (state.tab === "items" && state.year === "all") state.year = (meta.years || [])[0];
                 if (state.tab === "excellence" && state.departmentAuto) {
                     state.department = defaultDepartmentForProgram(state.program);
                 }
@@ -170,6 +181,10 @@
             if (action === "csv-public-excellence") exportPublicExcellenceCsv();
             if (action === "pdf-public-excellence") await exportPublicExcellencePdf();
             if (action === "pdf-excellence") await exportExcellencePdf();
+            if (action === "retry-items") { itemQualityError = false; renderContent(); }
+            if (action === "xlsx-items") exportItemQuality("xlsx");
+            if (action === "csv-items") exportItemQuality("csv");
+            if (action === "pdf-items") await exportItemQualityPdf();
         });
 
         root.addEventListener("change", (event) => {
@@ -198,6 +213,11 @@
                 state.department = event.target.value;
                 state.departmentAuto = false;
                 state.page = 1;
+                renderContent();
+                return;
+            }
+            if (event.target.id === "ceCohort" || event.target.id === "ceItemSort") {
+                state[event.target.id === "ceCohort" ? "cohort" : "itemSort"] = event.target.value;
                 renderContent();
                 return;
             }
@@ -241,6 +261,8 @@
         state.department = "all";
         state.departmentAuto = true;
         state.query = "";
+        state.cohort = "total";
+        state.itemSort = "source";
         state.page = 1;
         renderAll();
     }
@@ -254,7 +276,9 @@
             button.setAttribute("aria-selected", active ? "true" : "false");
         });
         ensureSemesterSelection();
-        $("#ceYear", root).innerHTML = optionList(meta.years || [], state.year, "كل السنوات");
+        $("#ceYear", root).innerHTML = state.tab === "items"
+            ? (meta.years || []).map((year) => `<option value="${escapeHtml(year)}"${year === state.year ? " selected" : ""}>${escapeHtml(year)}</option>`).join("")
+            : optionList(meta.years || [], state.year, "كل السنوات");
         const semesterField = $("[data-ce-semester-field]", root);
         const semesterSelect = $("#ceSemester", root);
         const semesterOptions = availableSemesters();
@@ -266,11 +290,13 @@
         $("#ceDepartment", root).innerHTML = optionList(meta.departments || [], state.department, "كل الأقسام");
         const departmentField = $("[data-ce-department-field]", root);
         if (departmentField) departmentField.classList.toggle("hidden", state.tab !== "excellence");
+        $("[data-ce-cohort-field]", root).classList.toggle("hidden", state.tab !== "items");
+        $("#ceCohort", root).value = state.cohort;
         const queryInput = $("#ceQuery", root);
         queryInput.value = state.query;
-        queryInput.placeholder = state.tab === "excellence" ? "اسم عضو هيئة التدريس" : "اسم المقرر أو رمزه";
+        queryInput.placeholder = state.tab === "items" ? "نص البند أو المحور" : state.tab === "excellence" ? "اسم عضو هيئة التدريس" : "اسم المقرر أو رمزه";
         const filters = $("#ceFilters", root);
-        if (filters) filters.classList.toggle("hidden", state.tab === "methodology");
+        if (filters) filters.classList.remove("hidden");
         renderContent();
     }
 
@@ -321,7 +347,7 @@
         if (state.tab === "annual") renderAnnual(content);
         if (state.tab === "indirect") renderIndirect(content);
         if (state.tab === "excellence") renderExcellence(content);
-        if (state.tab === "methodology") renderMethodology(content);
+        if (state.tab === "items") renderItemQuality(content);
     }
 
     function kpis(items) {
@@ -565,37 +591,210 @@
         setNotice("الخمسة الأعلى متاحون للعامة؛ تم فتح القائمة الكاملة والتفاصيل الإدارية لهذه الجلسة فقط.", "secure");
     }
 
-    function renderMethodology(content) {
-        const quality = meta.dataQuality || {};
-        content.innerHTML = `
-            <div class="ce-method-grid">
-                <article class="card ce-method-card"><span class="ce-method-number">${Number(quality.sections || 0).toLocaleString("ar-SA")}</span><h3>شعبة تدريسية</h3><p>من ثلاث سنوات دراسية، وتشمل الرسائل والمشروعات البحثية في حساب التميز.</p></article>
-                <article class="card ce-method-card"><span class="ce-method-number">${Number(quality.excludedBachelorSmallGroups || 0).toLocaleString("ar-SA")}</span><h3>مجموعة بكالوريوس مستبعدة</h3><p>مجموع شعب المقرر للعضو في السنة والبرنامج بقي طالبًا أو طالبين.</p></article>
-                <article class="card ce-method-card"><span class="ce-method-number">${Number(quality.recoveredBachelorSmallSections || 0).toLocaleString("ar-SA")}</span><h3>شعبة صغيرة استعيدت</h3><p>دخلت الحساب لوجود شعب أخرى للمقرر نفسه عند العضو في السنة نفسها.</p></article>
-                <article class="card ce-method-card"><span class="ce-method-number">${Number(quality.excellenceBachelorSectionsBelowFive || 0).toLocaleString("ar-SA")}</span><h3>شعبة دون حد التميز</h3><p>شعبة بكالوريوس يقل عدد مستجيبيها عن 5؛ تبقى في التقرير السنوي ولا تدخل تقرير التميز.</p></article>
-                <article class="card ce-method-card"><span class="ce-method-number">${Number(quality.researchSections || 0).toLocaleString("ar-SA")}</span><h3>رسالة أو مشروع بحثي</h3><p>تدخل ضمن الدرجة الموزونة للتميز وتخضع لحدود الأهلية بحسب الدرجة.</p></article>
+    function loadItemQuality() {
+        if (itemQualityRequest || itemQualityData || itemQualityError) return;
+        itemQualityRequest = fetch("data/course-evaluations/item-quality.json")
+            .then((response) => { if (!response.ok) throw new Error("Item data unavailable"); return response.json(); })
+            .then((data) => {
+                if (data.schemaVersion !== "course-item-quality-v1" || !Array.isArray(data.records) || !window.ItemQualityAnalysis) throw new Error("Invalid item quality data");
+                itemQualityData = data;
+            })
+            .catch((error) => { console.error("Item quality data:", error); itemQualityError = true; })
+            .finally(() => {
+                itemQualityRequest = null;
+                if (state.tab === "items") renderContent();
+            });
+    }
+
+    function itemQualityReport() {
+        return itemQualityData ? window.ItemQualityAnalysis.buildReport(itemQualityData, state) : null;
+    }
+
+    function itemScore(value) {
+        return value == null ? '<span class="ce-item-unavailable">غير متاح</span>' : scorePill(value);
+    }
+
+    function itemDifference(value) {
+        if (value == null) return '<span class="ce-item-unavailable">غير متاح</span>';
+        const rounded = Number(value.toFixed(2));
+        const tone = rounded > 0 ? "up" : rounded < 0 ? "down" : "equal";
+        const label = rounded > 0 ? "أعلى" : rounded < 0 ? "أدنى" : "مساوٍ";
+        return `<span class="ce-item-change ce-item-change--${tone}" aria-label="${label} بمقدار ${Math.abs(rounded).toFixed(2)} نقطة"><bdi dir="ltr">${rounded > 0 ? "↑ +" : rounded < 0 ? "↓ −" : "="}${Math.abs(rounded).toFixed(2)}</bdi></span>`;
+    }
+
+    function itemTable(report, rows = report.rows) {
+        return `<table class="data-table ce-item-table"><thead><tr>
+            <th>البند</th><th>متوسط ${escapeHtml(report.previousYear)}هـ</th><th>متوسط ${escapeHtml(report.year)}هـ</th><th>التغير السنوي</th><th>الفرق عن المتوسط العام الحالي</th>
+            </tr></thead><tbody>${rows.map((row) => `<tr>
+            <td class="ce-item-statement"><strong>${escapeHtml(row.statement)}</strong><small>${escapeHtml(row.topic)} · البند ${escapeHtml(row.number)}${row.instrument === "legacy" ? " · نموذج تقويم المقرر" : ""}</small></td>
+            <td>${itemScore(row.previous)}<small>${row.previousCourseCount.toLocaleString("ar-SA")} مقررًا</small></td>
+            <td>${itemScore(row.current)}<small>${row.courseCount.toLocaleString("ar-SA")} مقررًا</small></td>
+            <td>${itemDifference(row.annualChange)}</td><td>${itemDifference(row.overallDifference)}</td>
+            </tr>`).join("") || '<tr><td colspan="5"><div class="empty-state">لا توجد بنود مطابقة للفلاتر أو البحث.</div></td></tr>'}</tbody></table>`;
+    }
+
+    function itemScopeLabel(scope, report) {
+        const cohort = { total: "الإجمالي المتاح", male: "الطلاب", female: "الطالبات" }[scope.cohort];
+        return [scope.program === "all" ? "كل البرامج" : scope.program,
+            scope.degree === "all" ? "كل الدرجات" : scope.degree,
+            report.semester === "all" ? "كل الفصول" : `الفصل ${report.semester}`,
+            cohort, scope.query ? `البحث: ${scope.query}` : ""].filter(Boolean).join(" · ");
+    }
+
+    function renderItemQuality(content) {
+        if (!itemQualityData) {
+            content.innerHTML = `<article class="card"><div class="empty-state" role="status">${itemQualityError
+                ? 'تعذر تحميل نتائج البنود. <button class="btn" type="button" data-ce-action="retry-items">إعادة المحاولة</button>'
+                : "جارٍ تحميل متوسطات البنود…"}</div></article>`;
+            setNotice("مقارنة متوسط البند عبر المقررات بالسنة الماضية وبالمتوسط العام الحالي.");
+            loadItemQuality();
+            return;
+        }
+        const report = itemQualityReport();
+        const disabled = report.rows.length ? "" : " disabled";
+        content.innerHTML = `${kpis([
+            { label: `المتوسط العام للبنود ${report.year}هـ`, value: report.overall == null ? "—" : score(report.overall), note: "متوسط جميع البنود في النطاق · من 5" },
+            { label: "المقررات في النطاق", value: report.courseCount.toLocaleString("ar-SA"), note: "كل مقرر له الوزن نفسه" },
+            { label: "البنود ذات النتائج", value: report.itemCount.toLocaleString("ar-SA"), note: `${report.rows.length.toLocaleString("ar-SA")} بندًا ظاهرًا بعد البحث` },
+            { label: "البنود القابلة للمقارنة", value: report.comparableItemCount.toLocaleString("ar-SA"), note: `بين ${report.previousYear} و${report.year}هـ` },
+        ])}
+        <article class="card">
+            <div class="card-head ce-item-head"><div><h3>متوسط جودة البنود</h3><p class="meta-text">${escapeHtml(itemScopeLabel(state, report))}</p></div>
+                <div class="action-group"><button class="btn" type="button" data-ce-action="xlsx-items"${disabled}>Excel</button><button class="btn" type="button" data-ce-action="csv-items"${disabled}>CSV</button><button class="btn btn-primary" type="button" data-ce-action="pdf-items"${disabled}>تحميل PDF</button></div>
             </div>
-            <article class="card ce-methodology">
-                <h3>قاعدة التقرير السنوي</h3>
-                <p>في البكالوريوس تُجمع شعب المقرر للعضو نفسه داخل السنة والبرنامج أولًا؛ فإن بقي مجموع المجموعة طالبًا أو طالبين استُبعدت، وإن بلغ 3 فأكثر دخلت في التقرير السنوي. هذه القاعدة مستقلة عن أهلية تقرير التميز.</p>
-                <h3>قواعد تقرير التميز</h3>
-                <div class="ce-rule-grid">
-                    <div><strong>شعبة البكالوريوس: 5 فأكثر</strong><p>لا تدخل الشعبة في حساب التميز إذا كان عدد مستجيبيها أقل من 5.</p></div>
-                    <div><strong>عضو البكالوريوس: 20 فأكثر</strong><p>يشترط مجموع 20 استجابة محتسبة في الفترة، سواء جاءت من مقرر واحد أو مقررين أو أكثر.</p></div>
-                    <div><strong>عضو الدراسات العليا: 4 فأكثر</strong><p>يشترط مجموع 4 استجابات محتسبة، ويطبق المتوسط الموزون نفسه بلا حد أدنى مستقل للشعبة.</p></div>
-                    <div><strong>الرسائل والمشروعات</strong><p>تدخل ضمن المتوسط الموزون ودرجة التميز؛ وتُطبق عليها قاعدة البكالوريوس أو الدراسات العليا بحسب الدرجة.</p></div>
-                </div>
-                <h3>فلترة قسم عضو هيئة التدريس</h3>
-                <p>عند اختيار برنامج يضبط الموقع القسم افتراضيًا على القسم الذي يتبعه البرنامج. يمكن بعد ذلك اختيار «كل الأقسام» أو قسم آخر. قسم العضو مأخوذ من سجل أعضاء هيئة التدريس بحسب سنة التقييم، وتظهر السجلات التي تعذر ربطها تحت «غير محدد» بدل نسبتها إلى قسم دون دليل.</p>
-                <h3>حدود العرض العام والخاص</h3>
-                <p>تظهر للعامة بيانات الخمسة الأعلى في البرنامج والدرجة ونطاق القسم المختار، مع إتاحة إخراجها بصيغتي PDF وCSV. أما بقية الأعضاء، والتوزيعات التفصيلية، والأعلى في كل جانب، والسجلات غير المؤهلة فتبقى محمية بكلمة مرور المدير.</p>
-                <h3>طريقة حساب درجة العضو</h3>
-                <p><strong>درجة العضو = مجموع (درجة كل شعبة × عدد مستجيبيها) ÷ مجموع المستجيبين المحتسبين.</strong> وبهذا يمثل كل طالب صوتًا واحدًا، ولا يُعطى المقرر الصغير الوزن نفسه للمقرر الكبير.</p>
-                <p>مثال: 5 مستجيبين بدرجة 4.8، و35 مستجيبًا بدرجة 4.5؛ تكون النتيجة <span dir="ltr">(5×4.8 + 35×4.5) ÷ 40 = 4.5375</span>، وتعرض 4.54 من 5.</p>
-                <h3>حدود الاستخدام</h3>
-                <p>تقييم الطالب مؤشر مهم لتجربة التعلم، لكنه لا يُستخدم وحده لإثبات فاعلية التدريس. تقرير التميز النهائي ينبغي أن يضم قرائن أخرى مثل مراجعة الأقران، جودة ملف المقرر، التحصيل، والابتكار التدريسي.</p>
-            </article>`;
-        setNotice("التميز يحسب بالمتوسط الموزون بعدد الاستجابات: حد الشعبة في البكالوريوس 5، وحد العضو 20، وحد عضو الدراسات العليا 4.", "info");
+            <div class="ce-item-toolbar"><label for="ceItemSort">ترتيب البنود</label><select id="ceItemSort">${[
+                ["source", "ترتيب الاستبانة"], ["lowest", "الأقل في السنة الحالية"], ["highest", "الأعلى في السنة الحالية"],
+                ["change", "الأقل تحسنًا عن السنة الماضية"], ["difference", "الأدنى مقارنة بالمتوسط العام"],
+            ].map(([value, label]) => `<option value="${value}"${state.itemSort === value ? " selected" : ""}>${label}</option>`).join("")}</select></div>
+            <p class="meta-text ce-item-caption">الفروق بالنقاط على مقياس 5. المتوسط العام ثابت ضمن النطاق المختار ولا يتغير بالبحث النصي.</p>
+            <div class="table-wrap">${itemTable(report)}</div>
+        </article>`;
+        const notes = ["يُحسب متوسط البند بأوزان متساوية للمقررات بعد جمع إجابات شعب كل مقرر؛ والمقارنة السنوية مع الفصل المناظر عند تحديد فصل."];
+        if (!report.previousCourseCount) notes.push(`لا تتوافر بيانات للنطاق نفسه في ${report.previousYear}هـ.`);
+        else if (report.comparableItemCount < report.itemCount) notes.push("تظهر «غير متاح» عند غياب نتيجة سابقة مطابقة لنص البند ونموذجه.");
+        if (report.excludedCourseItems || report.unnamedItemObservations) notes.push("تُحتسب النتائج المكتملة ذات النص المعروف فقط؛ ويظهر تحت كل متوسط عدد المقررات المحتسبة للبند.");
+        setNotice(notes.join(" "));
+    }
+
+    function exportItemQuality(format) {
+        const report = itemQualityReport();
+        if (!report?.rows.length) return;
+        const rows = window.ItemQualityAnalysis.exportRows(report, state);
+        const filename = `متوسط_جودة_البنود_${report.year}`;
+        if (format === "xlsx") {
+            exportWorkbook(rows, "متوسط جودة البنود", `${filename}.xlsx`);
+            return;
+        }
+        const headers = Object.keys(rows[0]);
+        const lines = [headers.map(csvCell).join(","), ...rows.map((row) => headers.map((header) => csvCell(row[header])).join(","))];
+        const blob = new Blob(["\ufeff", lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${filename}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 0);
+    }
+
+    async function exportItemQualityPdf() {
+        const report = itemQualityReport();
+        if (!report?.rows.length) return;
+        if (!window.jspdf?.jsPDF) {
+            alert("تعذر تحميل أداة PDF. أعد تحميل الصفحة ثم حاول مرة أخرى.");
+            return;
+        }
+        const scope = { ...state };
+        const button = $("[data-ce-action='pdf-items']");
+        if (button) { button.disabled = true; button.textContent = "جارٍ التوليد…"; }
+        try {
+            await document.fonts.ready;
+            // Draw Arabic with the browser's native text shaping. Explicit row
+            // pagination avoids DOM screenshot clipping when the page is scrolled.
+            const pdf = new window.jspdf.jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+            const columns = [528, 168, 168, 168, 168];
+            let index = 0, pageNumber = 0;
+            while (index < report.rows.length) {
+                if (pageNumber++) pdf.addPage();
+                const canvas = document.createElement("canvas");
+                canvas.width = 1920; canvas.height = 1350;
+                const ctx = canvas.getContext("2d");
+                ctx.scale(1.5, 1.5);
+                ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, 1280, 900);
+                const font = (size, bold = false) => { ctx.font = `${bold ? 700 : 400} ${size}px Tajawal, sans-serif`; };
+                const text = (value, x, y, size = 18, color = "#163e39", align = "right", bold = false) => {
+                    font(size, bold); ctx.fillStyle = color; ctx.textAlign = align;
+                    ctx.direction = align === "right" ? "rtl" : "ltr";
+                    ctx.fillText(String(value), x, y);
+                };
+                const wrap = (value, width, size, bold = false) => {
+                    font(size, bold);
+                    const lines = []; let line = "";
+                    String(value).split(/\s+/).forEach((word) => {
+                        const next = line ? `${line} ${word}` : word;
+                        if (line && ctx.measureText(next).width > width) { lines.push(line); line = word; }
+                        else line = next;
+                    });
+                    if (line) lines.push(line);
+                    return lines;
+                };
+                text("متوسط جودة البنود", 1240, 45, 28, "#163e39", "right", true);
+                const scopeLines = wrap(itemScopeLabel(scope, report), 1190, 17);
+                scopeLines.forEach((line, i) => text(line, 1240, 78 + i * 23, 17));
+                const baselineY = 110 + (scopeLines.length - 1) * 23;
+                text(`المتوسط العام للبنود ${report.year}هـ: ${report.overall == null ? "غير متاح" : score(report.overall)} من 5 · كل مقرر له الوزن نفسه · الفروق بالنقاط`, 1240, baselineY, 18, "#163e39", "right", true);
+                let y = baselineY + 24;
+                const cell = (right, top, width, height, background) => {
+                    ctx.fillStyle = background; ctx.fillRect(right - width, top, width, height);
+                    ctx.strokeStyle = "#dbe3df"; ctx.lineWidth = 1; ctx.strokeRect(right - width, top, width, height);
+                };
+                const headers = ["البند", `متوسط ${report.previousYear}هـ`, `متوسط ${report.year}هـ`, "التغير السنوي", "الفرق عن المتوسط العام الحالي"];
+                let right = 1240;
+                headers.forEach((header, col) => {
+                    cell(right, y, columns[col], 64, "#edf4f0");
+                    wrap(header, columns[col] - 20, 17, true).forEach((line, i) => text(line, col ? right - columns[col] / 2 : right - 12, y + 25 + i * 23, 17, "#163e39", col ? "center" : "right", true));
+                    right -= columns[col];
+                });
+                y += 64;
+                let added = 0;
+                while (index < report.rows.length) {
+                    const row = report.rows[index];
+                    const statement = wrap(row.statement, columns[0] - 24, 20, true);
+                    const topic = wrap(`${row.topic} · البند ${row.number}${row.instrument === "legacy" ? " · نموذج تقويم المقرر" : ""}`, columns[0] - 24, 14);
+                    const height = Math.max(86, 22 + statement.length * 29 + topic.length * 21);
+                    if (added && y + height > 830) break;
+                    right = 1240;
+                    columns.forEach((width) => { cell(right, y, width, height, index % 2 ? "#f4f6f7" : "#fff"); right -= width; });
+                    statement.forEach((line, i) => text(line, 1228, y + 28 + i * 29, 20, "#163e39", "right", true));
+                    topic.forEach((line, i) => text(line, 1228, y + 31 + statement.length * 29 + i * 21, 14, "#526862"));
+                    right = 1240 - columns[0];
+                    [row.previous, row.current].forEach((value, col) => {
+                        const center = right - 84;
+                        text(value == null ? "غير متاح" : score(value), center, y + height / 2 - 3, 21, value == null ? "#526862" : "#875414", "center", true);
+                        text(`${(col ? row.courseCount : row.previousCourseCount).toLocaleString("ar-SA")} مقررًا`, center, y + height / 2 + 23, 14, "#526862", "center");
+                        right -= 168;
+                    });
+                    [row.annualChange, row.overallDifference].forEach((value) => {
+                        const rounded = value == null ? null : Number(value.toFixed(2));
+                        const color = rounded > 0 ? "#116344" : rounded < 0 ? "#a33030" : "#53636b";
+                        const label = rounded == null ? "غير متاح" : `${rounded > 0 ? "↑ +" : rounded < 0 ? "↓ −" : "="}${Math.abs(rounded).toFixed(2)}`;
+                        text(label, right - 84, y + height / 2 + 8, 20, color, "center", true);
+                        right -= 168;
+                    });
+                    y += height; index += 1; added += 1;
+                }
+                text(`تقييمات الطلاب للمقررات · صفحة ${pageNumber}`, 1240, 870, 14, "#526862");
+                pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 6, 5, 285, 200.390625);
+            }
+            pdf.save(`متوسط_جودة_البنود_${report.year}.pdf`);
+        } catch (error) {
+            console.error("Item quality PDF:", error);
+            alert("تعذر توليد PDF. أعد المحاولة.");
+        } finally {
+            const currentButton = $("[data-ce-action='pdf-items']");
+            if (currentButton) { currentButton.disabled = false; currentButton.textContent = "تحميل PDF"; }
+        }
     }
 
     function bytesFromBase64(value) {

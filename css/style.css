@@ -2540,6 +2540,22 @@ body.sheet-open {
     color: var(--text-soft);
 }
 
+.ce-item-head { flex-wrap: wrap; gap: 16px; }
+.ce-item-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
+.ce-item-toolbar select { max-width: 100%; padding: 9px 12px; border: 1px solid var(--line-strong); border-radius: 10px; background: #fff; color: var(--text); font: inherit; }
+.ce-item-table { min-width: 900px; width: 100%; table-layout: fixed; }
+.ce-item-table th:first-child { width: 44%; }
+.ce-item-table thead th { white-space: normal; overflow-wrap: break-word; }
+.ce-item-table td { vertical-align: middle; }
+.ce-item-table td:not(:first-child), .ce-item-table th:not(:first-child) { text-align: center; }
+.ce-item-table small { display: block; margin-top: 6px; color: var(--text-soft); font-size: 0.78rem; font-weight: 400; }
+.ce-item-statement strong { display: block; line-height: 1.8; overflow-wrap: anywhere; }
+.ce-item-unavailable { color: var(--text-soft); font-size: 0.85rem; }
+.ce-item-change { display: inline-block; border-radius: 9px; padding: 6px 9px; font-weight: 800; white-space: nowrap; }
+.ce-item-change--up { color: #116344; background: #e6f4ed; }
+.ce-item-change--down { color: #a33030; background: #fcecec; }
+.ce-item-change--equal { color: #53636b; background: #edf1f3; }
+
 .ce-exporting .ce-pagination,
 .ce-exporting .ce-detailed-block {
     display: none;
