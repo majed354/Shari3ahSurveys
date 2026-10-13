@@ -5,6 +5,8 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import shutil
+import subprocess
 import zipfile
 from collections import OrderedDict, defaultdict
 from datetime import datetime, timezone
@@ -16,6 +18,10 @@ from xml.etree import ElementTree as ET
 NS = {"a": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
 ROOT = Path(__file__).resolve().parents[1]
 LEGACY_WORKBOOK_PATH = ROOT / "استطلاعات_وتقييمات_كلية_الشريعة_1445_1446.xlsx"
+# تصديرات منصة ذكاء الأعمال المفصلة على مستوى البرنامج (بصيغة ملف 1445-1446 نفسها).
+# أي ملف xlsx يوضع هنا يُستورد تلقائيًا، وتتقدم بياناته على بيانات الكلية للبرنامج والسنة نفسيهما.
+PROGRAM_LEVEL_DATA_DIR = ROOT / "data" / "bi-program"
+PROGRAM_EXPERIENCE_KPI_SCRIPT = ROOT / "scripts" / "build_program_experience_kpi.cjs"
 SUPPLEMENTAL_DATA_DIR = ROOT / "data" / "bi-1447"
 GRADUATE_SAMPLE_DATA_DIR = ROOT / "data" / "graduate-samples"
 OUTPUT_PATH = ROOT / "js" / "surveys-data.js"
@@ -159,6 +165,31 @@ LEGACY_SOURCE_NOTE = (
     "يتضمن بيانات الطلاب مع عدد المقيمين."
 )
 
+PROGRAM_LEVEL_SOURCE_NOTE = (
+    "استيراد مباشر من تصدير منصة ذكاء الأعمال المفصل على مستوى البرنامج ({name}). "
+    "يتضمن بيانات الطلاب مع عدد المقيمين، ويتقدم على بيانات الكلية للبرنامج والسنة نفسيهما."
+)
+
+# أعمدة صيغة التصدير المفصل؛ تُطابق بالاسم لا بالموضع حتى لا يضر تغيير ترتيب الأعمدة.
+LEGACY_COLUMN_HEADERS = {
+    "A": ("الفصل الدراسي",),
+    "B": ("الجنس",),
+    "C": ("الدرجة العلمية",),
+    "D": ("المقر",),
+    "E": ("الكلية",),
+    "F": ("البرنامج", "التخصص"),
+    "G": ("التقييم", "الاستطلاع", "اسم الاستطلاع", "الاستبانة"),
+    "H": ("وصف الموضوع", "الموضوع", "المحور"),
+    "I": ("رقم العبارة",),
+    "J": ("وصف العبارة", "العبارة", "نص العبارة"),
+    "K": ("لا أوافق بشدة", "غير موافق بشدة"),
+    "L": ("لا أوافق", "غير موافق"),
+    "M": ("أوافق الى حد ما", "أوافق إلى حد ما", "محايد"),
+    "N": ("أوافق", "موافق"),
+    "O": ("أوافق بشدة", "موافق بشدة"),
+}
+LEGACY_OPTIONAL_COLUMNS = {"D", "E", "I"}
+
 STUDENT_1447_SOURCE_NOTE = (
     "استيراد مفسر من ملفات استطلاعات الطلاب 1447هـ بمنصة ذكاء الأعمال. "
     "هذا المصدر لا يتضمن الدرجة العلمية ولا عدد المقيمين؛ لذا حُفظ المتوسط كما هو، "
@@ -281,6 +312,36 @@ def read_first_sheet_rows(path: Path) -> List[Dict[str, str]]:
     with zipfile.ZipFile(path) as archive:
         shared_strings = read_shared_strings(archive)
         return list(iter_sheet_rows(archive, "xl/worksheets/sheet1.xml", shared_strings))
+
+
+def _header_key(value: object) -> str:
+    return re.sub(r"[أإآ]", "ا", clean_text(value))
+
+
+def align_legacy_rows(rows: Sequence[Dict[str, str]]) -> List[Dict[str, str]] | None:
+    """يعيد صفوف التصدير المفصل بمفاتيح الأعمدة القياسية A..O بحسب أسماء العناوين.
+
+    يعيد None إذا نقص عمود إلزامي، فلا يُستورد ملف بصيغة غير معروفة.
+    """
+    if not rows:
+        return None
+    by_header = {_header_key(label): column for column, label in rows[0].items() if clean_text(label)}
+    mapping: Dict[str, str] = {}
+    for canonical, names in LEGACY_COLUMN_HEADERS.items():
+        column = next((by_header[_header_key(name)] for name in names if _header_key(name) in by_header), None)
+        if column:
+            mapping[canonical] = column
+        elif canonical not in LEGACY_OPTIONAL_COLUMNS:
+            return None
+    return [{canonical: row.get(column, "") for canonical, column in mapping.items()} for row in rows[1:]]
+
+
+def program_level_workbooks() -> List[Path]:
+    if not PROGRAM_LEVEL_DATA_DIR.exists():
+        return []
+    return sorted(
+        path for path in PROGRAM_LEVEL_DATA_DIR.glob("*.xlsx") if not path.name.startswith("~$")
+    )
 
 
 def year_from_semester_code(code: str) -> str:
@@ -796,7 +857,10 @@ def import_legacy_student_surveys(
     available_program_years: Dict[str, set],
     available_genders: set,
     skipped_programs: set,
-) -> None:
+    source_note: str = LEGACY_SOURCE_NOTE,
+) -> set:
+    """يستورد صفوف التصدير المفصل ويعيد مجموعة (البرنامج، السنة) التي غطاها."""
+    covered: set = set()
     for row in legacy_rows:
         program_name = clean_text(row.get("F"))
         degree = clean_text(row.get("C"))
@@ -831,10 +895,12 @@ def import_legacy_student_surveys(
             item_number=item_number,
             item_label=item_label,
             gender=gender,
-            source_note=LEGACY_SOURCE_NOTE,
+            source_note=source_note,
             responses=response_sum,
             score_total=score_total,
         )
+        covered.add((program_id, year))
+    return covered
 
 
 def import_student_1447_surveys(
@@ -843,7 +909,11 @@ def import_student_1447_surveys(
     available_genders: set,
     skipped_programs: set,
     legacy_catalog: Dict[str, List[Dict[str, str]]],
+    program_level_coverage: Iterable[Tuple[str, str]] = (),
 ) -> None:
+    # ملفات 1447 الحالية مجمعة على مستوى الكلية؛ متى وُجد تصدير مفصل للبرنامج
+    # في السنة نفسها تُترك بيانات الكلية لذلك البرنامج حتى لا تختلط بالمفصلة.
+    covered_programs = {program_id for program_id, year in program_level_coverage if year == "1447"}
     for source in STUDENT_1447_SOURCES:
         path = source["path"]
         if not path.exists():
@@ -866,6 +936,9 @@ def import_student_1447_surveys(
             program_ids = resolve_student_program_ids(program_label)
             if not program_ids:
                 skipped_programs.add((program_label, "غير محدد", path.name))
+                continue
+            program_ids = [program_id for program_id in program_ids if program_id not in covered_programs]
+            if not program_ids:
                 continue
 
             phrase_text = clean_text(row.get(phrase_col))
@@ -1168,6 +1241,7 @@ def finalize_payload(
         "sourceFile": LEGACY_WORKBOOK_PATH.name,
         "sourceFiles": [
             LEGACY_WORKBOOK_PATH.name,
+            *[path.name for path in program_level_workbooks()],
             *[item["path"].name for item in STUDENT_1447_SOURCES if item["path"].exists()],
             *[item["path"].name for item in FACULTY_1447_SOURCES if item["path"].exists()],
             *[item["path"].name for item in GRADUATE_SAMPLE_SOURCES if item["path"].exists()],
@@ -1198,19 +1272,36 @@ def finalize_payload(
 def build_payload() -> Dict[str, object]:
     datasets, available_program_years, available_genders, skipped_programs = create_dataset_store()
 
-    legacy_rows = read_first_sheet_rows(LEGACY_WORKBOOK_PATH)
+    catalog_rows: List[Dict[str, str]] = []
+    program_level_coverage: set = set()
+
+    legacy_rows = align_legacy_rows(read_first_sheet_rows(LEGACY_WORKBOOK_PATH))
     if legacy_rows:
-        data_rows = legacy_rows[1:]
-        import_legacy_student_surveys(
-            data_rows,
+        program_level_coverage |= import_legacy_student_surveys(
+            legacy_rows,
             datasets,
             available_program_years,
             available_genders,
             skipped_programs,
         )
-        legacy_catalog = build_legacy_phrase_catalog(data_rows)
-    else:
-        legacy_catalog = {}
+        catalog_rows.extend(legacy_rows)
+
+    for path in program_level_workbooks():
+        rows = align_legacy_rows(read_first_sheet_rows(path))
+        if not rows:
+            print(f"تنبيه: تجاوز {path.name} لأن أعمدته لا تطابق صيغة التصدير المفصل.")
+            continue
+        program_level_coverage |= import_legacy_student_surveys(
+            rows,
+            datasets,
+            available_program_years,
+            available_genders,
+            skipped_programs,
+            source_note=PROGRAM_LEVEL_SOURCE_NOTE.format(name=path.name),
+        )
+        catalog_rows.extend(rows)
+
+    legacy_catalog = build_legacy_phrase_catalog(catalog_rows) if catalog_rows else {}
 
     import_student_1447_surveys(
         datasets,
@@ -1218,6 +1309,7 @@ def build_payload() -> Dict[str, object]:
         available_genders,
         skipped_programs,
         legacy_catalog,
+        program_level_coverage,
     )
     import_faculty_1447_surveys(
         datasets,
@@ -1256,6 +1348,19 @@ def main() -> None:
         print("Skipped program labels:")
         for item in payload["skippedPrograms"]:
             print(f" - {item['program']} | {item['degree']} | {item['source']}")
+    build_program_experience_kpi()
+
+
+def build_program_experience_kpi() -> None:
+    """يحدّث data/kpi/program-experience.json الذي تقرؤه لوحة مؤشرات الأداء."""
+    node = shutil.which("node")
+    if not node:
+        print(
+            "تنبيه: لم يُعثر على Node.js؛ شغّل يدويًا: "
+            f"node {PROGRAM_EXPERIENCE_KPI_SCRIPT.relative_to(ROOT)}"
+        )
+        return
+    subprocess.run([node, str(PROGRAM_EXPERIENCE_KPI_SCRIPT)], check=True, cwd=ROOT)
 
 
 if __name__ == "__main__":
