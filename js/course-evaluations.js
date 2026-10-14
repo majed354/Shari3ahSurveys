@@ -5,12 +5,14 @@
     const meta = packageData.meta || {};
     const courseRecords = Array.isArray(packageData.courseRecords) ? packageData.courseRecords : [];
     const publicExcellenceLeaders = Array.isArray(packageData.publicExcellenceLeaders) ? packageData.publicExcellenceLeaders : [];
-    const outcomeCategories = Array.isArray(meta.outcomeCategories) ? meta.outcomeCategories : [];
     const PAGE_SIZE = 75;
     const LOCK_AFTER_MS = 15 * 60 * 1000;
     let itemQualityData = null;
     let itemQualityRequest = null;
     let itemQualityError = false;
+    let domainData = null;
+    let domainRequest = null;
+    let domainError = false;
 
     const state = {
         initialized: false,
@@ -194,6 +196,7 @@
             if (action === "pdf-public-excellence") await exportPublicExcellencePdf();
             if (action === "pdf-excellence") await exportExcellencePdf();
             if (action === "retry-items") { itemQualityError = false; renderContent(); }
+            if (action === "retry-domains") { domainError = false; renderContent(); }
             if (action === "xlsx-items") exportItemQuality("xlsx");
             if (action === "csv-items") exportItemQuality("csv");
             if (action === "pdf-items") await exportItemQualityPdf();
@@ -313,9 +316,9 @@
         $("#ceDepartment", root).innerHTML = optionList(meta.departments || [], state.department, "كل الأقسام");
         const departmentField = $("[data-ce-department-field]", root);
         if (departmentField) departmentField.classList.toggle("hidden", state.tab !== "excellence");
-        $("[data-ce-cohort-field]", root).classList.toggle("hidden", state.tab !== "items");
+        $("[data-ce-cohort-field]", root).classList.toggle("hidden", state.tab !== "items" && state.tab !== "indirect");
         $("#ceCohort", root).value = state.cohort;
-        $("#ceCohort", root).disabled = state.compareCohorts;
+        $("#ceCohort", root).disabled = state.tab === "items" && state.compareCohorts;
         $("[data-ce-comparison-field]", root).classList.toggle("hidden", state.tab !== "items");
         $("#ceCompareCohorts", root).checked = state.compareCohorts;
         const queryInput = $("#ceQuery", root);
@@ -422,29 +425,67 @@
         setNotice(`الفترة الحالية: ${coursePeriodLabel()}. تُجمع شعب المقرر للعضو في السنة والبرنامج أولًا، ثم تُستبعد المجموعة إذا بقي مجموعها طالبًا أو طالبين.`, "info");
     }
 
+    const DOMAIN_LABELS = {
+        overall_satisfaction: "الرضا العام عن المقرر",
+        knowledge: "المعرفي",
+        skills: "المهاري",
+        values: "القيمي",
+        quality: "جودة المقرر والتدريس",
+        other: "خارج النواتج والجودة",
+    };
+
+    function loadDomainScores() {
+        if (domainRequest || domainData || domainError) return;
+        domainRequest = fetch("data/course-evaluations/course-domain-scores.json")
+            .then((response) => { if (!response.ok) throw new Error("Domain data unavailable"); return response.json(); })
+            .then((data) => {
+                if (data.schemaVersion !== "course-domain-scores-v1" || !Array.isArray(data.records) || !window.CourseDomainAnalysis) throw new Error("Invalid domain data");
+                domainData = data;
+            })
+            .catch((error) => { console.error("Course domain data:", error); domainError = true; })
+            .finally(() => {
+                domainRequest = null;
+                if (state.tab === "indirect") renderContent();
+            });
+    }
+
+    function courseCodeLookup(row) {
+        const match = courseRecords.find((record) => String(record.year) === row.year && record.program === row.program
+            && record.semester === "all" && String(record.courseName).normalize("NFC").replace(/\s+/g, " ").trim()
+                === String(row.courseName).normalize("NFC").replace(/\s+/g, " ").trim());
+        return match?.courseCode || "";
+    }
+
+    function domainRows() {
+        return window.CourseDomainAnalysis.buildRows(domainData, {
+            year: state.year, semester: activeCourseSemester(), degree: state.degree, program: state.program,
+            query: state.query, cohort: state.cohort,
+        }, courseCodeLookup);
+    }
+
     function renderIndirect(content) {
-        const rows = filterCourseRows();
-        if (!outcomeCategories.length) {
-            content.innerHTML = `
-                <article class="card ce-lock-card">
-                    <div class="ce-lock-icon" aria-hidden="true">⚠️</div>
-                    <div><h3>يلزم استكمال خريطة تصنيف بنود التقييم</h3><p>الملف التفصيلي يحتوي البنود ودرجاتها، والكود المرفق يقرأ تصنيفًا جاهزًا باسم «جودة المقرر/معرفي/مهاري/قيمي» من عمود غير موجود في ملف المصدر. لذلك أوقفت الجدول القديم ذي الجوانب السبعة حتى لا يعرض تصنيفًا غير مطابق.</p></div>
-                </article>`;
-            setNotice("يلزم ملف أو كود يربط رقم البند أو نصه بتصنيفه قبل حساب المتوسطات المعرفية والمهارية والقيمية بدقة.", "info");
+        if (!domainData) {
+            content.innerHTML = `<article class="card"><div class="empty-state" role="status">${domainError
+                ? 'تعذر تحميل نتائج المجالات. <button class="btn" type="button" data-ce-action="retry-domains">إعادة المحاولة</button>'
+                : "جارٍ تحميل نتائج المجالات…"}</div></article>`;
+            setNotice("المجالات محسوبة من بنود الاستبانة المصنفة دلاليًا في data/course-evaluations/item-classification.json.", "info");
+            loadDomainScores();
             return;
         }
+        const rows = domainRows();
         const page = pageRows(rows);
+        const columns = window.CourseDomainAnalysis.COLUMNS;
         content.innerHTML = `
             <article class="card">
-                <div class="card-head"><div><h3>التقييم غير المباشر للمقررات</h3><p class="meta-text">متوسطات التصنيف المعرفي والمهاري والقيمي وما بقي بلا تصنيف، بعد جمع شعب المقرر في السنة.</p></div><button class="btn btn-primary" type="button" data-ce-action="export-indirect">تصدير Excel</button></div>
+                <div class="card-head"><div><h3>التقييم غير المباشر للمقررات</h3><p class="meta-text">المعرفي والمهاري والقيمي من البنود التي تسأل الطالب عن مكسبه فقط. جودة التدريس والخدمات والرضا منفصلة ولا تدخل في النواتج. تُجمع إجابات فصول السنة قبل القسمة.</p></div><button class="btn btn-primary" type="button" data-ce-action="export-indirect">تصدير Excel</button></div>
                 <div class="table-wrap"><table class="data-table ce-wide-table"><thead><tr>
-                    <th>رمز المقرر</th><th>اسم المقرر</th><th>عدد الطلاب</th><th>جودة المقرر</th>${outcomeCategories.map((item) => `<th>${escapeHtml(item.label)}</th>`).join("")}
+                    <th>رمز المقرر</th><th>اسم المقرر</th><th>البرنامج</th><th>الفصول</th><th>إجابات البند</th>${columns.map((id) => `<th>${escapeHtml(DOMAIN_LABELS[id])}</th>`).join("")}
                 </tr></thead><tbody>
-                    ${page.rows.map((row) => `<tr><td>${escapeHtml(row.courseCode || "—")}</td><td><strong>${escapeHtml(row.courseName)}</strong></td><td>${Number(row.respondents).toLocaleString("ar-SA")}</td><td>${scorePill(row.score)}</td>${outcomeCategories.map((item) => `<td>${row.outcomeScores?.[item.id] == null ? "—" : scorePill(row.outcomeScores[item.id])}</td>`).join("")}</tr>`).join("") || `<tr><td colspan="${4 + outcomeCategories.length}"><div class="empty-state">لا توجد بيانات مطابقة.</div></td></tr>`}
+                    ${page.rows.map((row) => `<tr><td><bdi dir="ltr" style="white-space:nowrap">${escapeHtml(row.courseCode || "—")}</bdi></td><td><strong>${escapeHtml(row.courseName)}</strong></td><td>${escapeHtml(row.program)}</td><td>${escapeHtml(row.semesters.join("، "))}</td><td>${row.itemResponsesPerItem.toLocaleString("ar-SA")}</td>${columns.map((id) => `<td>${row.scores[id] == null ? "—" : scorePill(row.scores[id])}</td>`).join("")}</tr>`).join("") || `<tr><td colspan="${5 + columns.length}"><div class="empty-state">لا توجد بيانات مطابقة.</div></td></tr>`}
                 </tbody></table></div>
                 ${pagination(rows.length, page.pages)}
             </article>`;
-        setNotice("الشرطة (—) تعني عدم وجود بنود من التصنيف المحدد في نموذج السنة المختارة.", "info");
+        setNotice("الشرطة (—) تعني أن نموذج الاستبانة لا يتضمن بندًا يقيس هذا المجال أو أن أحد بنوده ناقص؛ لا تُعامل صفرًا. «إجابات البند» متوسط إجابات البند الواحد، وليست عدد طلاب فريدين. البنود التي بلا تصنيف مناسب لا تدخل أي متوسط.", "info");
     }
 
     function rankFaculty(rows) {
@@ -942,20 +983,19 @@
     }
 
     function exportIndirect() {
-        if (!outcomeCategories.length) {
-            alert("يلزم استكمال خريطة تصنيف البنود قبل تصدير التقييم غير المباشر.");
-            return;
-        }
-        exportWorkbook(filterCourseRows().map((row) => {
+        if (!domainData) { alert("لم تُحمّل نتائج المجالات بعد."); return; }
+        const columns = window.CourseDomainAnalysis.COLUMNS;
+        exportWorkbook(domainRows().map((row) => {
             const output = {
                 "السنة": row.year,
-                "الفصل": row.semester === "all" ? "كل الفصول" : row.semester,
+                "الفصول": row.semesters.join("، "),
+                "البرنامج": row.program,
                 "رمز المقرر": row.courseCode || "",
                 "اسم المقرر": row.courseName,
-                "عدد الطلاب": row.respondents,
-                "جودة المقرر": row.score,
+                "متوسط إجابات البند": row.itemResponsesPerItem,
             };
-            outcomeCategories.forEach((item) => { output[item.label] = row.outcomeScores?.[item.id] ?? ""; });
+            columns.forEach((id) => { output[DOMAIN_LABELS[id]] = row.scores[id] == null ? "" : Number(row.scores[id].toFixed(4)); });
+            output["بنود بلا تصنيف"] = row.excludedItems;
             return output;
         }), "التقييم غير المباشر", "التقييم_غير_المباشر_للمقررات.xlsx");
     }

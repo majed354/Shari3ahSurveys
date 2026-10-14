@@ -1,0 +1,1335 @@
+{
+ "schemaVersion": "course-item-classification-v1",
+ "scope": "بنود استبانة تقييم الطلاب للمقررات في data/course-evaluations/v2/student-course-evaluations.json",
+ "principle": "يُعد البند قياسًا غير مباشر لناتج تعلم فقط إذا سأل الطالب عن مكسبه هو في المعرفة أو المهارة أو القيمة نتيجة المقرر. بنود عضو هيئة التدريس وتنظيم المقرر والتقويم والأنشطة والمصادر والخدمات والتقنية والرضا ليست قياسًا لناتج تعلم ولو وردت فيها كلمات مثل «معرفة» أو «مهارات» أو «محتوى».",
+ "framework": "مجالات الإطار الوطني للمؤهلات (نقف 2020): المعرفة والفهم، المهارات (الإدراكية والعملية والتواصل وتقنية المعلومات)، القيم والاستقلالية والمسؤولية (ومنها العمل الجماعي، كما في نواتج البرامج ق1/ق2).",
+ "categories": [
+  {
+   "id": "knowledge",
+   "label": "معرفي",
+   "group": "learning_outcome"
+  },
+  {
+   "id": "skills",
+   "label": "مهاري",
+   "group": "learning_outcome"
+  },
+  {
+   "id": "values",
+   "label": "قيمي",
+   "group": "learning_outcome"
+  },
+  {
+   "id": "quality",
+   "label": "جودة المقرر والتدريس",
+   "group": "quality",
+   "note": "البنود ذات overall=true وحدها تمثل «الرضا العام عن المقرر»"
+  },
+  {
+   "id": "other",
+   "label": "خارج نواتج التعلم والجودة",
+   "group": "other",
+   "note": "الخدمات والمصادر والدعم الفني وقنوات التواصل ومزايا التعلم الإلكتروني وانطباعاته"
+  },
+  {
+   "id": "unclassified",
+   "label": "بلا تصنيف",
+   "group": "none",
+   "note": "بند لا تناسبه أي فئة بعد الحسم؛ لا يدخل أي متوسط"
+  },
+  {
+   "id": "review",
+   "label": "يحتاج مراجعة",
+   "group": "review",
+   "note": "لا يدخل أي متوسط حتى يُحسم"
+  }
+ ],
+ "subcategories": {
+  "course_organization": "تنظيم المقرر وخطته",
+  "course_design": "تصميم المقرر واتساقه",
+  "assessment": "التقويم",
+  "assessment_feedback": "التغذية الراجعة",
+  "teaching": "أداء عضو هيئة التدريس",
+  "teaching_methods": "أساليب التدريس ووسائطه",
+  "learning_materials": "المواد التعليمية",
+  "learning_activities": "الأنشطة التعليمية",
+  "learning_environment": "بيئة التعلم",
+  "overall_satisfaction": "الرضا العام عن المقرر",
+  "support_services": "الخدمات والدعم الأكاديمي",
+  "learning_resources": "توافر المصادر",
+  "technical_support": "الدعم الفني",
+  "elearning_support": "التدريب على التعلم الإلكتروني",
+  "elearning_features": "مزايا التعلم الإلكتروني",
+  "elearning_convenience": "تيسيرات التعلم الإلكتروني",
+  "elearning_impression": "الانطباع عن التعلم الإلكتروني",
+  "communication_channels": "قنوات التواصل",
+  "cognitive_skills": "مهارات إدراكية",
+  "communication_skills": "مهارات التواصل",
+  "communication_it_skills": "مهارات التقنية والاتصالات",
+  "teamwork_responsibility": "العمل الجماعي والمسؤولية",
+  "lifelong_learning_disposition": "النزعة إلى التعلم المستمر",
+  "elearning_effect": "أثر نمط التعلم الإلكتروني",
+  "content_relevance": "أهمية محتوى المقرر ونفعه"
+ },
+ "scoring": "درجة الفئة لمقرر وشطر وفترة = مجموع (الدرجة × عدد الإجابات) لبنود الفئة ÷ مجموع إجاباتها. تُعد النتيجة غير مكتملة (null) إذا لم يكن في الفئة بند، أو كان أحد بنودها partial أو بلا إجابات. البنود ذات النص المفقود وبنود review لا تدخل أي فئة.",
+ "verification": {
+  "method": "تصنيف المؤلف ثم تصنيف أعمى مستقل بالمعيار نفسه دون اطلاع على التصنيف الأول؛ حُسم الخلاف في فئات غير النواتج بسياق محور البند، وبقي الملتبس في نواتج التعلم للمراجعة. حُسمت البنود الثلاثة الملتبسة بالمعيار نفسه بتفويض المستخدم في 15 أكتوبر 2026، مع مراجعة معاكسة مستقلة.",
+  "agreement": "43/48",
+  "date": "2026-10-15"
+ },
+ "items": [
+  {
+   "statement": "كانت الخطوط الأساسية (بما في ذلك المعلومات والمهارات التي صمم المقرر لتطويرها) واضحة بالنسبة لي.",
+   "instrument": "legacy",
+   "topic": "أسئلة خاصة بـبداية المقرر",
+   "number": 1,
+   "itemIds": [
+    "ae59692f76c1d21682047d06",
+    "ca4021cff5826f5362cdcc0e"
+   ],
+   "category": "quality",
+   "subcategory": "course_organization",
+   "overall": false,
+   "status": "classified",
+   "rationale": "وضوح الخطوط الأساسية للمقرر وصف لتنظيمه، لا لمكسب الطالب",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "plan"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "كانت متطلبات النجاح في المقرر (بما في ذلك الواجبات التي يتم التقييم بناء عليها، ومحكات التقييم) واضحة بالنسبة لي.",
+   "instrument": "legacy",
+   "topic": "أسئلة خاصة بـبداية المقرر",
+   "number": 2,
+   "itemIds": [
+    "2ef5d590e61d0a93c9c38176",
+    "94f53c4a380b22fe37ab2edb"
+   ],
+   "category": "quality",
+   "subcategory": "assessment",
+   "overall": false,
+   "status": "classified",
+   "rationale": "وضوح متطلبات النجاح ومحكات التقييم ممارسة تقويم",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "plan"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "كانت مصادر مساعدتي في المقرر (بما في ذلك الساعات المكتبية لعضو هيئة التدريس، والمراجع) واضحة بالنسبة لي.",
+   "instrument": "legacy",
+   "topic": "أسئلة خاصة بـبداية المقرر",
+   "number": 3,
+   "itemIds": [
+    "4fb41f0d1d20a061d85e2481",
+    "7e552317f18830e4084a36a4"
+   ],
+   "category": "other",
+   "subcategory": "support_services",
+   "overall": false,
+   "status": "classified",
+   "rationale": "وضوح مصادر المساعدة (الساعات المكتبية والمراجع) خدمة دعم",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "plan"
+   },
+   "verification": {
+    "author": "other",
+    "blindVerifier": "review",
+    "agreed": false,
+    "resolvedBy": "arbiter"
+   }
+  },
+  {
+   "statement": "كان تنفيذ المقرر والأشياء التي طلب مني أداؤها متسقة مع الخطوط الأساسية للمقرر.",
+   "instrument": "legacy",
+   "topic": "أسئلة خاصة بما حدث خلال المقرر",
+   "number": 1,
+   "itemIds": [
+    "a47c0e1de9a165fe978a2fcf",
+    "b368491e29ced90226839603"
+   ],
+   "category": "quality",
+   "subcategory": "course_organization",
+   "overall": false,
+   "status": "classified",
+   "rationale": "اتساق التنفيذ مع الخطوط الأساسية تنظيم للمقرر",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "plan"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "كان عضو هيئة التدريس ملتزماً بإعطاء المقرر بشكل كامل (مثل: بدأ المحاضرات في الوقت المحدد، تواجد عضو هيئة التدريس بشكل دائم، الإعداد الجيد للمواد المساعدة في التدريس، وهكذا).",
+   "instrument": "legacy",
+   "topic": "أسئلة خاصة بما حدث خلال المقرر",
+   "number": 2,
+   "itemIds": [
+    "51809f57967b68aa8ba1aa48",
+    "ba8ec8f5fbb87b6ae52826d8"
+   ],
+   "category": "quality",
+   "subcategory": "teaching",
+   "overall": false,
+   "status": "classified",
+   "rationale": "التزام عضو هيئة التدريس بإعطاء المقرر أداء تدريسي",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "plan"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "لدى عضو هيئة التدريس الذي يقوم بتقديم هذا المقرر إلمام كامل بمحتوى المقرر.",
+   "instrument": "legacy",
+   "topic": "أسئلة خاصة بما حدث خلال المقرر",
+   "number": 3,
+   "itemIds": [
+    "060372c5e90b63df66ebb49d",
+    "6da18a4218a1bf016a587567"
+   ],
+   "category": "quality",
+   "subcategory": "teaching",
+   "overall": false,
+   "status": "classified",
+   "rationale": "إلمام المدرس بالمحتوى صفة للمدرس لا مكسب للطالب",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "strategies"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "كان عضو هيئة التدريس موجوداً للمساعدة خلال الساعات المكتبية .",
+   "instrument": "legacy",
+   "topic": "أسئلة خاصة بما حدث خلال المقرر",
+   "number": 4,
+   "itemIds": [
+    "014194236658da7268eb4d6e",
+    "23889569cffd13b0071d545f"
+   ],
+   "category": "quality",
+   "subcategory": "teaching",
+   "overall": false,
+   "status": "classified",
+   "rationale": "تواجد عضو هيئة التدريس للمساعدة جزء من أدائه التدريسي، لا مكسب تعلم للطالب",
+   "previous": {
+    "reviewSt": "غير مصنف",
+    "siteDimension": "interaction"
+   },
+   "verification": {
+    "author": "other",
+    "blindVerifier": "quality",
+    "agreed": false,
+    "resolvedBy": "arbiter"
+   }
+  },
+  {
+   "statement": "كان عضو هيئة التدريس متحمساً لما يقوم بتدريسه .",
+   "instrument": "legacy",
+   "topic": "أسئلة خاصة بما حدث خلال المقرر",
+   "number": 5,
+   "itemIds": [
+    "a28c4f763bd0d323abf7347a",
+    "b48e0b8910a124d26b843085"
+   ],
+   "category": "quality",
+   "subcategory": "teaching",
+   "overall": false,
+   "status": "classified",
+   "rationale": "حماس المدرس صفة تدريسية، لا قيمة اكتسبها الطالب",
+   "previous": {
+    "reviewSt": "غير مصنف",
+    "siteDimension": "strategies"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "كان عضو هيئة التدريس مهتماً بمدى تقدمي وكان معينا ً لي.",
+   "instrument": "legacy",
+   "topic": "أسئلة خاصة بما حدث خلال المقرر",
+   "number": 6,
+   "itemIds": [
+    "738ee9a32562673f47790ce3",
+    "8219c4c35d107bbcf6f314f0"
+   ],
+   "category": "quality",
+   "subcategory": "teaching",
+   "overall": false,
+   "status": "classified",
+   "rationale": "اهتمام المدرس بتقدم الطالب ممارسة تدريسية",
+   "previous": {
+    "reviewSt": "غير مصنف",
+    "siteDimension": "interaction"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "كان كل ما يقدم في المقرر حديثا ومفيداً، (النصوص المقروءة، التلخيصات، المراجع، وما شابهها).",
+   "instrument": "legacy",
+   "topic": "أسئلة خاصة بما حدث خلال المقرر",
+   "number": 7,
+   "itemIds": [
+    "b68635338d62bc4f45837b4f",
+    "fcf953271177fe27ef94238f"
+   ],
+   "category": "quality",
+   "subcategory": "learning_materials",
+   "overall": false,
+   "status": "classified",
+   "rationale": "حداثة المواد وفائدتها جودة المواد التعليمية",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "strategies"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "كانت المصادر التي احتجتها في هذا المقرر متوافرة كلما كنت أحتاج إليها.",
+   "instrument": "legacy",
+   "topic": "أسئلة خاصة بما حدث خلال المقرر",
+   "number": 8,
+   "itemIds": [
+    "e73e685edac9ea6b33d9a695",
+    "f44fd15d6143cec6decc6ada"
+   ],
+   "category": "other",
+   "subcategory": "learning_resources",
+   "overall": false,
+   "status": "classified",
+   "rationale": "توافر المصادر خدمة وموارد",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "plan"
+   },
+   "verification": {
+    "author": "other",
+    "blindVerifier": "other",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "كان هناك استخدام فعال للتقنية لدعم تعليمي في هذا المقرر.",
+   "instrument": "legacy",
+   "topic": "أسئلة خاصة بما حدث خلال المقرر",
+   "number": 9,
+   "itemIds": [
+    "7d14b4d3948aa40b356c5171",
+    "bd8735afa728330fbd91d56c"
+   ],
+   "category": "quality",
+   "subcategory": "teaching_methods",
+   "overall": false,
+   "status": "classified",
+   "rationale": "استخدام التقنية لدعم التعليم أسلوب تدريس",
+   "previous": {
+    "reviewSt": "مهاري",
+    "siteDimension": "technology"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "وجدت تشجيعاً لإلقاء الأسئلة وتطوير أفكاري الخاصة في هذا المقرر.",
+   "instrument": "legacy",
+   "topic": "أسئلة خاصة بما حدث خلال المقرر",
+   "number": 10,
+   "itemIds": [
+    "011737b26bcacc05b862018d",
+    "7a29a530f51d3c16398d6974"
+   ],
+   "category": "quality",
+   "subcategory": "learning_environment",
+   "overall": false,
+   "status": "classified",
+   "rationale": "يصف تشجيعًا في بيئة التعلم وأسلوب التدريس، لا مكسبًا مقيسًا لدى الطالب",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "interaction"
+   },
+   "verification": {
+    "author": "review",
+    "blindVerifier": "quality",
+    "agreed": false,
+    "resolvedBy": "arbiter"
+   }
+  },
+  {
+   "statement": "شجعت في هذا المقرر على تقديم أفضل ما عندي .",
+   "instrument": "legacy",
+   "topic": "أسئلة خاصة بما حدث خلال المقرر",
+   "number": 11,
+   "itemIds": [
+    "3b8e89a80602f6f91f7423f1",
+    "3f5c7be4bbbadc5264d271e7"
+   ],
+   "category": "quality",
+   "subcategory": "teaching",
+   "overall": false,
+   "status": "classified",
+   "rationale": "التشجيع على تقديم الأفضل ممارسة تحفيزية من المدرس",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "satisfaction"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "ساعدت الأشياء التي طلبت مني في هذا المقرر (النشطة الصفية، المعامل، وهكذا) في تطوير معرفتي ومهاراتي التي يهدف المقرر لتعليمها.",
+   "instrument": "legacy",
+   "topic": "أسئلة خاصة بما حدث خلال المقرر",
+   "number": 12,
+   "itemIds": [
+    "2794ad5e48bfcb7791825853",
+    "574705f539bdcec9db8d0550"
+   ],
+   "category": "quality",
+   "subcategory": "learning_activities",
+   "overall": false,
+   "status": "classified",
+   "rationale": "يحكم على فاعلية الأنشطة المطلوبة في بلوغ أهداف المقرر، كالبند 32؛ ولا يُنسب إلى مجال واحد لأنه يجمع المعرفة والمهارات في إجابة واحدة.",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "alignment"
+   },
+   "verification": {
+    "author": "review",
+    "blindVerifier": "review",
+    "agreed": true
+   },
+   "decision": {
+    "from": "review",
+    "proposed": "knowledge",
+    "alternative": "skills",
+    "decidedBy": "تطبيق المعيار بتفويض المستخدم",
+    "date": "2026-10-15",
+    "adversarialReview": "changed_from_unclassified_to_quality"
+   }
+  },
+  {
+   "statement": "كانت كمية العمل في هذا المقرر متناسبة مع عدد الساعات المعتمدة المخصصة للمقرر.",
+   "instrument": "legacy",
+   "topic": "أسئلة خاصة بما حدث خلال المقرر",
+   "number": 13,
+   "itemIds": [
+    "37068c55e0dbf3e32e9cd7b1",
+    "84127c671adc3f035da5bd20"
+   ],
+   "category": "quality",
+   "subcategory": "course_organization",
+   "overall": false,
+   "status": "classified",
+   "rationale": "تناسب عبء العمل مع الساعات تنظيم للمقرر",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "alignment"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "قدمت لي درجات الواجبات والاختبارات في هذا المقرر خلال وقت معقول.",
+   "instrument": "legacy",
+   "topic": "أسئلة خاصة بما حدث خلال المقرر",
+   "number": 14,
+   "itemIds": [
+    "7235f881f40f9790b86bba20",
+    "fba143fa34c34ce016136b64"
+   ],
+   "category": "quality",
+   "subcategory": "assessment",
+   "overall": false,
+   "status": "classified",
+   "rationale": "سرعة إعلان الدرجات ممارسة تقويم",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "assessment"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "كان تصحيح واجباتي واختباراتي عادلاً ومناسباً.",
+   "instrument": "legacy",
+   "topic": "أسئلة خاصة بما حدث خلال المقرر",
+   "number": 15,
+   "itemIds": [
+    "59de738e1b3e707a1d7b3145",
+    "a9a0c0eed7bc5949ca78eb61"
+   ],
+   "category": "quality",
+   "subcategory": "assessment",
+   "overall": false,
+   "status": "classified",
+   "rationale": "عدالة التصحيح ممارسة تقويم",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "assessment"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "وضحت لي الصلة بين هذا المقرر والمقررات الأخرى بالبرنامج (القسم).",
+   "instrument": "legacy",
+   "topic": "أسئلة خاصة بما حدث خلال المقرر",
+   "number": 16,
+   "itemIds": [
+    "8e8eaedd52bdae0ecc7538ad",
+    "a8b6361a8cb4cc228e0b2ae8"
+   ],
+   "category": "quality",
+   "subcategory": "course_organization",
+   "overall": false,
+   "status": "classified",
+   "rationale": "توضيح صلة المقرر بغيره عرض لموقع المقرر في البرنامج",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "alignment"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "أشعر بالرضا بشكل عام عن مستوى جودة هذا المقرر.",
+   "instrument": "legacy",
+   "topic": "التقويم العام",
+   "number": 1,
+   "itemIds": [
+    "bcf3b6e30f46db11bff852d3",
+    "bfb1376156a2449183a3adaf"
+   ],
+   "category": "quality",
+   "subcategory": "overall_satisfaction",
+   "overall": true,
+   "status": "classified",
+   "rationale": "حكم عام على جودة المقرر كله",
+   "previous": {
+    "reviewSt": "جودة المقرر",
+    "siteDimension": "satisfaction"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "ما تعلمته في هذا المقرر مهم وسيفيدني مستقبلاً.",
+   "instrument": "legacy",
+   "topic": "تقويم المقرر",
+   "number": 1,
+   "itemIds": [
+    "4cfdc71eee9457f737eb9892",
+    "95372e1cb3129a625e35134a"
+   ],
+   "category": "quality",
+   "subcategory": "content_relevance",
+   "overall": false,
+   "status": "classified",
+   "rationale": "حكم على أهمية محتوى المقرر ونفعه، كالبند 10 «حديثًا ومفيدًا»، لا على مكسب محدد في معرفة أو مهارة أو قيمة.",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "alignment"
+   },
+   "verification": {
+    "author": "review",
+    "blindVerifier": "review",
+    "agreed": true
+   },
+   "decision": {
+    "from": "review",
+    "proposed": "knowledge",
+    "alternative": "values",
+    "decidedBy": "تطبيق المعيار بتفويض المستخدم",
+    "date": "2026-10-15",
+    "adversarialReview": "changed_from_unclassified_to_quality"
+   }
+  },
+  {
+   "statement": "ساعدني هذا المقرر على تحسين قدرتي على التفكير وحل المشكلات بدلاً من حفظ المعلومات فقط.",
+   "instrument": "legacy",
+   "topic": "تقويم المقرر",
+   "number": 2,
+   "itemIds": [
+    "416aad28ec24e9e2e621b8c1",
+    "fa149c00afefcf563b0445a6"
+   ],
+   "category": "skills",
+   "subcategory": "cognitive_skills",
+   "overall": false,
+   "status": "classified",
+   "rationale": "تحسن القدرة على التفكير وحل المشكلات مهارة إدراكية",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "alignment"
+   },
+   "verification": {
+    "author": "skills",
+    "blindVerifier": "skills",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "ساعدني هذا المقرر على تحسين مهاراتي في العمل على شكل فريق.",
+   "instrument": "legacy",
+   "topic": "تقويم المقرر",
+   "number": 3,
+   "itemIds": [
+    "2f50ccbb158d46ef62fc2f81",
+    "8856f3d2898e71a17e9b0bbe"
+   ],
+   "category": "values",
+   "subcategory": "teamwork_responsibility",
+   "overall": false,
+   "status": "classified",
+   "rationale": "العمل ضمن فريق يقع في مجال القيم والاستقلالية والمسؤولية (ق) في نقف وبرامج الكلية",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "alignment"
+   },
+   "verification": {
+    "author": "values",
+    "blindVerifier": "values",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "ساعدني هذا المقرر على تحسين قدرتي على الاتصال بفاعلية.",
+   "instrument": "legacy",
+   "topic": "تقويم المقرر",
+   "number": 4,
+   "itemIds": [
+    "36c3dadc67b7599bc877024a",
+    "d72759005619bdac41f29e11"
+   ],
+   "category": "skills",
+   "subcategory": "communication_skills",
+   "overall": false,
+   "status": "classified",
+   "rationale": "تحسن القدرة على الاتصال بفاعلية مهارة تواصل",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "interaction"
+   },
+   "verification": {
+    "author": "skills",
+    "blindVerifier": "skills",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "تم عرض خطة المقرر بالتفصيل في بداية الفصل الدراسي.",
+   "instrument": "electronic_learning",
+   "topic": "أولاً: تنظيم المقرر وتخطيطه:",
+   "number": 1,
+   "itemIds": [
+    "24f0a90444ffb75fe4131ac5",
+    "3f08db3cab0c2f5d5dc5164e",
+    "59124d33cb7568e6711dfc7a",
+    "5ce86b384ed9a9551372f6ff",
+    "9e40a04b47322ad10656b0dd"
+   ],
+   "category": "quality",
+   "subcategory": "course_organization",
+   "overall": false,
+   "status": "classified",
+   "rationale": "عرض خطة المقرر تنظيم",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "plan"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "تم عرض الدروس بأشكال وأساليب مختلفة بالتعلم الالكتروني",
+   "instrument": "electronic_learning",
+   "topic": "أولاً: تنظيم المقرر وتخطيطه:",
+   "number": 2,
+   "itemIds": [
+    "3fa1e6d7cc89e5c0981f6c10",
+    "44a05e3660051cccc633df5c",
+    "c544d5384535c20b9121ec3b",
+    "dbbd6e690b7ddce55a58128e",
+    "df06c6aedbace9600275e956"
+   ],
+   "category": "quality",
+   "subcategory": "teaching_methods",
+   "overall": false,
+   "status": "classified",
+   "rationale": "تنويع أساليب عرض الدروس أسلوب تدريس",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "strategies"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "وضح عضو هيئة التدريس آلية تصحيح الاختبارات والأنشطة والتكليفات",
+   "instrument": "electronic_learning",
+   "topic": "أولاً: تنظيم المقرر وتخطيطه:",
+   "number": 3,
+   "itemIds": [
+    "0b0821696e004d34303e565f",
+    "7c0b6aa03d2fa61d92238caa",
+    "80a7cf9d27b0446da1f5681c",
+    "ae601f4fe0b5ac4270360022",
+    "f65c57572591eee38c70388e"
+   ],
+   "category": "quality",
+   "subcategory": "assessment",
+   "overall": false,
+   "status": "classified",
+   "rationale": "توضيح آلية التصحيح ممارسة تقويم",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "plan"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "أتيح لي كيفية الحصول على الخدمات الاكاديمية في المقرر مثل الارشاد الأكاديمي، ورفع الغياب.",
+   "instrument": "electronic_learning",
+   "topic": "أولاً: تنظيم المقرر وتخطيطه:",
+   "number": 4,
+   "itemIds": [
+    "15166ea57b3a65280d630605",
+    "30407c1d4a1907534a203f77",
+    "39f2e1e3e243364f32a23770",
+    "4659aeeb7908f18e87a9cd90",
+    "a654d3c1a9beb1337aa7286a"
+   ],
+   "category": "other",
+   "subcategory": "support_services",
+   "overall": false,
+   "status": "classified",
+   "rationale": "الإرشاد الأكاديمي ورفع الغياب خدمات أكاديمية",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "plan"
+   },
+   "verification": {
+    "author": "other",
+    "blindVerifier": "other",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "تنوعت الوسائط التعليمية التي تم عرض المقرر بها.",
+   "instrument": "electronic_learning",
+   "topic": "ثالثاً: عناصر تصميم المقرر ووسائطه المتعددة:",
+   "number": 1,
+   "itemIds": [
+    "15d64b322e1aaac28877b177",
+    "41a433a32d44973b8a3a8c0f",
+    "5d9b28c16ddee89c9e878a23",
+    "c5eda073e420111a36ac3311",
+    "dfa59d9072d90a08a0431715"
+   ],
+   "category": "quality",
+   "subcategory": "teaching_methods",
+   "overall": false,
+   "status": "classified",
+   "rationale": "تنوع الوسائط أسلوب تدريس",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "strategies"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "تم تنفيذ وعرض المقرر بأسلوب شيق بالتعلم الالكتروني.",
+   "instrument": "electronic_learning",
+   "topic": "ثالثاً: عناصر تصميم المقرر ووسائطه المتعددة:",
+   "number": 2,
+   "itemIds": [
+    "2488633105ffaa099f54ce1c",
+    "bbb44dbd2bd5f6d20d4fe0df",
+    "c1ca365eb17328aec5cb9517",
+    "de953d4c759b8ad97f766a83",
+    "ece584b85d25eca704833da6"
+   ],
+   "category": "quality",
+   "subcategory": "teaching_methods",
+   "overall": false,
+   "status": "classified",
+   "rationale": "تشويق العرض أسلوب تدريس",
+   "previous": {
+    "reviewSt": "مهاري",
+    "siteDimension": "strategies"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "تلقيت التدريب والإرشاد عن كيفية الاستفادة القصوى من التعلم الالكتروني.",
+   "instrument": "electronic_learning",
+   "topic": "ثالثاً: عناصر تصميم المقرر ووسائطه المتعددة:",
+   "number": 3,
+   "itemIds": [
+    "849afc7232387a969cc3afed",
+    "88984d95f4a9712d6df3f4a3",
+    "8dba6b46b06500c294f76d33",
+    "c2457d338693e21db4fb57a4",
+    "e15ef8f1e847d19a844a6f66"
+   ],
+   "category": "other",
+   "subcategory": "elearning_support",
+   "overall": false,
+   "status": "classified",
+   "rationale": "التدريب على استخدام التعلم الإلكتروني دعم للمنصة",
+   "previous": {
+    "reviewSt": "مهاري",
+    "siteDimension": "technology"
+   },
+   "verification": {
+    "author": "other",
+    "blindVerifier": "other",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "أتاحت لي الأنشطة التعليمية وأدوات المقرر فرصة للتفاعل مع المحتوى.",
+   "instrument": "electronic_learning",
+   "topic": "ثالثاً: عناصر تصميم المقرر ووسائطه المتعددة:",
+   "number": 4,
+   "itemIds": [
+    "0111a8451ae92493cc061976",
+    "3391d6eb58aef893da1549ee",
+    "6206d60c0e37af01462c54ee",
+    "8776f229c4169b9c4cdb723c",
+    "8f528c3d66bc1fcb2b83fffd"
+   ],
+   "category": "quality",
+   "subcategory": "learning_activities",
+   "overall": false,
+   "status": "classified",
+   "rationale": "إتاحة فرصة التفاعل مع المحتوى وصف للأنشطة لا لمكسب",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "alignment"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "تمكنت من متابعة ما تغيبت عنه من الدروس من خلال التعلم الالكتروني.",
+   "instrument": "electronic_learning",
+   "topic": "ثالثاً: عناصر تصميم المقرر ووسائطه المتعددة:",
+   "number": 5,
+   "itemIds": [
+    "1baaf42f4514d4b63635d82e",
+    "79051efa8c23e1e1aee02d3c",
+    "7e20be927b2ec5b991dab81e",
+    "95bbd807794b065ef5dbb551",
+    "9ce8f6e89af71eb65e173f1e"
+   ],
+   "category": "other",
+   "subcategory": "elearning_convenience",
+   "overall": false,
+   "status": "classified",
+   "rationale": "متابعة الدروس الفائتة ميزة منصة",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "technology"
+   },
+   "verification": {
+    "author": "other",
+    "blindVerifier": "other",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "شجعني التعلم الالكتروني على التعلم المستمر.",
+   "instrument": "electronic_learning",
+   "topic": "ثالثاً: عناصر تصميم المقرر ووسائطه المتعددة:",
+   "number": 6,
+   "itemIds": [
+    "0d1405e7cd7c81274dbffd34",
+    "2acb7e4b1f51576868e7cc10",
+    "8ea2efd4e19341b63bfbf5a4",
+    "9db1b492fbf9aa7e51f63e48",
+    "f50b38be15144ffde42a9951"
+   ],
+   "category": "other",
+   "subcategory": "elearning_effect",
+   "overall": false,
+   "status": "classified",
+   "rationale": "«شجعني» تصف حافزًا لا قيمة متحققة لدى الطالب، كسابقتي البندين 13 و14؛ ومصدر الحافز نمط التعلم الإلكتروني فيُلحق بالبند 42.",
+   "previous": {
+    "reviewSt": "قيمي",
+    "siteDimension": "satisfaction"
+   },
+   "verification": {
+    "author": "review",
+    "blindVerifier": "review",
+    "agreed": true
+   },
+   "decision": {
+    "from": "review",
+    "proposed": "values",
+    "alternative": "other",
+    "decidedBy": "تطبيق المعيار بتفويض المستخدم",
+    "date": "2026-10-15",
+    "adversarialReview": "agreed"
+   }
+  },
+  {
+   "statement": "تحسنت مهارتي في استخدام التكنولوجيا والاتصالات من خلال التعلم الالكتروني.",
+   "instrument": "electronic_learning",
+   "topic": "ثالثاً: عناصر تصميم المقرر ووسائطه المتعددة:",
+   "number": 7,
+   "itemIds": [
+    "33a063d2e51c4ca283691aa0",
+    "6174f763ada89590ea31ad4d",
+    "6c1ba6177ed233b8058b050a",
+    "bdb8a6d8d08209c6ec7d59b9",
+    "c57e716dbce0739ade976ce3"
+   ],
+   "category": "skills",
+   "subcategory": "communication_it_skills",
+   "overall": false,
+   "status": "classified",
+   "rationale": "تحسن مهارة استخدام التقنية والاتصالات مكسب مهاري",
+   "previous": {
+    "reviewSt": "مهاري",
+    "siteDimension": "technology"
+   },
+   "verification": {
+    "author": "skills",
+    "blindVerifier": "skills",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "أتاح التعلم الالكتروني لنا فرص متكافئة في المشاركة أثناء المحاضرة.",
+   "instrument": "electronic_learning",
+   "topic": "ثانياً التواصل والتفاعل:",
+   "number": 1,
+   "itemIds": [
+    "362ae90e119ee57009b4355d",
+    "920ad351c5f29b547fb046c3",
+    "9dc28902d03d1c16941ebfad",
+    "d20272a9362b128be56f160e",
+    "e839f67c66978b6844239f65"
+   ],
+   "category": "other",
+   "subcategory": "elearning_features",
+   "overall": false,
+   "status": "classified",
+   "rationale": "تكافؤ فرص المشاركة ميزة يتيحها نمط التعلم الإلكتروني",
+   "previous": {
+    "reviewSt": "غير مصنف",
+    "siteDimension": "interaction"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "other",
+    "agreed": false,
+    "resolvedBy": "arbiter"
+   }
+  },
+  {
+   "statement": "أتاح لي التعلم الالكتروني التواصل مع عضو هيئة التدريس.",
+   "instrument": "electronic_learning",
+   "topic": "ثانياً التواصل والتفاعل:",
+   "number": 2,
+   "itemIds": [
+    "0fc97608b4bacad75699f571",
+    "2858f3d28ef8104031c52ebc",
+    "47697f86a0eee9d7a1de9984",
+    "b959431d5c596e7dcfc658c5",
+    "d82f3340c85590936e4b6697"
+   ],
+   "category": "other",
+   "subcategory": "communication_channels",
+   "overall": false,
+   "status": "classified",
+   "rationale": "إتاحة التواصل مع المدرس قناة تواصل",
+   "previous": {
+    "reviewSt": "غير مصنف",
+    "siteDimension": "interaction"
+   },
+   "verification": {
+    "author": "other",
+    "blindVerifier": "other",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "تتوفر أكثر من وسيلة للتواصل مع عضو هيئة التدريس.",
+   "instrument": "electronic_learning",
+   "topic": "ثانياً التواصل والتفاعل:",
+   "number": 3,
+   "itemIds": [
+    "112e301ab936ff2862cae8c4",
+    "74579dc559498452f52370e9",
+    "c64e22964cc387bd59413ecb",
+    "d49644f3423c311648659268",
+    "e06427bcdfe141b93740a7dd"
+   ],
+   "category": "other",
+   "subcategory": "communication_channels",
+   "overall": false,
+   "status": "classified",
+   "rationale": "تعدد وسائل التواصل قناة تواصل",
+   "previous": {
+    "reviewSt": "غير مصنف",
+    "siteDimension": "interaction"
+   },
+   "verification": {
+    "author": "other",
+    "blindVerifier": "other",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "يتاح لي في التعلم الالكتروني مناقشة زملائي فيما يرتبط بالمقرر وأنشطته.",
+   "instrument": "electronic_learning",
+   "topic": "ثانياً التواصل والتفاعل:",
+   "number": 4,
+   "itemIds": [
+    "8140f7edab09825349169fc1",
+    "8f60698cddf113baaedc2ed5",
+    "8f80f5c6f22f8211218dbc89",
+    "a0bed64c858a74a751506e50",
+    "d8fe4b4955fc89214fcce016"
+   ],
+   "category": "other",
+   "subcategory": "elearning_features",
+   "overall": false,
+   "status": "classified",
+   "rationale": "إتاحة النقاش مع الزملاء ميزة يتيحها نمط التعلم الإلكتروني",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "interaction"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "other",
+    "agreed": false,
+    "resolvedBy": "arbiter"
+   }
+  },
+  {
+   "statement": "يتوفر لنا الدعم الفني في التعلم الالكتروني.",
+   "instrument": "electronic_learning",
+   "topic": "ثانياً التواصل والتفاعل:",
+   "number": 5,
+   "itemIds": [
+    "15e81d0ce6376b77a196b24b",
+    "702578bfd09bff786f228cd2",
+    "a37e5dc86ef006d7df9d0880",
+    "abeb072cb32451544b89fc23",
+    "f106ea4ff420a9859d98310d"
+   ],
+   "category": "other",
+   "subcategory": "technical_support",
+   "overall": false,
+   "status": "classified",
+   "rationale": "الدعم الفني خدمة",
+   "previous": {
+    "reviewSt": "غير مصنف",
+    "siteDimension": "technology"
+   },
+   "verification": {
+    "author": "other",
+    "blindVerifier": "other",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "تلقيت تغذية راجعة عن أدائي في بعض المهام من قبل عضو هيئة التدريس.",
+   "instrument": "electronic_learning",
+   "topic": "ثانياً التواصل والتفاعل:",
+   "number": 6,
+   "itemIds": [
+    "54f8331f84d02996ce45b9ea",
+    "6251ae9d4b4d2f44bfe23ad5",
+    "9f4ea500e00f44f715a81c66",
+    "e0ee88a1c45c6eec74cf99ce",
+    "fb28063848fe86452c3442e0"
+   ],
+   "category": "quality",
+   "subcategory": "assessment_feedback",
+   "overall": false,
+   "status": "classified",
+   "rationale": "تلقي التغذية الراجعة ممارسة تقويم",
+   "previous": {
+    "reviewSt": "غير مصنف",
+    "siteDimension": "assessment"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "اشعر بالمتعة في الدراسة من خلال التعلم الالكتروني.",
+   "instrument": "electronic_learning",
+   "topic": "ثانياً التواصل والتفاعل:",
+   "number": 7,
+   "itemIds": [
+    "6a4ef0c027e4cb0390611fd8",
+    "6d5a8bf8b7c2a6ab79a326ed",
+    "9e325208254da18b000c0a49",
+    "b49045462f539c0fed069abd",
+    "defefc850039dd6fac5b0921"
+   ],
+   "category": "other",
+   "subcategory": "elearning_impression",
+   "overall": false,
+   "status": "classified",
+   "rationale": "المتعة بنمط التعلم الإلكتروني انطباع وجداني لا قيمة مكتسبة",
+   "previous": {
+    "reviewSt": "قيمي",
+    "siteDimension": "satisfaction"
+   },
+   "verification": {
+    "author": "other",
+    "blindVerifier": "other",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "شعر بالرضا عن شرح عضو هيئة التدريس في المقرر من خلال التعلم الالكتروني.",
+   "instrument": "electronic_learning",
+   "topic": "خامساً: الرضا العام عن المقرر وعضو هيئة التدريس:",
+   "number": 1,
+   "itemIds": [
+    "06b3a7de3c816c156bd9c5cb",
+    "2ec6dcefa06eedb3f84ae63d",
+    "6cefbe72be991d19ffd26e97",
+    "920fceca85368a8f0e966357",
+    "eee8a441d326d2e446c1c57e"
+   ],
+   "category": "quality",
+   "subcategory": "teaching",
+   "overall": false,
+   "status": "classified",
+   "rationale": "الرضا عن شرح المدرس حكم على التدريس",
+   "previous": {
+    "reviewSt": "قيمي",
+    "siteDimension": "satisfaction"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "بشكل عام أنا راضي عن هذا المقرر.",
+   "instrument": "electronic_learning",
+   "topic": "خامساً: الرضا العام عن المقرر وعضو هيئة التدريس:",
+   "number": 2,
+   "itemIds": [
+    "19a8151fd67fe6427b8b33a2",
+    "4da8e77ab9800bdfdf1113c5",
+    "878aa8bf62f776e15e180d4e",
+    "8f86a8d09ff31578315abe7a",
+    "8fcdef4704b22f80c25c3535"
+   ],
+   "category": "quality",
+   "subcategory": "overall_satisfaction",
+   "overall": true,
+   "status": "classified",
+   "rationale": "حكم عام بالرضا عن المقرر",
+   "previous": {
+    "reviewSt": "جودة المقرر",
+    "siteDimension": "satisfaction"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "ارتبطت أهداف الوحدات الدراسية بالأهداف العامة للمقرر.",
+   "instrument": "electronic_learning",
+   "topic": "رابعاً: المواد التعليمية والتقييمات:",
+   "number": 1,
+   "itemIds": [
+    "836b824a8898052b50c48d2c",
+    "9d8824f5be87c243079a961d",
+    "b4d8064dd466f9666ef063ad",
+    "d7291551f320200e865fb74b",
+    "f230bc29577cef584c345ce2"
+   ],
+   "category": "quality",
+   "subcategory": "course_design",
+   "overall": false,
+   "status": "classified",
+   "rationale": "ارتباط أهداف الوحدات بأهداف المقرر تصميم للمقرر",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "alignment"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "الأنشطة والتكليفات التي تم تنفيذها بالتعلم الالكتروني مرتبطة بالمقرر.",
+   "instrument": "electronic_learning",
+   "topic": "رابعاً: المواد التعليمية والتقييمات:",
+   "number": 2,
+   "itemIds": [
+    "0e4bd6bac7e8f3b22059e581",
+    "789f17326b2e2cea28916fb6",
+    "ad738f8d3544f299850e2c5c",
+    "dc94ddf9d257a5b41b6aafb2",
+    "dfdef45d951a6f522b499ae9"
+   ],
+   "category": "quality",
+   "subcategory": "course_design",
+   "overall": false,
+   "status": "classified",
+   "rationale": "ارتباط الأنشطة بالمقرر تصميم",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "alignment"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "يتم من خلال التعلم الالكتروني تقديم تغذية راجعة فورية بعد الاختبار",
+   "instrument": "electronic_learning",
+   "topic": "رابعاً: المواد التعليمية والتقييمات:",
+   "number": 3,
+   "itemIds": [
+    "6431c554b0e39f61e57d7821",
+    "672898271c0591e0146ff0a0",
+    "81451bbd6edbf8d49acd59d1",
+    "8189fc2a8a13c8e89557d437",
+    "854c714f49ec38c28e915827"
+   ],
+   "category": "quality",
+   "subcategory": "assessment_feedback",
+   "overall": false,
+   "status": "classified",
+   "rationale": "التغذية الراجعة بعد الاختبار ممارسة تقويم",
+   "previous": {
+    "reviewSt": "معرفي",
+    "siteDimension": "assessment"
+   },
+   "verification": {
+    "author": "quality",
+    "blindVerifier": "quality",
+    "agreed": true
+   }
+  },
+  {
+   "statement": "يوفر التعلم الالكتروني وقت الطالب.",
+   "instrument": "electronic_learning",
+   "topic": "رابعاً: المواد التعليمية والتقييمات:",
+   "number": 4,
+   "itemIds": [
+    "41f3da8c5f915fcd5f8c637b",
+    "5ca0a22ea33ced6cf66d423c",
+    "8cc2864c05d9d9be80769312",
+    "a7b9729c74b59af946c66192",
+    "d0d6ded990398098a06b5cc7"
+   ],
+   "category": "other",
+   "subcategory": "elearning_convenience",
+   "overall": false,
+   "status": "classified",
+   "rationale": "توفير الوقت ميزة منصة",
+   "previous": {
+    "reviewSt": "غير مصنف",
+    "siteDimension": "technology"
+   },
+   "verification": {
+    "author": "other",
+    "blindVerifier": "other",
+    "agreed": true
+   }
+  }
+ ]
+}
