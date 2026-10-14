@@ -50,7 +50,7 @@ def categories_of(item):
     return (item["category"],)
 
 
-def build_payload(source, classification):
+def build_payload(source, classification, classification_bytes=None):
     if source.get("schemaVersion") != "course-student-evaluations-v2":
         raise ValueError("Expected course-student-evaluations-v2")
     by_id, by_statement = load_map(classification)
@@ -95,8 +95,7 @@ def build_payload(source, classification):
     degree_names = {"البكالوريوس": "بكالوريوس", "الماجستير": "ماجستير", "الدكتوراه": "دكتوراه"}
     labels = {c["id"]: c["label"] for c in classification["categories"]}
     return {"schemaVersion": "course-domain-scores-v1", "source": "course-student-evaluations-v2",
-            "classificationSha256": hashlib.sha256(CLASSIFICATION.read_bytes()).hexdigest()
-            if CLASSIFICATION.exists() else None,
+            "classificationSha256": hashlib.sha256(classification_bytes).hexdigest() if classification_bytes else None,
             "tuple": ["scoreNumerator", "responses", "itemCount", "nonCompleteItems"],
             "categories": [{"id": c, "label": "الرضا العام عن المقرر" if c == "overall_satisfaction" else labels[c]}
                            for c in SCORED],
@@ -125,7 +124,8 @@ def main():
     parser.add_argument("--output", type=Path, default=OUTPUT)
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
-    output = serialize(build_payload(json.loads(args.source.read_text()), json.loads(args.classification.read_text())))
+    classification_bytes = args.classification.read_bytes()
+    output = serialize(build_payload(json.loads(args.source.read_text()), json.loads(classification_bytes), classification_bytes))
     if args.check:
         if not args.output.exists() or args.output.read_text() != output:
             raise SystemExit("Course domain scores are out of date")

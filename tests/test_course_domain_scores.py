@@ -102,7 +102,8 @@ class DomainScoreTests(unittest.TestCase):
 
     def test_published_scores_match_public_source(self):
         source = json.loads(api.SOURCE.read_text())
-        self.assertEqual(api.OUTPUT.read_text(), api.serialize(api.build_payload(source, classification())))
+        raw = api.CLASSIFICATION.read_bytes()
+        self.assertEqual(api.OUTPUT.read_text(), api.serialize(api.build_payload(source, json.loads(raw), raw)))
         self.assertLess(api.OUTPUT.stat().st_size, 3_000_000)
 
 
