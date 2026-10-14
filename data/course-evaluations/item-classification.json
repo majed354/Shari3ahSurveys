@@ -69,11 +69,13 @@
   "teamwork_responsibility": "العمل الجماعي والمسؤولية",
   "lifelong_learning_disposition": "النزعة إلى التعلم المستمر",
   "elearning_effect": "أثر نمط التعلم الإلكتروني",
-  "content_relevance": "أهمية محتوى المقرر ونفعه"
+  "content_relevance": "أهمية محتوى المقرر ونفعه",
+  "knowledge_proxy": "قرب المعرفة والفهم (تقريبي)",
+  "values_proxy": "قرب القيم والاستقلالية والمسؤولية (تقريبي)"
  },
- "scoring": "درجة الفئة لمقرر وشطر وفترة = مجموع (الدرجة × عدد الإجابات) لبنود الفئة ÷ مجموع إجاباتها. تُعد النتيجة غير مكتملة (null) إذا لم يكن في الفئة بند، أو كان أحد بنودها partial أو بلا إجابات. البنود ذات النص المفقود وبنود review لا تدخل أي فئة.",
+ "scoring": "درجة الفئة لمقرر وشطر وفترة = مجموع (الدرجة × عدد الإجابات المقبولة) لبنود الفئة ÷ مجموع إجاباتها المقبولة. البند الجزئي يدخل بإجاباته المقبولة المعروفة (knownResponseCounts) فقط، ولا يدخل التقييم المتعارض المعزول في المصدر. تُعلَّم النتيجة «عينة جزئية» إذا عُزل جزء من العينة أو غاب بند. لا نتيجة (null) إلا إذا لم يبق للفئة أي إجابة مقبولة. البنود ذات النص المفقود وبنود review وunclassified لا تدخل أي فئة.",
  "verification": {
-  "method": "تصنيف المؤلف ثم تصنيف أعمى مستقل بالمعيار نفسه دون اطلاع على التصنيف الأول؛ حُسم الخلاف في فئات غير النواتج بسياق محور البند، وبقي الملتبس في نواتج التعلم للمراجعة. حُسمت البنود الثلاثة الملتبسة بالمعيار نفسه بتفويض المستخدم في 15 أكتوبر 2026، مع مراجعة معاكسة مستقلة.",
+  "method": "تصنيف المؤلف ثم تصنيف أعمى مستقل بالمعيار نفسه دون اطلاع على التصنيف الأول؛ حُسم الخلاف في فئات غير النواتج بسياق محور البند، وبقي الملتبس في نواتج التعلم للمراجعة. حُسمت البنود الثلاثة الملتبسة بالمعيار نفسه بتفويض المستخدم في 15 أكتوبر 2026، مع مراجعة معاكسة مستقلة. اختيرت البنود التقريبية للمعرفي والقيمي باختيار المؤلف ثم اختيار أعمى مستقل؛ تطابق الاختياران كاملًا.",
   "agreement": "43/48",
   "date": "2026-10-15"
  },
@@ -426,11 +428,11 @@
     "2794ad5e48bfcb7791825853",
     "574705f539bdcec9db8d0550"
    ],
-   "category": "quality",
-   "subcategory": "learning_activities",
+   "category": "knowledge",
+   "subcategory": "knowledge_proxy",
    "overall": false,
    "status": "classified",
-   "rationale": "يحكم على فاعلية الأنشطة المطلوبة في بلوغ أهداف المقرر، كالبند 32؛ ولا يُنسب إلى مجال واحد لأنه يجمع المعرفة والمهارات في إجابة واحدة.",
+   "rationale": "ينص على تطوير معرفة الطالب؛ شقه المهاري مغطى في النموذج نفسه بالبندين 22 و24.",
    "previous": {
     "reviewSt": "معرفي",
     "siteDimension": "alignment"
@@ -447,6 +449,16 @@
     "decidedBy": "تطبيق المعيار بتفويض المستخدم",
     "date": "2026-10-15",
     "adversarialReview": "changed_from_unclassified_to_quality"
+   },
+   "measurementBasis": "proxy",
+   "proxyDecision": {
+    "previousCategory": "quality",
+    "previousSubcategory": "learning_activities",
+    "reason": "قرار المستخدم: لا يبقى مجال معرفي أو قيمي فارغًا في أي نموذج؛ اختير أقرب بند.",
+    "author": "knowledge",
+    "blindVerifier": "knowledge",
+    "agreed": true,
+    "date": "2026-10-15"
    }
   },
   {
@@ -578,11 +590,11 @@
     "4cfdc71eee9457f737eb9892",
     "95372e1cb3129a625e35134a"
    ],
-   "category": "quality",
-   "subcategory": "content_relevance",
+   "category": "knowledge",
+   "subcategory": "knowledge_proxy",
    "overall": false,
    "status": "classified",
-   "rationale": "حكم على أهمية محتوى المقرر ونفعه، كالبند 10 «حديثًا ومفيدًا»، لا على مكسب محدد في معرفة أو مهارة أو قيمة.",
+   "rationale": "حكم الطالب على أهمية ما تعلمه ونفعه؛ أقرب بنود النموذج القديم إلى المعرفة والفهم.",
    "previous": {
     "reviewSt": "معرفي",
     "siteDimension": "alignment"
@@ -599,6 +611,16 @@
     "decidedBy": "تطبيق المعيار بتفويض المستخدم",
     "date": "2026-10-15",
     "adversarialReview": "changed_from_unclassified_to_quality"
+   },
+   "measurementBasis": "proxy",
+   "proxyDecision": {
+    "previousCategory": "quality",
+    "previousSubcategory": "content_relevance",
+    "reason": "قرار المستخدم: لا يبقى مجال معرفي أو قيمي فارغًا في أي نموذج؛ اختير أقرب بند.",
+    "author": "knowledge",
+    "blindVerifier": "knowledge",
+    "agreed": true,
+    "date": "2026-10-15"
    }
   },
   {
@@ -623,7 +645,8 @@
     "author": "skills",
     "blindVerifier": "skills",
     "agreed": true
-   }
+   },
+   "measurementBasis": "direct_gain"
   },
   {
    "statement": "ساعدني هذا المقرر على تحسين مهاراتي في العمل على شكل فريق.",
@@ -647,7 +670,8 @@
     "author": "values",
     "blindVerifier": "values",
     "agreed": true
-   }
+   },
+   "measurementBasis": "direct_gain"
   },
   {
    "statement": "ساعدني هذا المقرر على تحسين قدرتي على الاتصال بفاعلية.",
@@ -671,7 +695,8 @@
     "author": "skills",
     "blindVerifier": "skills",
     "agreed": true
-   }
+   },
+   "measurementBasis": "direct_gain"
   },
   {
    "statement": "تم عرض خطة المقرر بالتفصيل في بداية الفصل الدراسي.",
@@ -874,11 +899,11 @@
     "8776f229c4169b9c4cdb723c",
     "8f528c3d66bc1fcb2b83fffd"
    ],
-   "category": "quality",
-   "subcategory": "learning_activities",
+   "category": "knowledge",
+   "subcategory": "knowledge_proxy",
    "overall": false,
    "status": "classified",
-   "rationale": "إتاحة فرصة التفاعل مع المحتوى وصف للأنشطة لا لمكسب",
+   "rationale": "التفاعل مع محتوى المقرر أقرب بنود نموذج التعلم الإلكتروني إلى المعرفة والفهم؛ لا يوجد فيه بند مباشر للمعرفة.",
    "previous": {
     "reviewSt": "معرفي",
     "siteDimension": "alignment"
@@ -887,6 +912,16 @@
     "author": "quality",
     "blindVerifier": "quality",
     "agreed": true
+   },
+   "measurementBasis": "proxy",
+   "proxyDecision": {
+    "previousCategory": "quality",
+    "previousSubcategory": "learning_activities",
+    "reason": "قرار المستخدم: لا يبقى مجال معرفي أو قيمي فارغًا في أي نموذج؛ اختير أقرب بند.",
+    "author": "knowledge",
+    "blindVerifier": "knowledge",
+    "agreed": true,
+    "date": "2026-10-15"
    }
   },
   {
@@ -928,11 +963,11 @@
     "9db1b492fbf9aa7e51f63e48",
     "f50b38be15144ffde42a9951"
    ],
-   "category": "other",
-   "subcategory": "elearning_effect",
+   "category": "values",
+   "subcategory": "values_proxy",
    "overall": false,
    "status": "classified",
-   "rationale": "«شجعني» تصف حافزًا لا قيمة متحققة لدى الطالب، كسابقتي البندين 13 و14؛ ومصدر الحافز نمط التعلم الإلكتروني فيُلحق بالبند 42.",
+   "rationale": "التعلم المستمر من القيم والاستقلالية في نقف 2020؛ «شجعني» تجعله مؤشرًا لا قياسًا مباشرًا.",
    "previous": {
     "reviewSt": "قيمي",
     "siteDimension": "satisfaction"
@@ -949,6 +984,16 @@
     "decidedBy": "تطبيق المعيار بتفويض المستخدم",
     "date": "2026-10-15",
     "adversarialReview": "agreed"
+   },
+   "measurementBasis": "proxy",
+   "proxyDecision": {
+    "previousCategory": "other",
+    "previousSubcategory": "elearning_effect",
+    "reason": "قرار المستخدم: لا يبقى مجال معرفي أو قيمي فارغًا في أي نموذج؛ اختير أقرب بند.",
+    "author": "values",
+    "blindVerifier": "values",
+    "agreed": true,
+    "date": "2026-10-15"
    }
   },
   {
@@ -976,7 +1021,8 @@
     "author": "skills",
     "blindVerifier": "skills",
     "agreed": true
-   }
+   },
+   "measurementBasis": "direct_gain"
   },
   {
    "statement": "أتاح التعلم الالكتروني لنا فرص متكافئة في المشاركة أثناء المحاضرة.",
@@ -1072,11 +1118,11 @@
     "a0bed64c858a74a751506e50",
     "d8fe4b4955fc89214fcce016"
    ],
-   "category": "other",
-   "subcategory": "elearning_features",
+   "category": "values",
+   "subcategory": "values_proxy",
    "overall": false,
    "status": "classified",
-   "rationale": "إتاحة النقاش مع الزملاء ميزة يتيحها نمط التعلم الإلكتروني",
+   "rationale": "يطابق ناتج ق1 «يشارك مجموعات العمل في المناقشات الجماعية»؛ يقيس إتاحة المشاركة لا تحققها، فهو تقريبي.",
    "previous": {
     "reviewSt": "معرفي",
     "siteDimension": "interaction"
@@ -1086,6 +1132,16 @@
     "blindVerifier": "other",
     "agreed": false,
     "resolvedBy": "arbiter"
+   },
+   "measurementBasis": "proxy",
+   "proxyDecision": {
+    "previousCategory": "other",
+    "previousSubcategory": "elearning_features",
+    "reason": "قرار المستخدم: لا يبقى مجال معرفي أو قيمي فارغًا في أي نموذج؛ اختير أقرب بند.",
+    "author": "values",
+    "blindVerifier": "values",
+    "agreed": true,
+    "date": "2026-10-15"
    }
   },
   {
@@ -1331,5 +1387,9 @@
     "agreed": true
    }
   }
- ]
+ ],
+ "measurementBasis": {
+  "direct_gain": "البند يسأل الطالب عن مكسبه في المجال مباشرة",
+  "proxy": "قياس تقريبي: النموذج لا يتضمن بندًا مباشرًا للمجال، فاختير أقرب بند إليه بقرار المستخدم (15 أكتوبر 2026) ليبقى المجال مقيسًا؛ يُقرأ مؤشرًا لا قياسًا مباشرًا"
+ }
 }

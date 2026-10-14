@@ -39,22 +39,36 @@ class ClassificationMapTests(unittest.TestCase):
         self.assertEqual(named, set(by_id))
         self.assertEqual(len(by_statement), len(classification()["items"]))
 
-    def test_learning_domains_only_hold_self_reported_learning_gain(self):
-        # Teaching, organisation, assessment, services and satisfaction never measure outcomes.
+    def test_every_instrument_measures_all_three_domains_and_overall(self):
+        # User decision: no learning domain may be empty in any instrument.
         items = classification()["items"]
-        learning = {i["statement"] for i in items if i["category"] in LEARNING}
-        self.assertEqual(learning, {
+        for instrument in ("legacy", "electronic_learning"):
+            present = {i["category"] for i in items if i["instrument"] == instrument}
+            self.assertTrue(LEARNING <= present, instrument)
+            self.assertTrue(any(i["overall"] for i in items if i["instrument"] == instrument), instrument)
+
+    def test_direct_and_proxy_learning_items_are_explicit(self):
+        items = classification()["items"]
+        direct = {i["statement"] for i in items if i.get("measurementBasis") == "direct_gain"}
+        self.assertEqual(direct, {
             "ساعدني هذا المقرر على تحسين قدرتي على التفكير وحل المشكلات بدلاً من حفظ المعلومات فقط.",
             "ساعدني هذا المقرر على تحسين قدرتي على الاتصال بفاعلية.",
             "تحسنت مهارتي في استخدام التكنولوجيا والاتصالات من خلال التعلم الالكتروني.",
             "ساعدني هذا المقرر على تحسين مهاراتي في العمل على شكل فريق.",
         })
-        for item in items:
-            if item["category"] in LEARNING:
-                self.assertFalse(item["statement"].startswith(("كان عضو", "لدى عضو", "تم عرض", "وضح عضو")))
+        proxy = {i["statement"]: i["category"] for i in items if i.get("measurementBasis") == "proxy"}
+        self.assertEqual(proxy, {
+            "ساعدت الأشياء التي طلبت مني في هذا المقرر (النشطة الصفية، المعامل، وهكذا) في تطوير معرفتي ومهاراتي التي يهدف المقرر لتعليمها.": "knowledge",
+            "ما تعلمته في هذا المقرر مهم وسيفيدني مستقبلاً.": "knowledge",
+            "أتاحت لي الأنشطة التعليمية وأدوات المقرر فرصة للتفاعل مع المحتوى.": "knowledge",
+            "شجعني التعلم الالكتروني على التعلم المستمر.": "values",
+            "يتاح لي في التعلم الالكتروني مناقشة زملائي فيما يرتبط بالمقرر وأنشطته.": "values",
+        })
+        # Teaching, services and satisfaction never become learning items, even as proxies.
         for statement in ("اشعر بالمتعة في الدراسة من خلال التعلم الالكتروني.",
                           "لدى عضو هيئة التدريس الذي يقوم بتقديم هذا المقرر إلمام كامل بمحتوى المقرر.",
-                          "ارتبطت أهداف الوحدات الدراسية بالأهداف العامة للمقرر."):
+                          "تم عرض خطة المقرر بالتفصيل في بداية الفصل الدراسي.",
+                          "يتوفر لنا الدعم الفني في التعلم الالكتروني."):
             self.assertNotIn(next(i for i in items if i["statement"] == statement)["category"], LEARNING)
 
     def test_overall_satisfaction_and_review_items_are_explicit(self):
@@ -63,9 +77,7 @@ class ClassificationMapTests(unittest.TestCase):
                          {"أشعر بالرضا بشكل عام عن مستوى جودة هذا المقرر.", "بشكل عام أنا راضي عن هذا المقرر."})
         # Every former review item is decided; unsuitable items stay unclassified.
         self.assertFalse([i for i in items if i["category"] == "review"])
-        decided = {i["statement"]: i["category"] for i in items if "decision" in i}
-        self.assertEqual(set(decided.values()), {"quality", "other"})
-        self.assertEqual(len(decided), 3)
+        self.assertEqual(len([i for i in items if "decision" in i]), 3)
         for item in items:
             if item["category"] == "review":
                 self.assertEqual(item["status"], "needs_review")
@@ -76,20 +88,31 @@ class DomainScoreTests(unittest.TestCase):
     def test_scores_use_response_counts_and_skip_missing_statements(self):
         payload = api.build_payload(fixture(), classification())
         categories = payload["records"][0]["cohorts"]["total"]["categories"]
-        self.assertEqual(categories["skills"], [8, 2, 1, 0])
-        self.assertEqual(categories["overall_satisfaction"], [9, 2, 1, 0])
-        self.assertEqual(categories["quality"], [15, 4, 2, 0])  # overall item is also a quality item
-        self.assertNotIn("knowledge", categories)
+        self.assertEqual(categories["skills"], [8, 2, 1, 0, 0])
+        self.assertEqual(categories["overall_satisfaction"], [9, 2, 1, 0, 0])
+        self.assertEqual(categories["quality"], [15, 4, 2, 0, 0])  # overall item is also a quality item
+        self.assertNotIn("values", categories)
         self.assertEqual(payload["records"][0]["cohorts"]["total"]["unnamedItems"], 1)
         self.assertEqual(api.category_score(categories["skills"]), 4)
         self.assertIsNone(api.category_score(categories.get("knowledge")))
         self.assertNotIn("male", payload["records"][0]["cohorts"])
 
-    def test_partial_item_blocks_its_category(self):
+    def test_partial_item_uses_accepted_counts_and_is_flagged(self):
         data = fixture()
-        data["records"][0]["cohorts"]["total"]["items"][0].update(status="partial", scoreNumerator=None, responses=None)
+        data["records"][0]["cohorts"]["total"]["items"][0].update(
+            status="partial", scoreNumerator=None, responses=None, knownResponseCounts=[0, 0, 1, 2, 0])
         categories = api.build_payload(data, classification())["records"][0]["cohorts"]["total"]["categories"]
-        self.assertEqual(categories["skills"], [0, 0, 1, 1])
+        self.assertEqual(categories["skills"], [11, 3, 1, 1, 0])
+        self.assertAlmostEqual(api.category_score(categories["skills"]), 11 / 3)
+        self.assertTrue(api.is_partial(categories["skills"]))
+        self.assertFalse(api.is_partial(categories["overall_satisfaction"]))
+
+    def test_only_a_fully_quarantined_category_has_no_score(self):
+        data = fixture()
+        data["records"][0]["cohorts"]["total"]["items"][0].update(
+            status="partial", scoreNumerator=None, responses=None, knownResponseCounts=[0, 0, 0, 0, 0])
+        categories = api.build_payload(data, classification())["records"][0]["cohorts"]["total"]["categories"]
+        self.assertEqual(categories["skills"], [0, 0, 1, 1, 1])
         self.assertIsNone(api.category_score(categories["skills"]))
 
     def test_unclassified_statement_stops_the_build(self):

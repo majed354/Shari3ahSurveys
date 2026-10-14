@@ -481,11 +481,11 @@
                 <div class="table-wrap"><table class="data-table ce-wide-table"><thead><tr>
                     <th>رمز المقرر</th><th>اسم المقرر</th><th>البرنامج</th><th>الفصول</th><th>إجابات البند</th>${columns.map((id) => `<th>${escapeHtml(DOMAIN_LABELS[id])}</th>`).join("")}
                 </tr></thead><tbody>
-                    ${page.rows.map((row) => `<tr><td><bdi dir="ltr" style="white-space:nowrap">${escapeHtml(row.courseCode || "—")}</bdi></td><td><strong>${escapeHtml(row.courseName)}</strong></td><td>${escapeHtml(row.program)}</td><td>${escapeHtml(row.semesters.join("، "))}</td><td>${row.itemResponsesPerItem.toLocaleString("ar-SA")}</td>${columns.map((id) => `<td>${row.scores[id] == null ? "—" : scorePill(row.scores[id])}</td>`).join("")}</tr>`).join("") || `<tr><td colspan="${5 + columns.length}"><div class="empty-state">لا توجد بيانات مطابقة.</div></td></tr>`}
+                    ${page.rows.map((row) => `<tr><td><bdi dir="ltr" style="white-space:nowrap">${escapeHtml(row.courseCode || "—")}</bdi></td><td><strong>${escapeHtml(row.courseName)}</strong></td><td>${escapeHtml(row.program)}</td><td>${escapeHtml(row.semesters.join("، "))}</td><td>${row.itemResponsesPerItem.toLocaleString("ar-SA")}</td>${columns.map((id) => `<td>${row.scores[id] == null ? '<span title="لا توجد إجابة مقبولة؛ التقييم الوحيد متعارض في المصدر">—</span>' : scorePill(row.scores[id]) + (row.partial[id] ? '<sup class="ce-partial" title="عينة جزئية: عُزل تقييم متعارض في المصدر أو غاب بند">*</sup>' : "")}</td>`).join("")}</tr>`).join("") || `<tr><td colspan="${5 + columns.length}"><div class="empty-state">لا توجد بيانات مطابقة.</div></td></tr>`}
                 </tbody></table></div>
                 ${pagination(rows.length, page.pages)}
             </article>`;
-        setNotice("الشرطة (—) تعني أن نموذج الاستبانة لا يتضمن بندًا يقيس هذا المجال أو أن أحد بنوده ناقص؛ لا تُعامل صفرًا. «إجابات البند» متوسط إجابات البند الواحد، وليست عدد طلاب فريدين. البنود التي بلا تصنيف مناسب لا تدخل أي متوسط.", "info");
+        setNotice("لكل نموذج بنود للمجالات الثلاثة والرضا العام. المعرفي والقيمي في نموذج التعلم الإلكتروني، والمعرفي في نموذج تقويم المقرر القديم، من أقرب البنود إليهما (قياس تقريبي). العلامة * تعني عينة جزئية بعد عزل تقييم متعارض في المصدر. الشرطة (—) لا تظهر إلا إذا لم تبق إجابة مقبولة. «إجابات البند» متوسط إجابات البند الواحد، وليست عدد طلاب فريدين.", "info");
     }
 
     function rankFaculty(rows) {
@@ -995,6 +995,7 @@
                 "متوسط إجابات البند": row.itemResponsesPerItem,
             };
             columns.forEach((id) => { output[DOMAIN_LABELS[id]] = row.scores[id] == null ? "" : Number(row.scores[id].toFixed(4)); });
+            output["مجالات بعينة جزئية"] = columns.filter((id) => row.partial[id]).map((id) => DOMAIN_LABELS[id]).join("، ");
             output["بنود بلا تصنيف"] = row.excludedItems;
             return output;
         }), "التقييم غير المباشر", "التقييم_غير_المباشر_للمقررات.xlsx");

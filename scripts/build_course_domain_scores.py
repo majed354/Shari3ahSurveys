@@ -35,6 +35,9 @@ def load_map(classification):
             raise ValueError("overall=true is only valid for quality items")
         if (item["category"] == "review") != (item["status"] == "needs_review"):
             raise ValueError("review category and needs_review status must agree")
+        learning = item["category"] in ("knowledge", "skills", "values")
+        if learning != (item.get("measurementBasis") in ("direct_gain", "proxy")):
+            raise ValueError("learning-domain items need measurementBasis direct_gain or proxy; others none")
         key = normalized(item["statement"])
         if key in by_statement:
             raise ValueError(f"Duplicate statement in classification: {key}")
@@ -48,6 +51,18 @@ def categories_of(item):
     if item["overall"]:
         return ("quality", "overall_satisfaction")
     return (item["category"],)
+
+
+def item_counts(item):
+    """Accepted counts of one item: complete counts, or the accepted part of a partial item.
+
+    A partial item keeps the counts of evaluations that were not quarantined
+    (knownResponseCounts); the conflicting reports themselves never enter.
+    """
+    if item["status"] == "partial":
+        counts = item.get("knownResponseCounts") or [0, 0, 0, 0, 0]
+        return sum(i * n for i, n in enumerate(counts, 1)), sum(counts), 1
+    return item.get("scoreNumerator") or 0, item.get("responses") or 0, 0
 
 
 def build_payload(source, classification, classification_bytes=None):
@@ -72,7 +87,7 @@ def build_payload(source, classification, classification_bytes=None):
             cohort = record["cohorts"].get(cohort_name)
             if cohort is None:
                 continue
-            # [scoreNumerator, responses, itemCount, nonCompleteItems]
+            # [scoreNumerator, responses, itemCount, partialItems, unscoredItems]
             totals = {}
             unnamed = 0
             for item in cohort["items"]:
@@ -80,12 +95,14 @@ def build_payload(source, classification, classification_bytes=None):
                 if categories is None or item.get("statementSource") == "missing_in_source":
                     unnamed += 1
                     continue
+                numerator, responses, partial = item_counts(item)
                 for category in categories:
-                    value = totals.setdefault(category, [0, 0, 0, 0])
-                    value[0] += item.get("scoreNumerator") or 0
-                    value[1] += item.get("responses") or 0
+                    value = totals.setdefault(category, [0, 0, 0, 0, 0])
+                    value[0] += numerator
+                    value[1] += responses
                     value[2] += 1
-                    value[3] += item["status"] != "complete"
+                    value[3] += partial
+                    value[4] += responses == 0
             cohorts[cohort_name] = {"categories": {c: totals[c] for c in SCORED if c in totals},
                                     **({"unnamedItems": unnamed} if unnamed else {})}
         records.append({"year": record["academicYear"], "semester": record["semester"],
@@ -96,7 +113,7 @@ def build_payload(source, classification, classification_bytes=None):
     labels = {c["id"]: c["label"] for c in classification["categories"]}
     return {"schemaVersion": "course-domain-scores-v1", "source": "course-student-evaluations-v2",
             "classificationSha256": hashlib.sha256(classification_bytes).hexdigest() if classification_bytes else None,
-            "tuple": ["scoreNumerator", "responses", "itemCount", "nonCompleteItems"],
+            "tuple": ["scoreNumerator", "responses", "itemCount", "partialItems", "unscoredItems"],
             "categories": [{"id": c, "label": "الرضا العام عن المقرر" if c == "overall_satisfaction" else labels[c]}
                            for c in SCORED],
             "scoring": classification["scoring"],
@@ -106,11 +123,16 @@ def build_payload(source, classification, classification_bytes=None):
 
 
 def category_score(values):
-    """Score of one category after summing tuples over the selected periods."""
+    """Score of one category from its accepted responses; None only without any."""
     if not values:
         return None
-    numerator, responses, items, non_complete = values
-    return numerator / responses if items and not non_complete and responses > 0 else None
+    numerator, responses, items = values[:3]
+    return numerator / responses if items and responses > 0 else None
+
+
+def is_partial(values):
+    """True when part of the sample was excluded (quarantined report or missing item)."""
+    return bool(values) and bool(values[3] or values[4])
 
 
 def serialize(payload):

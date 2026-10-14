@@ -9,16 +9,21 @@
     const COLUMNS = ["overall_satisfaction", "knowledge", "skills", "values", "quality", "other"];
     const normalize = (text) => String(text || "").normalize("NFC").replace(/\s+/g, " ").trim();
 
-    // Same rule as the automation pipeline: a category is scored only when every item is complete.
+    // Same rule as the automation pipeline: accepted responses only; quarantined reports never enter.
     function categoryScore(values) {
         if (!values) return null;
-        const [numerator, responses, items, nonComplete] = values;
-        return items && !nonComplete && responses > 0 ? numerator / responses : null;
+        const [numerator, responses, items] = values;
+        return items && responses > 0 ? numerator / responses : null;
+    }
+
+    // Part of the sample was excluded (conflicting report quarantined, or an item missing).
+    function isPartial(values) {
+        return Boolean(values && (values[3] || values[4]));
     }
 
     function addTuple(target, values) {
         if (!values) return target;
-        const base = target || [0, 0, 0, 0];
+        const base = target || [0, 0, 0, 0, 0];
         return base.map((value, index) => value + values[index]);
     }
 
@@ -53,12 +58,13 @@
         return [...groups.values()].map((group) => {
             const courseCode = codeLookup(group) || "";
             const scores = Object.fromEntries(COLUMNS.map((id) => [id, categoryScore(group.categories[id])]));
+            const partial = Object.fromEntries(COLUMNS.map((id) => [id, isPartial(group.categories[id])]));
             const responses = Math.max(0, ...Object.values(group.categories).map((tuple) => tuple[2] ? tuple[1] / tuple[2] : 0));
-            return { ...group, semesters: group.semesters.sort(), courseCode, scores,
+            return { ...group, semesters: group.semesters.sort(), courseCode, scores, partial,
                 itemResponsesPerItem: Math.round(responses), excludedItems: group.excludedItems || 0 };
         }).filter((row) => !query || [row.courseName, row.courseCode, row.program].join(" ").toLocaleLowerCase("ar").includes(query))
             .sort((a, b) => a.program.localeCompare(b.program, "ar") || a.courseName.localeCompare(b.courseName, "ar"));
     }
 
-    return { COLUMNS, buildRows, categoryScore };
+    return { COLUMNS, buildRows, categoryScore, isPartial };
 });

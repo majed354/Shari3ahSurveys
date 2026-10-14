@@ -10,11 +10,11 @@ function fixture() {
             { id: "p04", name: "بكالوريوس القرآن وعلومه", degree: "البكالوريوس" }],
         records: [
             { year: "1447", semester: "471", programId: "p10", courseName: "أصول التفسير",
-                cohorts: { total: { categories: { skills: [8, 2, 1, 0], overall_satisfaction: [9, 2, 1, 0], unclassified: [6, 2, 1, 0] } } } },
+                cohorts: { total: { categories: { skills: [8, 2, 1, 0, 0], overall_satisfaction: [9, 2, 1, 0, 0], unclassified: [6, 2, 1, 0, 0] } } } },
             { year: "1447", semester: "472", programId: "p10", courseName: "أصول  التفسير",
-                cohorts: { total: { categories: { skills: [12, 3, 1, 0], overall_satisfaction: [10, 3, 1, 0] } } } },
+                cohorts: { total: { categories: { skills: [12, 3, 1, 0, 0], overall_satisfaction: [10, 3, 1, 0, 0] } } } },
             { year: "1447", semester: "471", programId: "p04", courseName: "تلاوة",
-                cohorts: { total: { categories: { skills: [0, 0, 1, 1] } }, male: { categories: { skills: [4, 1, 1, 0] } } } },
+                cohorts: { total: { categories: { skills: [6, 2, 1, 1, 0] } }, male: { categories: { skills: [4, 1, 1, 0, 0] } }, female: { categories: { skills: [0, 0, 1, 1, 1] } } } },
         ],
     };
 }
@@ -29,13 +29,26 @@ test("semesters are pooled by response counts before dividing", () => {
     assert.deepEqual(rows[0].semesters, ["471", "472"]);
 });
 
-test("a partial item blocks the category and cohorts stay separate", () => {
+test("a partial item is scored from accepted counts and flagged; cohorts stay separate", () => {
     const total = buildRows(fixture(), { year: "1447", semester: "471", degree: "البكالوريوس" });
-    assert.equal(total[0].scores.skills, null);
+    assert.equal(total[0].scores.skills, 3);
+    assert.equal(total[0].partial.skills, true);
     const male = buildRows(fixture(), { year: "1447", semester: "471", degree: "البكالوريوس", cohort: "male" });
     assert.equal(male[0].scores.skills, 4);
-    assert.equal(buildRows(fixture(), { year: "1447", semester: "471", cohort: "female" }).length, 0);
+    assert.equal(male[0].partial.skills, false);
+    const female = buildRows(fixture(), { year: "1447", semester: "471", degree: "البكالوريوس", cohort: "female" });
+    assert.equal(female[0].scores.skills, null); // only a quarantined report: no accepted answer
     assert.equal(categoryScore(undefined), null);
+});
+
+test("every published 1447 and 1446 course has all three domains and overall satisfaction", () => {
+    const data = JSON.parse(fs.readFileSync(path.join(__dirname, "../data/course-evaluations/course-domain-scores.json"), "utf8"));
+    for (const year of ["1447", "1446"]) {
+        const rows = buildRows(data, { year, semester: "all" });
+        rows.forEach((row) => ["knowledge", "skills", "values", "overall_satisfaction"].forEach((id) => {
+            assert.notEqual(row.scores[id], null, `${year} ${row.program} ${row.courseName} ${id}`);
+        }));
+    }
 });
 
 test("published scores load and every row has bounded scores", () => {
