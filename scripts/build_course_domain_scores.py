@@ -15,7 +15,7 @@ SOURCE = ROOT / "data/course-evaluations/v2/student-course-evaluations.json"
 CLASSIFICATION = ROOT / "data/course-evaluations/item-classification.json"
 OUTPUT = ROOT / "data/course-evaluations/course-domain-scores.json"
 # overall_satisfaction is the "overall" subset of quality; it is scored separately.
-SCORED = ("knowledge", "skills", "values", "overall_satisfaction", "quality", "other", "review")
+SCORED = ("knowledge", "skills", "values", "overall_satisfaction", "quality", "other", "unclassified", "review")
 COHORTS = ("total", "male", "female")
 
 

@@ -61,6 +61,11 @@ class ClassificationMapTests(unittest.TestCase):
         items = classification()["items"]
         self.assertEqual({i["statement"] for i in items if i["overall"]},
                          {"أشعر بالرضا بشكل عام عن مستوى جودة هذا المقرر.", "بشكل عام أنا راضي عن هذا المقرر."})
+        # Every former review item is decided; unsuitable items stay unclassified.
+        self.assertFalse([i for i in items if i["category"] == "review"])
+        decided = {i["statement"]: i["category"] for i in items if "decision" in i}
+        self.assertEqual(set(decided.values()), {"quality", "other"})
+        self.assertEqual(len(decided), 3)
         for item in items:
             if item["category"] == "review":
                 self.assertEqual(item["status"], "needs_review")

@@ -10,7 +10,7 @@ function fixture() {
             { id: "p04", name: "بكالوريوس القرآن وعلومه", degree: "البكالوريوس" }],
         records: [
             { year: "1447", semester: "471", programId: "p10", courseName: "أصول التفسير",
-                cohorts: { total: { categories: { skills: [8, 2, 1, 0], overall_satisfaction: [9, 2, 1, 0], review: [6, 2, 1, 0] } } } },
+                cohorts: { total: { categories: { skills: [8, 2, 1, 0], overall_satisfaction: [9, 2, 1, 0], unclassified: [6, 2, 1, 0] } } } },
             { year: "1447", semester: "472", programId: "p10", courseName: "أصول  التفسير",
                 cohorts: { total: { categories: { skills: [12, 3, 1, 0], overall_satisfaction: [10, 3, 1, 0] } } } },
             { year: "1447", semester: "471", programId: "p04", courseName: "تلاوة",
@@ -25,7 +25,7 @@ test("semesters are pooled by response counts before dividing", () => {
     assert.equal(rows[0].scores.skills, 20 / 5);
     assert.equal(rows[0].scores.overall_satisfaction, 19 / 5);
     assert.equal(rows[0].scores.knowledge, null); // no knowledge item: not measured, never zero
-    assert.equal(rows[0].reviewItems, 1);
+    assert.equal(rows[0].excludedItems, 1);
     assert.deepEqual(rows[0].semesters, ["471", "472"]);
 });
 

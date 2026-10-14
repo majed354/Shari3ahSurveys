@@ -485,7 +485,7 @@
                 </tbody></table></div>
                 ${pagination(rows.length, page.pages)}
             </article>`;
-        setNotice("الشرطة (—) تعني أن نموذج الاستبانة لا يتضمن بندًا يقيس هذا المجال أو أن أحد بنوده ناقص؛ لا تُعامل صفرًا. «إجابات البند» متوسط إجابات البند الواحد، وليست عدد طلاب فريدين. البنود الملتبسة محجوبة حتى تُراجع.", "info");
+        setNotice("الشرطة (—) تعني أن نموذج الاستبانة لا يتضمن بندًا يقيس هذا المجال أو أن أحد بنوده ناقص؛ لا تُعامل صفرًا. «إجابات البند» متوسط إجابات البند الواحد، وليست عدد طلاب فريدين. البنود التي بلا تصنيف مناسب لا تدخل أي متوسط.", "info");
     }
 
     function rankFaculty(rows) {
@@ -995,7 +995,7 @@
                 "متوسط إجابات البند": row.itemResponsesPerItem,
             };
             columns.forEach((id) => { output[DOMAIN_LABELS[id]] = row.scores[id] == null ? "" : Number(row.scores[id].toFixed(4)); });
-            output["بنود قيد المراجعة"] = row.reviewItems;
+            output["بنود بلا تصنيف"] = row.excludedItems;
             return output;
         }), "التقييم غير المباشر", "التقييم_غير_المباشر_للمقررات.xlsx");
     }

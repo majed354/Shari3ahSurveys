@@ -43,8 +43,9 @@
             }
             const group = groups.get(key);
             group.semesters.push(record.semester);
-            // Same review items recur each semester; report distinct items, not occurrences.
-            group.reviewItems = Math.max(group.reviewItems || 0, values.categories.review?.[2] || 0);
+            // Same excluded items recur each semester; report distinct items, not occurrences.
+            const excluded = (values.categories.unclassified?.[2] || 0) + (values.categories.review?.[2] || 0);
+            group.excludedItems = Math.max(group.excludedItems || 0, excluded);
             Object.entries(values.categories).forEach(([category, tuple]) => {
                 group.categories[category] = addTuple(group.categories[category], tuple);
             });
@@ -54,7 +55,7 @@
             const scores = Object.fromEntries(COLUMNS.map((id) => [id, categoryScore(group.categories[id])]));
             const responses = Math.max(0, ...Object.values(group.categories).map((tuple) => tuple[2] ? tuple[1] / tuple[2] : 0));
             return { ...group, semesters: group.semesters.sort(), courseCode, scores,
-                itemResponsesPerItem: Math.round(responses), reviewItems: group.reviewItems || 0 };
+                itemResponsesPerItem: Math.round(responses), excludedItems: group.excludedItems || 0 };
         }).filter((row) => !query || [row.courseName, row.courseCode, row.program].join(" ").toLocaleLowerCase("ar").includes(query))
             .sort((a, b) => a.program.localeCompare(b.program, "ar") || a.courseName.localeCompare(b.courseName, "ar"));
     }

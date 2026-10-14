@@ -126,7 +126,7 @@ python3 scripts/build_survey_data.py
 
 ## تصنيف البنود والتقييم غير المباشر
 
-تُصنف بنود تقييم المقررات بحسب معناها في [`data/course-evaluations/item-classification.json`](data/course-evaluations/item-classification.json)، لا بالكلمات المفتاحية. «المعرفي» و«المهاري» و«القيمي» تقتصر على البنود التي تسأل الطالب عن مكسبه هو. بنود التدريس والتنظيم والتقويم والخدمات والرضا منفصلة عن نواتج التعلم. الجدول والمبررات والبنود قيد المراجعة في [docs/item-classification.md](docs/item-classification.md).
+تُصنف بنود تقييم المقررات بحسب معناها في [`data/course-evaluations/item-classification.json`](data/course-evaluations/item-classification.json)، لا بالكلمات المفتاحية. «المعرفي» و«المهاري» و«القيمي» تقتصر على البنود التي تسأل الطالب عن مكسبه هو. بنود التدريس والتنظيم والتقويم والخدمات والرضا منفصلة عن نواتج التعلم. الجدول والمبررات وحسم البنود الملتبسة في [docs/item-classification.md](docs/item-classification.md). البند الذي لا تناسبه فئة يُصنف «بلا تصنيف» ولا يدخل أي متوسط.
 
 يبني `scripts/build_course_domain_scores.py` الملف [`course-domain-scores.json`](data/course-evaluations/course-domain-scores.json) من بيانات v2، ويستخدمه تبويب «التقييم غير المباشر». أتمتة التقارير تقرأ الخريطة نفسها، فلا تتعارض الأرقام. بند غير مصنف يوقف البناء.
 

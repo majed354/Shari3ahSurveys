@@ -32,6 +32,12 @@
    "note": "الخدمات والمصادر والدعم الفني وقنوات التواصل ومزايا التعلم الإلكتروني وانطباعاته"
   },
   {
+   "id": "unclassified",
+   "label": "بلا تصنيف",
+   "group": "none",
+   "note": "بند لا تناسبه أي فئة بعد الحسم؛ لا يدخل أي متوسط"
+  },
+  {
    "id": "review",
    "label": "يحتاج مراجعة",
    "group": "review",
@@ -61,13 +67,13 @@
   "communication_skills": "مهارات التواصل",
   "communication_it_skills": "مهارات التقنية والاتصالات",
   "teamwork_responsibility": "العمل الجماعي والمسؤولية",
-  "combined_learning_gain": "مكسب معرفي ومهاري مشترك",
-  "general_learning_value": "قيمة التعلم العامة",
-  "lifelong_learning_disposition": "النزعة إلى التعلم المستمر"
+  "lifelong_learning_disposition": "النزعة إلى التعلم المستمر",
+  "elearning_effect": "أثر نمط التعلم الإلكتروني",
+  "content_relevance": "أهمية محتوى المقرر ونفعه"
  },
  "scoring": "درجة الفئة لمقرر وشطر وفترة = مجموع (الدرجة × عدد الإجابات) لبنود الفئة ÷ مجموع إجاباتها. تُعد النتيجة غير مكتملة (null) إذا لم يكن في الفئة بند، أو كان أحد بنودها partial أو بلا إجابات. البنود ذات النص المفقود وبنود review لا تدخل أي فئة.",
  "verification": {
-  "method": "تصنيف المؤلف ثم تصنيف أعمى مستقل بالمعيار نفسه دون اطلاع على التصنيف الأول؛ حُسم الخلاف في فئات غير النواتج بسياق محور البند، وبقي الملتبس في نواتج التعلم للمراجعة.",
+  "method": "تصنيف المؤلف ثم تصنيف أعمى مستقل بالمعيار نفسه دون اطلاع على التصنيف الأول؛ حُسم الخلاف في فئات غير النواتج بسياق محور البند، وبقي الملتبس في نواتج التعلم للمراجعة. حُسمت البنود الثلاثة الملتبسة بالمعيار نفسه بتفويض المستخدم في 15 أكتوبر 2026، مع مراجعة معاكسة مستقلة.",
   "agreement": "43/48",
   "date": "2026-10-15"
  },
@@ -420,13 +426,11 @@
     "2794ad5e48bfcb7791825853",
     "574705f539bdcec9db8d0550"
    ],
-   "category": "review",
-   "subcategory": "combined_learning_gain",
+   "category": "quality",
+   "subcategory": "learning_activities",
    "overall": false,
-   "status": "needs_review",
-   "rationale": "يسأل عن مكسب في المعرفة والمهارات معًا فلا يُنسب لمجال واحد",
-   "proposedCategory": "knowledge",
-   "alternativeCategory": "skills",
+   "status": "classified",
+   "rationale": "يحكم على فاعلية الأنشطة المطلوبة في بلوغ أهداف المقرر، كالبند 32؛ ولا يُنسب إلى مجال واحد لأنه يجمع المعرفة والمهارات في إجابة واحدة.",
    "previous": {
     "reviewSt": "معرفي",
     "siteDimension": "alignment"
@@ -435,6 +439,14 @@
     "author": "review",
     "blindVerifier": "review",
     "agreed": true
+   },
+   "decision": {
+    "from": "review",
+    "proposed": "knowledge",
+    "alternative": "skills",
+    "decidedBy": "تطبيق المعيار بتفويض المستخدم",
+    "date": "2026-10-15",
+    "adversarialReview": "changed_from_unclassified_to_quality"
    }
   },
   {
@@ -566,13 +578,11 @@
     "4cfdc71eee9457f737eb9892",
     "95372e1cb3129a625e35134a"
    ],
-   "category": "review",
-   "subcategory": "general_learning_value",
+   "category": "quality",
+   "subcategory": "content_relevance",
    "overall": false,
-   "status": "needs_review",
-   "rationale": "يحكم على أهمية ما تعلمه ونفعه دون تحديد مجال",
-   "proposedCategory": "knowledge",
-   "alternativeCategory": "values",
+   "status": "classified",
+   "rationale": "حكم على أهمية محتوى المقرر ونفعه، كالبند 10 «حديثًا ومفيدًا»، لا على مكسب محدد في معرفة أو مهارة أو قيمة.",
    "previous": {
     "reviewSt": "معرفي",
     "siteDimension": "alignment"
@@ -581,6 +591,14 @@
     "author": "review",
     "blindVerifier": "review",
     "agreed": true
+   },
+   "decision": {
+    "from": "review",
+    "proposed": "knowledge",
+    "alternative": "values",
+    "decidedBy": "تطبيق المعيار بتفويض المستخدم",
+    "date": "2026-10-15",
+    "adversarialReview": "changed_from_unclassified_to_quality"
    }
   },
   {
@@ -910,13 +928,11 @@
     "9db1b492fbf9aa7e51f63e48",
     "f50b38be15144ffde42a9951"
    ],
-   "category": "review",
-   "subcategory": "lifelong_learning_disposition",
+   "category": "other",
+   "subcategory": "elearning_effect",
    "overall": false,
-   "status": "needs_review",
-   "rationale": "التعلم المستمر نزعة قيمية، لكن الصيغة تنسب التشجيع لنمط التعلم الإلكتروني",
-   "proposedCategory": "values",
-   "alternativeCategory": "other",
+   "status": "classified",
+   "rationale": "«شجعني» تصف حافزًا لا قيمة متحققة لدى الطالب، كسابقتي البندين 13 و14؛ ومصدر الحافز نمط التعلم الإلكتروني فيُلحق بالبند 42.",
    "previous": {
     "reviewSt": "قيمي",
     "siteDimension": "satisfaction"
@@ -925,6 +941,14 @@
     "author": "review",
     "blindVerifier": "review",
     "agreed": true
+   },
+   "decision": {
+    "from": "review",
+    "proposed": "values",
+    "alternative": "other",
+    "decidedBy": "تطبيق المعيار بتفويض المستخدم",
+    "date": "2026-10-15",
+    "adversarialReview": "agreed"
    }
   },
   {
