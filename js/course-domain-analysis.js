@@ -44,10 +44,11 @@
             const key = [record.year, record.programId, normalize(record.courseName)].join("||");
             if (!groups.has(key)) {
                 groups.set(key, { year: record.year, program: program.name, degree: program.degree,
-                    courseName: record.courseName, semesters: [], categories: {} });
+                    courseName: record.courseName, semesters: [], categories: {}, proxy: new Set() });
             }
             const group = groups.get(key);
             group.semesters.push(record.semester);
+            (values.proxyCategories || []).forEach((category) => group.proxy.add(category));
             // Same excluded items recur each semester; report distinct items, not occurrences.
             const excluded = (values.categories.unclassified?.[2] || 0) + (values.categories.review?.[2] || 0);
             group.excludedItems = Math.max(group.excludedItems || 0, excluded);
@@ -59,8 +60,9 @@
             const courseCode = codeLookup(group) || "";
             const scores = Object.fromEntries(COLUMNS.map((id) => [id, categoryScore(group.categories[id])]));
             const partial = Object.fromEntries(COLUMNS.map((id) => [id, isPartial(group.categories[id])]));
+            const proxy = Object.fromEntries(COLUMNS.map((id) => [id, group.proxy.has(id)]));
             const responses = Math.max(0, ...Object.values(group.categories).map((tuple) => tuple[2] ? tuple[1] / tuple[2] : 0));
-            return { ...group, semesters: group.semesters.sort(), courseCode, scores, partial,
+            return { ...group, semesters: group.semesters.sort(), courseCode, scores, partial, proxy,
                 itemResponsesPerItem: Math.round(responses), excludedItems: group.excludedItems || 0 };
         }).filter((row) => !query || [row.courseName, row.courseCode, row.program].join(" ").toLocaleLowerCase("ar").includes(query))
             .sort((a, b) => a.program.localeCompare(b.program, "ar") || a.courseName.localeCompare(b.courseName, "ar"));

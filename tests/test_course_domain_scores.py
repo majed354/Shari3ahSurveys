@@ -96,6 +96,7 @@ class DomainScoreTests(unittest.TestCase):
         self.assertEqual(api.category_score(categories["skills"]), 4)
         self.assertIsNone(api.category_score(categories.get("knowledge")))
         self.assertNotIn("male", payload["records"][0]["cohorts"])
+        self.assertNotIn("proxyCategories", payload["records"][0]["cohorts"]["total"])  # skills item is direct
 
     def test_partial_item_uses_accepted_counts_and_is_flagged(self):
         data = fixture()

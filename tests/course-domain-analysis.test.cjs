@@ -27,6 +27,7 @@ test("semesters are pooled by response counts before dividing", () => {
     assert.equal(rows[0].scores.knowledge, null); // no knowledge item: not measured, never zero
     assert.equal(rows[0].excludedItems, 1);
     assert.deepEqual(rows[0].semesters, ["471", "472"]);
+    assert.equal(rows[0].proxy.knowledge, false);
 });
 
 test("a partial item is scored from accepted counts and flagged; cohorts stay separate", () => {
@@ -39,6 +40,14 @@ test("a partial item is scored from accepted counts and flagged; cohorts stay se
     const female = buildRows(fixture(), { year: "1447", semester: "471", degree: "البكالوريوس", cohort: "female" });
     assert.equal(female[0].scores.skills, null); // only a quarantined report: no accepted answer
     assert.equal(categoryScore(undefined), null);
+});
+
+test("proxy categories are carried to the row", () => {
+    const data = fixture();
+    data.records[0].cohorts.total.proxyCategories = ["values"];
+    const rows = buildRows(data, { year: "1447", semester: "all", program: "ماجستير الدراسات القرآنية المعاصرة" });
+    assert.equal(rows[0].proxy.values, true);
+    assert.equal(rows[0].proxy.skills, false);
 });
 
 test("every published 1447 and 1446 course has all three domains and overall satisfaction", () => {

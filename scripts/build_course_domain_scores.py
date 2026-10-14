@@ -70,6 +70,7 @@ def build_payload(source, classification, classification_bytes=None):
         raise ValueError("Expected course-student-evaluations-v2")
     by_id, by_statement = load_map(classification)
     item_category = {}
+    proxy_items = set()
     for item_id, definition in source["itemDefinitions"].items():
         statement = definition.get("statement")
         if not statement:
@@ -79,6 +80,8 @@ def build_payload(source, classification, classification_bytes=None):
         if mapped is None or normalized(mapped["statement"]) != normalized(statement):
             raise ValueError(f"Item not classified: {item_id} {statement}")
         item_category[item_id] = categories_of(mapped)
+        if mapped.get("measurementBasis") == "proxy":
+            proxy_items.add(item_id)
 
     records = []
     for record in source["records"]:
@@ -90,12 +93,15 @@ def build_payload(source, classification, classification_bytes=None):
             # [scoreNumerator, responses, itemCount, partialItems, unscoredItems]
             totals = {}
             unnamed = 0
+            proxy = set()
             for item in cohort["items"]:
                 categories = item_category[item["itemId"]]
                 if categories is None or item.get("statementSource") == "missing_in_source":
                     unnamed += 1
                     continue
                 numerator, responses, partial = item_counts(item)
+                if item["itemId"] in proxy_items:
+                    proxy.update(categories)
                 for category in categories:
                     value = totals.setdefault(category, [0, 0, 0, 0, 0])
                     value[0] += numerator
@@ -104,6 +110,8 @@ def build_payload(source, classification, classification_bytes=None):
                     value[3] += partial
                     value[4] += responses == 0
             cohorts[cohort_name] = {"categories": {c: totals[c] for c in SCORED if c in totals},
+                                    # Categories measured (wholly or partly) through proxy items.
+                                    **({"proxyCategories": [c for c in SCORED if c in proxy]} if proxy else {}),
                                     **({"unnamedItems": unnamed} if unnamed else {})}
         records.append({"year": record["academicYear"], "semester": record["semester"],
                         "programId": record["programId"], "courseName": record["courseName"],
