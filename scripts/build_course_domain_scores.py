@@ -15,6 +15,11 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "data/course-evaluations/v2/student-course-evaluations.json"
 CLASSIFICATION = ROOT / "data/course-evaluations/item-classification.json"
 OUTPUT = ROOT / "data/course-evaluations/course-domain-scores.json"
+# Course codes shown on the dashboard (resolved there from the programmes' course lists).
+SITE_DATA = ROOT / "js/course-evaluations-data.js"
+LINKABLE_CODE_STATUSES = {"matched", "cross-program"}
+# Human-approved code links where the survey name differs and the dashboard gives no code.
+COURSE_LINKS = ROOT / "data/course-evaluations/course-links.json"
 # overall_satisfaction is the "overall" subset of quality; it is scored separately.
 SCORED = ("knowledge", "skills", "values", "overall_satisfaction", "quality", "other", "unclassified", "review")
 COHORTS = ("total", "male", "female")
@@ -147,7 +152,52 @@ def item_counts(item):
     return item.get("scoreNumerator") or 0, item.get("responses") or 0, 0
 
 
-def build_payload(source, classification, classification_bytes=None):
+def load_site_codes(path=SITE_DATA):
+    """(year, semester|all, programme name, course name) -> course code, as on the dashboard."""
+    if not path.exists():
+        return {}
+    text = path.read_text(encoding="utf-8")
+    data = json.loads(text[text.index("{"):text.rindex("}") + 1])
+    codes = {}
+    for row in data.get("courseRecords", []):
+        if row.get("courseCode") and row.get("codeStatus") in LINKABLE_CODE_STATUSES:
+            # Spelling-insensitive like the dashboard's own grouping (اصول/أصول، الفقة/الفقه).
+            key = (str(row["year"]), str(row["semester"]), row["program"], match_key(row["courseName"]))
+            codes[key] = (row["courseCode"], row["codeStatus"])
+    return codes
+
+
+def load_manual_links(path=COURSE_LINKS):
+    """(programId, course name) -> course code, from approved entries only."""
+    if not path.exists():
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if data.get("schemaVersion") != "course-links-v1":
+        raise ValueError("Expected course-links-v1")
+    links = {}
+    for link in data["links"]:
+        if link.get("status") not in ("approved", "proposed"):
+            raise ValueError(f"Unknown link status: {link.get('status')}")
+        if link["status"] != "approved":
+            continue
+        for name in link["surveyNames"]:
+            key = (link["programId"], normalized(name))
+            if links.get(key, link["courseCode"]) != link["courseCode"]:
+                raise ValueError(f"Survey name linked to two codes: {name}")
+            links[key] = link["courseCode"]
+    return links
+
+
+def course_code(codes, year, semester, programme, course):
+    """Semester row first, then the year row; the same dashboard rule for every record."""
+    for period in (semester, "all"):
+        found = codes.get((year, period, programme, match_key(course)))
+        if found:
+            return found
+    return None, None
+
+
+def build_payload(source, classification, classification_bytes=None, site_codes=None, manual_links=None):
     if source.get("schemaVersion") != "course-student-evaluations-v2":
         raise ValueError("Expected course-student-evaluations-v2")
     by_id, by_statement, keyed = load_map(classification)
@@ -178,6 +228,10 @@ def build_payload(source, classification, classification_bytes=None):
     if unmatched:
         raise ValueError("بنود جديدة تحتاج تصنيفًا في item-classification.json قبل النشر:\n" + "\n".join(unmatched))
 
+    degree_names = {"البكالوريوس": "بكالوريوس", "الماجستير": "ماجستير", "الدكتوراه": "دكتوراه"}
+    programme_names = {p["id"]: f"{degree_names[p['degree']]} {p['specialty']}" for p in source["programs"]}
+    site_codes = load_site_codes() if site_codes is None else site_codes
+    manual_links = load_manual_links() if manual_links is None else manual_links
     records = []
     for record in source["records"]:
         cohorts = {}
@@ -208,11 +262,14 @@ def build_payload(source, classification, classification_bytes=None):
                                     # Categories measured (wholly or partly) through proxy items.
                                     **({"proxyCategories": [c for c in SCORED if c in proxy]} if proxy else {}),
                                     **({"unnamedItems": unnamed} if unnamed else {})}
+        manual = manual_links.get((record["programId"], normalized(record["courseName"])))
+        code, code_status = (manual, "approved_link") if manual else course_code(
+            site_codes, record["academicYear"], record["semester"], programme_names[record["programId"]], record["courseName"])
         records.append({"year": record["academicYear"], "semester": record["semester"],
                         "programId": record["programId"], "courseName": record["courseName"],
+                        **({"courseCode": code, "courseCodeSource": code_status if manual else "dashboard_" + code_status} if code else {}),
                         "recordId": record["id"], "cohorts": cohorts})
     records.sort(key=lambda r: (r["year"], r["semester"], r["programId"], r["courseName"]))
-    degree_names = {"البكالوريوس": "بكالوريوس", "الماجستير": "ماجستير", "الدكتوراه": "دكتوراه"}
     labels = {c["id"]: c["label"] for c in classification["categories"]}
     return {"schemaVersion": "course-domain-scores-v1", "source": "course-student-evaluations-v2",
             "classificationSha256": hashlib.sha256(classification_bytes).hexdigest() if classification_bytes else None,

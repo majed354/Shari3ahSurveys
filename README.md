@@ -135,6 +135,21 @@ python3 scripts/build_course_domain_scores.py
 python3 scripts/build_course_domain_scores.py --check
 ```
 
+## ربط المقررات برموزها للأتمتة
+
+يحمل كل سجل في [`course-domain-scores.json`](data/course-evaluations/course-domain-scores.json) رمز المقرر (`courseCode`) حين يُعرف. مصدر الرمز (`courseCodeSource`) واحد من اثنين:
+- **`approved_link`:** ربط أقره المسؤول في [`course-links.json`](data/course-evaluations/course-links.json)، وله الأولوية.
+- **`dashboard_matched` أو `dashboard_cross-program`:** رمز يعرضه الموقع من قوائم مقررات البرامج.
+
+تربط أتمتة نواتج البرنامج مقررات التوصيف بالتقييمات بالترتيب الآتي:
+1. الرمز المنشور المساوي لرمز التوصيف. يربط المقرر حتى إن اختلف اسمه، مثل «القراءات وأثرها في التفسير» و«علم القراءات دراية».
+2. الاسم التام.
+3. الاسم بعد التطبيع: المسافات والهمزة والتشكيل وأداة التعريف.
+
+لا يُربط مقرر بلا رمز في التوصيف بالاسم وحده، ولا اسم يشترك فيه رمزان. سبب كل فجوة مذكور، ومنه آخر سنة فيها تقييم للمقرر.
+
+لإضافة ربط: أضف في `course-links.json` رمز المقرر وبرنامجه وأسماءه في الاستطلاع، واجعل حالته `approved`. ثم أعد البناء بـ`python3 scripts/build_course_domain_scores.py`. الحالة `proposed` لا تُستعمل.
+
 ## تفاصيل عبارات تقييم المقررات لعام 1447
 
 - صفحة العرض: `course-item-evaluations.html`، ورابطها داخل «تقييم المقررات».
