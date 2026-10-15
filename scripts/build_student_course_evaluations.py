@@ -462,6 +462,14 @@ def main():
         temporary = args.output.with_suffix(".json.tmp")
         temporary.write_text(result, encoding="utf-8")
         temporary.replace(args.output)
+        if args.output.resolve() == DEFAULT_OUTPUT.resolve():
+            # Every published refresh reclassifies items through item-classification.json;
+            # a genuinely new statement stops here with the nearest classified item suggested.
+            import build_course_domain_scores
+            domains = build_course_domain_scores.build_payload(
+                payload, json.loads(build_course_domain_scores.CLASSIFICATION.read_text()),
+                build_course_domain_scores.CLASSIFICATION.read_bytes())
+            build_course_domain_scores.OUTPUT.write_text(build_course_domain_scores.serialize(domains))
     print(json.dumps({"output": str(args.output), **{k: v for k, v in payload["quality"].items()
           if k not in ("issues", "reconciliations")}}, ensure_ascii=False))
 

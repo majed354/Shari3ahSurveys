@@ -34,7 +34,7 @@ def fixture():
 class ClassificationMapTests(unittest.TestCase):
     def test_every_published_item_is_classified_once(self):
         source = json.loads(api.SOURCE.read_text())
-        by_id, by_statement = api.load_map(classification())
+        by_id, by_statement, _ = api.load_map(classification())
         named = {k for k, v in source["itemDefinitions"].items() if v.get("statement")}
         self.assertEqual(named, set(by_id))
         self.assertEqual(len(by_statement), len(classification()["items"]))
@@ -119,8 +119,67 @@ class DomainScoreTests(unittest.TestCase):
     def test_unclassified_statement_stops_the_build(self):
         data = fixture()
         data["itemDefinitions"]["x"] = {"statement": "بند جديد لم يصنف"}
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(ValueError, "بنود جديدة تحتاج تصنيفًا"):
             api.build_payload(data, classification())
+
+    def cases(self):
+        return json.loads((api.ROOT / "tests/fixtures/item-matching-cases.json").read_text())
+
+    def test_new_meaning_is_never_matched(self):
+        # Independent adversarial cases: negations, المقرر/البرنامج, الطالب/المدرس, other skills or services.
+        _, _, keyed = api.load_map(classification())
+        for case in self.cases()["newMeaning"]:
+            item, method, nearest = api.resolve(case["statement"], keyed, api.equivalents_of(classification()))
+            self.assertIsNone(item, case["statement"])
+            self.assertEqual(method, "unmatched")
+
+    def test_wording_variants_never_reach_a_wrong_item(self):
+        _, _, keyed = api.load_map(classification())
+        matched = 0
+        for case in self.cases()["variants"]:
+            item = api.resolve(case["statement"], keyed, api.equivalents_of(classification()))[0]
+            if item is not None:
+                self.assertEqual(item["statement"], case["item"], case["statement"])
+                matched += 1
+        self.assertGreaterEqual(matched, 50)  # the rest stop for a human alias decision
+
+    def test_spelling_variants_match_and_letter_swaps_or_numbers_do_not(self):
+        _, _, keyed = api.load_map(classification())
+        for variant, original in [
+                ("بشكل عام أنا راضٍ عن هذا المقرر", "بشكل عام أنا راضي عن هذا المقرر."),
+                ("أشعر بالرضا عن شرح عضو هيئة التدريس في المقرر من خلال التعلم الإلكتروني.", "شعر بالرضا عن شرح عضو هيئة التدريس في المقرر من خلال التعلم الالكتروني."),
+                ("تحسنت مهاراتي في استخدام التكنولوجيا والاتصالات من خلال التعلم الإلكتروني", "تحسنت مهارتي في استخدام التكنولوجيا والاتصالات من خلال التعلم الالكتروني."),
+                ("أتاحت لي الأنشطة التعليمية و أدوات المقرر فرصة للتفاعل مع المحتوى", "أتاحت لي الأنشطة التعليمية وأدوات المقرر فرصة للتفاعل مع المحتوى."),
+                ("شجعني التعلّم الإلكتروني على التعلم المستمر", "شجعني التعلم الالكتروني على التعلم المستمر.")]:
+            self.assertEqual(api.resolve(variant, keyed, api.equivalents_of(classification()))[0]["statement"], original, variant)
+        for text in self.cases()["edge"]:
+            item = api.resolve(text, keyed)[0]
+            if item is not None:  # only separator differences such as «بشكل_عام» are equal after normalisation
+                self.assertEqual(api.match_key(text), api.match_key(item["statement"]), text)
+        for a, b in [("اختبار", "اختيار"), ("غير", "غيرة"), ("مهم", "مهمل"), ("الجيد", "الجديد"), ("بعد", "بعدم"), ("الصفيه", "الصيفيه")]:
+            self.assertFalse(api.same_word(a, b, api.equivalents_of(classification())), (a, b))
+
+    def test_human_alias_makes_a_rephrasing_match_exactly(self):
+        data = copy.deepcopy(classification())
+        rephrased = "ساعدني هذا المقرر على تحسين قدرتي على التواصل بفاعلية."
+        _, _, keyed = api.load_map(data)
+        self.assertIsNone(api.resolve(rephrased, keyed)[0])
+        next(i for i in data["items"] if i["statement"] == "ساعدني هذا المقرر على تحسين قدرتي على الاتصال بفاعلية.")["aliases"] = [rephrased]
+        _, _, keyed = api.load_map(data)
+        self.assertEqual(api.resolve(rephrased, keyed)[0]["category"], "skills")
+
+    def test_variant_in_source_is_scored_and_reported(self):
+        data = fixture()
+        data["itemDefinitions"]["s"]["statement"] = "تحسنت مهاراتي في استخدام التكنولوجيا والاتصالات من خلال التعلم الإلكتروني"
+        payload = api.build_payload(data, classification())
+        self.assertEqual(payload["records"][0]["cohorts"]["total"]["categories"]["skills"], [8, 2, 1, 0, 0])
+        self.assertEqual([m["itemId"] for m in payload["itemMatches"]], ["s"])
+
+    def test_no_two_classified_items_are_variants_of_each_other(self):
+        items = classification()["items"]
+        for n, a in enumerate(items):
+            for b in items[n + 1:]:
+                self.assertFalse(api.is_variant(api.tokens(a["statement"]), api.tokens(b["statement"])), (a["statement"], b["statement"]))
 
     def test_invalid_map_is_rejected(self):
         bad = copy.deepcopy(classification())
