@@ -2349,6 +2349,10 @@ body.sheet-open {
 .ce-score--good { color: #225f8e; background: rgba(46, 118, 183, 0.12); }
 .ce-score--fair { color: #8b5716; background: rgba(193, 123, 31, 0.12); }
 .ce-score--low { color: #94382d; background: rgba(190, 75, 59, 0.12); }
+.ce-score-cell { white-space: nowrap; }
+.ce-partial, .ce-proxy { margin-inline-start: 2px; font-weight: 800; cursor: help; }
+.ce-partial { color: #8b5716; }
+.ce-proxy { color: #225f8e; }
 
 .ce-pagination {
     display: flex;

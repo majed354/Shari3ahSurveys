@@ -126,9 +126,9 @@ python3 scripts/build_survey_data.py
 
 ## تصنيف البنود والتقييم غير المباشر
 
-تُصنف بنود تقييم المقررات بحسب معناها في [`data/course-evaluations/item-classification.json`](data/course-evaluations/item-classification.json)، لا بالكلمات المفتاحية. «المعرفي» و«المهاري» و«القيمي» تقتصر على البنود التي تسأل الطالب عن مكسبه هو. بنود التدريس والتنظيم والتقويم والخدمات والرضا منفصلة عن نواتج التعلم. الجدول والمبررات وحسم البنود الملتبسة في [docs/item-classification.md](docs/item-classification.md). البند الذي لا تناسبه فئة يُصنف «بلا تصنيف» ولا يدخل أي متوسط.
+تُصنف بنود تقييم المقررات بحسب معناها في [`data/course-evaluations/item-classification.json`](data/course-evaluations/item-classification.json)، لا بالكلمات المفتاحية. لكل مقرر قياس للمعرفي والمهاري والقيمي والرضا العام. البند المباشر يسأل الطالب عن مكسبه. وحيث لا يوجد بند مباشر في النموذج، يُستخدم أقرب بند ويُعلَّم تقريبيًا (`proxy`). بنود التدريس والتنظيم والتقويم والخدمات منفصلة عن نواتج التعلم. البند الجزئي يدخل بإجاباته المقبولة فقط، ويُعلَّم عينة جزئية. الجدول والمبررات وحسم البنود الملتبسة في [docs/item-classification.md](docs/item-classification.md). البند الذي لا تناسبه فئة يُصنف «بلا تصنيف» ولا يدخل أي متوسط.
 
-يبني `scripts/build_course_domain_scores.py` الملف [`course-domain-scores.json`](data/course-evaluations/course-domain-scores.json) من بيانات v2، ويستخدمه تبويب «التقييم غير المباشر». أتمتة التقارير تقرأ الخريطة نفسها، فلا تتعارض الأرقام. بند غير مصنف يوقف البناء.
+يبني `scripts/build_course_domain_scores.py` الملف [`course-domain-scores.json`](data/course-evaluations/course-domain-scores.json) من بيانات v2، ويستخدمه تبويب «التقييم غير المباشر». أتمتة التقارير تقرأ الخريطة نفسها، فلا تتعارض الأرقام. اختلافات الإملاء اليسيرة تُلحق آليًا بالبند المصنف وتُسجل في `itemMatches`، مثل الهمزة والتشكيل والمسافات وحرف زائد وأداة التعريف و«هذا». أما المعنى الجديد وإعادة الصياغة بمرادف أو نفي أو تبديل كلمة فتوقف البناء وتقترح أقرب بند. تُعتمد الصيغة المقرة بإضافتها إلى `aliases`. تحديث بيانات v2 بـ`build_student_course_evaluations.py` يعيد بناء ملف المجالات تلقائيًا.
 
 ```bash
 python3 scripts/build_course_domain_scores.py
