@@ -181,6 +181,32 @@ class DomainScoreTests(unittest.TestCase):
             for b in items[n + 1:]:
                 self.assertFalse(api.is_variant(api.tokens(a["statement"]), api.tokens(b["statement"])), (a["statement"], b["statement"]))
 
+    def test_dashboard_course_code_is_published_per_semester_then_year(self):
+        data = fixture()
+        codes = {("1447", "471", "ماجستير الدراسات القرآنية المعاصرة", api.match_key("مقرر")): ("2002851-4", "matched")}
+        record = api.build_payload(data, classification(), site_codes=codes)["records"][0]
+        self.assertEqual((record["courseCode"], record["courseCodeSource"]), ("2002851-4", "dashboard_matched"))
+        codes = {("1447", "all", "ماجستير الدراسات القرآنية المعاصرة", api.match_key("مقرر")): ("2002851-4", "cross-program")}
+        self.assertEqual(api.build_payload(data, classification(), site_codes=codes)["records"][0]["courseCode"], "2002851-4")
+        self.assertNotIn("courseCode", api.build_payload(data, classification(), site_codes={})["records"][0])
+
+    def test_approved_manual_link_overrides_and_proposed_is_ignored(self):
+        data = fixture()
+        codes = {("1447", "471", "ماجستير الدراسات القرآنية المعاصرة", api.match_key("مقرر")): ("2002851-4", "matched")}
+        record = api.build_payload(data, classification(), site_codes=codes, manual_links={("p10", "مقرر"): "2002999-2"})["records"][0]
+        self.assertEqual((record["courseCode"], record["courseCodeSource"]), ("2002999-2", "approved_link"))
+        links = json.loads(api.COURSE_LINKS.read_text())
+        self.assertTrue(all(link["status"] in ("approved", "proposed") for link in links["links"]))
+        approved = {(l["programId"], n) for l in links["links"] if l["status"] == "approved" for n in l["surveyNames"]}
+        self.assertEqual(set(api.load_manual_links()), {(p, api.normalized(n)) for p, n in approved})
+
+    def test_published_master_courses_carry_their_codes(self):
+        published = json.loads(api.OUTPUT.read_text())
+        rows = {r["courseName"]: r.get("courseCode") for r in published["records"] if r["programId"] == "p10" and r["year"] == "1447"}
+        self.assertEqual(rows["علم القراءات دراية"], "2002854-2")
+        self.assertEqual(rows["مشروع بحثي"], "2002888-4")
+        self.assertTrue(all(rows.values()))
+
     def test_invalid_map_is_rejected(self):
         bad = copy.deepcopy(classification())
         bad["items"][0]["overall"] = True
