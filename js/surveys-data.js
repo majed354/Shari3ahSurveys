@@ -12,7 +12,7 @@ window.SURVEYS_DATA = {
     "نتائج استطلاعات البكالوريوس.xlsx",
     "نتائج استطلاعات الدراسات العليا.xlsx"
   ],
-  "generatedAt": "2026-09-13T09:19:39.964027+00:00",
+  "generatedAt": "2026-10-18T08:15:37.482364+00:00",
   "datasetCount": 45,
   "surveyCount": 744,
   "itemRecordCount": 20739,
@@ -158,20 +158,31 @@ window.SURVEYS_DATA = {
           "value": 81.1667,
           "sampleCount": 6,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "instrumentNote": "درجات أفاد بها الخريجون أنفسهم في الاختبار الوطني أو المهني فئاتٍ، واحتُسب منتصف كل فئة؛ ليست نتائج رسمية."
         },
         "employment_rate": {
           "value": 42.8571,
           "sampleCount": 7,
           "positiveCount": 3,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "known_status_share"
         },
         "eval_employers": {
           "value": 4.75,
           "sampleCount": 3,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "employerSurvey": false,
+          "instrumentNote": "ليس تقويمًا من جهات التوظيف: سؤال «للموظفين فقط» في استطلاع الخريجين عن تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه، مسجلًا فئةً واحتُسب منتصفها."
         }
       }
     },
@@ -188,20 +199,31 @@ window.SURVEYS_DATA = {
           "value": 63.25,
           "sampleCount": 4,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "instrumentNote": "درجات أفاد بها الخريجون أنفسهم في الاختبار الوطني أو المهني فئاتٍ، واحتُسب منتصف كل فئة؛ ليست نتائج رسمية."
         },
         "employment_rate": {
           "value": 28.5714,
           "sampleCount": 7,
           "positiveCount": 2,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "known_status_share"
         },
         "eval_employers": {
           "value": 4.245,
           "sampleCount": 1,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "employerSurvey": false,
+          "instrumentNote": "ليس تقويمًا من جهات التوظيف: سؤال «للموظفين فقط» في استطلاع الخريجين عن تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه، مسجلًا فئةً واحتُسب منتصفها."
         }
       }
     },
@@ -218,14 +240,20 @@ window.SURVEYS_DATA = {
           "value": 67.0,
           "sampleCount": 2,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "instrumentNote": "درجات أفاد بها الخريجون أنفسهم في الاختبار الوطني أو المهني فئاتٍ، واحتُسب منتصف كل فئة؛ ليست نتائج رسمية."
         },
         "employment_rate": {
           "value": 0.0,
           "sampleCount": 2,
           "positiveCount": 0,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "known_status_share"
         }
       }
     },
@@ -242,20 +270,31 @@ window.SURVEYS_DATA = {
           "value": 78.875,
           "sampleCount": 8,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "instrumentNote": "درجات أفاد بها الخريجون أنفسهم في الاختبار الوطني أو المهني فئاتٍ، واحتُسب منتصف كل فئة؛ ليست نتائج رسمية."
         },
         "employment_rate": {
           "value": 30.0,
           "sampleCount": 10,
           "positiveCount": 3,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "known_status_share"
         },
         "eval_employers": {
           "value": 4.75,
           "sampleCount": 2,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "employerSurvey": false,
+          "instrumentNote": "ليس تقويمًا من جهات التوظيف: سؤال «للموظفين فقط» في استطلاع الخريجين عن تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه، مسجلًا فئةً واحتُسب منتصفها."
         }
       }
     },
@@ -272,14 +311,20 @@ window.SURVEYS_DATA = {
           "value": 68.6667,
           "sampleCount": 3,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "instrumentNote": "درجات أفاد بها الخريجون أنفسهم في الاختبار الوطني أو المهني فئاتٍ، واحتُسب منتصف كل فئة؛ ليست نتائج رسمية."
         },
         "employment_rate": {
           "value": 7.6923,
           "sampleCount": 13,
           "positiveCount": 1,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "known_status_share"
         }
       }
     },
@@ -296,14 +341,20 @@ window.SURVEYS_DATA = {
           "value": 68.6667,
           "sampleCount": 3,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "instrumentNote": "درجات أفاد بها الخريجون أنفسهم في الاختبار الوطني أو المهني فئاتٍ، واحتُسب منتصف كل فئة؛ ليست نتائج رسمية."
         },
         "employment_rate": {
           "value": 20.0,
           "sampleCount": 5,
           "positiveCount": 1,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "known_status_share"
         }
       }
     },
@@ -320,20 +371,31 @@ window.SURVEYS_DATA = {
           "value": 69.5,
           "sampleCount": 2,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "instrumentNote": "درجات أفاد بها الخريجون أنفسهم في الاختبار الوطني أو المهني فئاتٍ، واحتُسب منتصف كل فئة؛ ليست نتائج رسمية."
         },
         "employment_rate": {
           "value": 33.3333,
           "sampleCount": 6,
           "positiveCount": 2,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "known_status_share"
         },
         "eval_employers": {
           "value": 4.75,
           "sampleCount": 1,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "employerSurvey": false,
+          "instrumentNote": "ليس تقويمًا من جهات التوظيف: سؤال «للموظفين فقط» في استطلاع الخريجين عن تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه، مسجلًا فئةً واحتُسب منتصفها."
         }
       }
     },
@@ -350,14 +412,20 @@ window.SURVEYS_DATA = {
           "value": 83.8333,
           "sampleCount": 3,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "instrumentNote": "درجات أفاد بها الخريجون أنفسهم في الاختبار الوطني أو المهني فئاتٍ، واحتُسب منتصف كل فئة؛ ليست نتائج رسمية."
         },
         "employment_rate": {
           "value": 0.0,
           "sampleCount": 6,
           "positiveCount": 0,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "known_status_share"
         }
       }
     },
@@ -374,20 +442,31 @@ window.SURVEYS_DATA = {
           "value": 84.75,
           "sampleCount": 2,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "instrumentNote": "درجات أفاد بها الخريجون أنفسهم في الاختبار الوطني أو المهني فئاتٍ، واحتُسب منتصف كل فئة؛ ليست نتائج رسمية."
         },
         "employment_rate": {
           "value": 60.0,
           "sampleCount": 5,
           "positiveCount": 3,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "known_status_share"
         },
         "eval_employers": {
           "value": 4.245,
           "sampleCount": 2,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "employerSurvey": false,
+          "instrumentNote": "ليس تقويمًا من جهات التوظيف: سؤال «للموظفين فقط» في استطلاع الخريجين عن تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه، مسجلًا فئةً واحتُسب منتصفها."
         }
       }
     },
@@ -405,7 +484,9 @@ window.SURVEYS_DATA = {
           "sampleCount": 1,
           "positiveCount": 0,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "known_status_share"
         }
       }
     },
@@ -422,19 +503,29 @@ window.SURVEYS_DATA = {
           "value": 3.2857,
           "sampleCount": 7,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score"
         },
         "eval_services": {
           "value": 2.8571,
           "sampleCount": 7,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score",
+          "instrumentNote": "يجيب عنه خريجو الدراسات العليا، لا الطلاب المنتظمون."
         },
         "eval_employers": {
           "value": 4.447,
           "sampleCount": 5,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "employerSurvey": false,
+          "instrumentNote": "ليس تقويمًا من جهات التوظيف: سؤال «للموظفين فقط» في استطلاع الخريجين عن تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه، مسجلًا فئةً واحتُسب منتصفها."
         }
       }
     },
@@ -451,19 +542,29 @@ window.SURVEYS_DATA = {
           "value": 3.5,
           "sampleCount": 2,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score"
         },
         "eval_services": {
           "value": 3.0,
           "sampleCount": 2,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score",
+          "instrumentNote": "يجيب عنه خريجو الدراسات العليا، لا الطلاب المنتظمون."
         },
         "eval_employers": {
           "value": 4.245,
           "sampleCount": 1,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "employerSurvey": false,
+          "instrumentNote": "ليس تقويمًا من جهات التوظيف: سؤال «للموظفين فقط» في استطلاع الخريجين عن تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه، مسجلًا فئةً واحتُسب منتصفها."
         }
       }
     },
@@ -480,19 +581,29 @@ window.SURVEYS_DATA = {
           "value": 3.875,
           "sampleCount": 8,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score"
         },
         "eval_services": {
           "value": 4.0,
           "sampleCount": 8,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score",
+          "instrumentNote": "يجيب عنه خريجو الدراسات العليا، لا الطلاب المنتظمون."
         },
         "eval_employers": {
           "value": 4.75,
           "sampleCount": 4,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "employerSurvey": false,
+          "instrumentNote": "ليس تقويمًا من جهات التوظيف: سؤال «للموظفين فقط» في استطلاع الخريجين عن تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه، مسجلًا فئةً واحتُسب منتصفها."
         }
       }
     },
@@ -509,19 +620,29 @@ window.SURVEYS_DATA = {
           "value": 2.6667,
           "sampleCount": 6,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score"
         },
         "eval_services": {
           "value": 2.3333,
           "sampleCount": 6,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score",
+          "instrumentNote": "يجيب عنه خريجو الدراسات العليا، لا الطلاب المنتظمون."
         },
         "eval_employers": {
           "value": 4.75,
           "sampleCount": 2,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "employerSurvey": false,
+          "instrumentNote": "ليس تقويمًا من جهات التوظيف: سؤال «للموظفين فقط» في استطلاع الخريجين عن تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه، مسجلًا فئةً واحتُسب منتصفها."
         }
       }
     },
@@ -538,19 +659,29 @@ window.SURVEYS_DATA = {
           "value": 4.2,
           "sampleCount": 5,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score"
         },
         "eval_services": {
           "value": 4.0,
           "sampleCount": 5,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score",
+          "instrumentNote": "يجيب عنه خريجو الدراسات العليا، لا الطلاب المنتظمون."
         },
         "eval_employers": {
           "value": 4.75,
           "sampleCount": 3,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "employerSurvey": false,
+          "instrumentNote": "ليس تقويمًا من جهات التوظيف: سؤال «للموظفين فقط» في استطلاع الخريجين عن تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه، مسجلًا فئةً واحتُسب منتصفها."
         }
       }
     },
@@ -567,19 +698,29 @@ window.SURVEYS_DATA = {
           "value": 3.4545,
           "sampleCount": 11,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score"
         },
         "eval_services": {
           "value": 4.5455,
           "sampleCount": 11,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score",
+          "instrumentNote": "يجيب عنه خريجو الدراسات العليا، لا الطلاب المنتظمون."
         },
         "eval_employers": {
           "value": 4.5817,
           "sampleCount": 3,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "employerSurvey": false,
+          "instrumentNote": "ليس تقويمًا من جهات التوظيف: سؤال «للموظفين فقط» في استطلاع الخريجين عن تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه، مسجلًا فئةً واحتُسب منتصفها."
         }
       }
     },
@@ -596,19 +737,29 @@ window.SURVEYS_DATA = {
           "value": 2.0,
           "sampleCount": 2,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score"
         },
         "eval_services": {
           "value": 2.5,
           "sampleCount": 2,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score",
+          "instrumentNote": "يجيب عنه خريجو الدراسات العليا، لا الطلاب المنتظمون."
         },
         "eval_employers": {
           "value": 4.75,
           "sampleCount": 1,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "employerSurvey": false,
+          "instrumentNote": "ليس تقويمًا من جهات التوظيف: سؤال «للموظفين فقط» في استطلاع الخريجين عن تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه، مسجلًا فئةً واحتُسب منتصفها."
         }
       }
     },
@@ -625,19 +776,29 @@ window.SURVEYS_DATA = {
           "value": 4.0,
           "sampleCount": 11,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score"
         },
         "eval_services": {
           "value": 3.4545,
           "sampleCount": 11,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score",
+          "instrumentNote": "يجيب عنه خريجو الدراسات العليا، لا الطلاب المنتظمون."
         },
         "eval_employers": {
           "value": 4.649,
           "sampleCount": 5,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "employerSurvey": false,
+          "instrumentNote": "ليس تقويمًا من جهات التوظيف: سؤال «للموظفين فقط» في استطلاع الخريجين عن تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه، مسجلًا فئةً واحتُسب منتصفها."
         }
       }
     },
@@ -654,19 +815,29 @@ window.SURVEYS_DATA = {
           "value": 4.0,
           "sampleCount": 1,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score"
         },
         "eval_services": {
           "value": 2.0,
           "sampleCount": 1,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score",
+          "instrumentNote": "يجيب عنه خريجو الدراسات العليا، لا الطلاب المنتظمون."
         },
         "eval_employers": {
           "value": 4.245,
           "sampleCount": 1,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "employerSurvey": false,
+          "instrumentNote": "ليس تقويمًا من جهات التوظيف: سؤال «للموظفين فقط» في استطلاع الخريجين عن تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه، مسجلًا فئةً واحتُسب منتصفها."
         }
       }
     },
@@ -683,19 +854,29 @@ window.SURVEYS_DATA = {
           "value": 4.25,
           "sampleCount": 8,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score"
         },
         "eval_services": {
           "value": 4.125,
           "sampleCount": 8,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score",
+          "instrumentNote": "يجيب عنه خريجو الدراسات العليا، لا الطلاب المنتظمون."
         },
         "eval_employers": {
           "value": 4.75,
           "sampleCount": 2,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "employerSurvey": false,
+          "instrumentNote": "ليس تقويمًا من جهات التوظيف: سؤال «للموظفين فقط» في استطلاع الخريجين عن تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه، مسجلًا فئةً واحتُسب منتصفها."
         }
       }
     },
@@ -712,19 +893,29 @@ window.SURVEYS_DATA = {
           "value": 5.0,
           "sampleCount": 2,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score"
         },
         "eval_services": {
           "value": 4.0,
           "sampleCount": 2,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score",
+          "instrumentNote": "يجيب عنه خريجو الدراسات العليا، لا الطلاب المنتظمون."
         },
         "eval_employers": {
           "value": 4.75,
           "sampleCount": 1,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "employerSurvey": false,
+          "instrumentNote": "ليس تقويمًا من جهات التوظيف: سؤال «للموظفين فقط» في استطلاع الخريجين عن تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه، مسجلًا فئةً واحتُسب منتصفها."
         }
       }
     },
@@ -741,19 +932,29 @@ window.SURVEYS_DATA = {
           "value": 5.0,
           "sampleCount": 1,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score"
         },
         "eval_services": {
           "value": 1.0,
           "sampleCount": 1,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score",
+          "instrumentNote": "يجيب عنه خريجو الدراسات العليا، لا الطلاب المنتظمون."
         },
         "eval_employers": {
           "value": 4.75,
           "sampleCount": 1,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "employerSurvey": false,
+          "instrumentNote": "ليس تقويمًا من جهات التوظيف: سؤال «للموظفين فقط» في استطلاع الخريجين عن تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه، مسجلًا فئةً واحتُسب منتصفها."
         }
       }
     },
@@ -770,13 +971,18 @@ window.SURVEYS_DATA = {
           "value": 2.0,
           "sampleCount": 1,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score"
         },
         "eval_services": {
           "value": 3.0,
           "sampleCount": 1,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score",
+          "instrumentNote": "يجيب عنه خريجو الدراسات العليا، لا الطلاب المنتظمون."
         }
       }
     },
@@ -793,19 +999,29 @@ window.SURVEYS_DATA = {
           "value": 4.1,
           "sampleCount": 10,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score"
         },
         "eval_services": {
           "value": 4.4,
           "sampleCount": 10,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score",
+          "instrumentNote": "يجيب عنه خريجو الدراسات العليا، لا الطلاب المنتظمون."
         },
         "eval_employers": {
           "value": 4.75,
           "sampleCount": 2,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "employerSurvey": false,
+          "instrumentNote": "ليس تقويمًا من جهات التوظيف: سؤال «للموظفين فقط» في استطلاع الخريجين عن تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه، مسجلًا فئةً واحتُسب منتصفها."
         }
       }
     },
@@ -822,19 +1038,29 @@ window.SURVEYS_DATA = {
           "value": 4.5,
           "sampleCount": 4,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score"
         },
         "eval_services": {
           "value": 5.0,
           "sampleCount": 4,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "direct_score",
+          "instrumentNote": "يجيب عنه خريجو الدراسات العليا، لا الطلاب المنتظمون."
         },
         "eval_employers": {
           "value": 4.75,
           "sampleCount": 3,
           "sourceType": "sample",
-          "sourceLabel": "استطلاع عينة"
+          "sourceLabel": "استطلاع عينة",
+          "respondentType": "graduates",
+          "valueMethod": "self_reported_band_midpoint",
+          "selfReported": true,
+          "employerSurvey": false,
+          "instrumentNote": "ليس تقويمًا من جهات التوظيف: سؤال «للموظفين فقط» في استطلاع الخريجين عن تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه، مسجلًا فئةً واحتُسب منتصفها."
         }
       }
     }
@@ -3717,8 +3943,8 @@ window.SURVEYS_DATA = {
           ]
         },
         {
-          "id": "1a9dd37b9887",
-          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "id": "d15a5e79990e",
+          "title": "تقييم الخريجين الموظفين لأدائهم الوظيفي (كما أفادوا به) — استطلاع عينة",
           "stakeholder": "alumni",
           "sectionId": "market",
           "surveyType": "sample",
@@ -3728,7 +3954,7 @@ window.SURVEYS_DATA = {
               "items": [
                 {
                   "number": "1",
-                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "label": "تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه كما أفاد به الخريج (فئة، احتُسب منتصفها)",
                   "genders": [
                     {
                       "gender": "",
@@ -6615,8 +6841,8 @@ window.SURVEYS_DATA = {
           ]
         },
         {
-          "id": "86f7e60641d1",
-          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "id": "a1e3bec2e93d",
+          "title": "تقييم الخريجين الموظفين لأدائهم الوظيفي (كما أفادوا به) — استطلاع عينة",
           "stakeholder": "alumni",
           "sectionId": "market",
           "surveyType": "sample",
@@ -6626,7 +6852,7 @@ window.SURVEYS_DATA = {
               "items": [
                 {
                   "number": "1",
-                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "label": "تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه كما أفاد به الخريج (فئة، احتُسب منتصفها)",
                   "genders": [
                     {
                       "gender": "",
@@ -12386,8 +12612,8 @@ window.SURVEYS_DATA = {
           ]
         },
         {
-          "id": "49523fa1382c",
-          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "id": "197e380efdd1",
+          "title": "تقييم الخريجين الموظفين لأدائهم الوظيفي (كما أفادوا به) — استطلاع عينة",
           "stakeholder": "alumni",
           "sectionId": "market",
           "surveyType": "sample",
@@ -12397,7 +12623,7 @@ window.SURVEYS_DATA = {
               "items": [
                 {
                   "number": "1",
-                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "label": "تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه كما أفاد به الخريج (فئة، احتُسب منتصفها)",
                   "genders": [
                     {
                       "gender": "",
@@ -15284,8 +15510,8 @@ window.SURVEYS_DATA = {
           ]
         },
         {
-          "id": "ffc9f1febe40",
-          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "id": "7ee70b22b3cc",
+          "title": "تقييم الخريجين الموظفين لأدائهم الوظيفي (كما أفادوا به) — استطلاع عينة",
           "stakeholder": "alumni",
           "sectionId": "market",
           "surveyType": "sample",
@@ -15295,7 +15521,7 @@ window.SURVEYS_DATA = {
               "items": [
                 {
                   "number": "1",
-                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "label": "تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه كما أفاد به الخريج (فئة، احتُسب منتصفها)",
                   "genders": [
                     {
                       "gender": "",
@@ -17700,8 +17926,8 @@ window.SURVEYS_DATA = {
           ]
         },
         {
-          "id": "655d45987344",
-          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "id": "c1625ac7f60f",
+          "title": "تقييم الخريجين الموظفين لأدائهم الوظيفي (كما أفادوا به) — استطلاع عينة",
           "stakeholder": "alumni",
           "sectionId": "market",
           "surveyType": "sample",
@@ -17711,7 +17937,7 @@ window.SURVEYS_DATA = {
               "items": [
                 {
                   "number": "1",
-                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "label": "تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه كما أفاد به الخريج (فئة، احتُسب منتصفها)",
                   "genders": [
                     {
                       "gender": "",
@@ -19876,8 +20102,8 @@ window.SURVEYS_DATA = {
           ]
         },
         {
-          "id": "fbf96f1ba1d3",
-          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "id": "a8f9da8b47d7",
+          "title": "تقييم الخريجين الموظفين لأدائهم الوظيفي (كما أفادوا به) — استطلاع عينة",
           "stakeholder": "alumni",
           "sectionId": "market",
           "surveyType": "sample",
@@ -19887,7 +20113,7 @@ window.SURVEYS_DATA = {
               "items": [
                 {
                   "number": "1",
-                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "label": "تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه كما أفاد به الخريج (فئة، احتُسب منتصفها)",
                   "genders": [
                     {
                       "gender": "",
@@ -24633,8 +24859,8 @@ window.SURVEYS_DATA = {
           ]
         },
         {
-          "id": "4804bfab7b33",
-          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "id": "a7fdcb9f5146",
+          "title": "تقييم الخريجين الموظفين لأدائهم الوظيفي (كما أفادوا به) — استطلاع عينة",
           "stakeholder": "alumni",
           "sectionId": "market",
           "surveyType": "sample",
@@ -24644,7 +24870,7 @@ window.SURVEYS_DATA = {
               "items": [
                 {
                   "number": "1",
-                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "label": "تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه كما أفاد به الخريج (فئة، احتُسب منتصفها)",
                   "genders": [
                     {
                       "gender": "",
@@ -27049,8 +27275,8 @@ window.SURVEYS_DATA = {
           ]
         },
         {
-          "id": "6db8f0be1f99",
-          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "id": "1b1d64f514cc",
+          "title": "تقييم الخريجين الموظفين لأدائهم الوظيفي (كما أفادوا به) — استطلاع عينة",
           "stakeholder": "alumni",
           "sectionId": "market",
           "surveyType": "sample",
@@ -27060,7 +27286,7 @@ window.SURVEYS_DATA = {
               "items": [
                 {
                   "number": "1",
-                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "label": "تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه كما أفاد به الخريج (فئة، احتُسب منتصفها)",
                   "genders": [
                     {
                       "gender": "",
@@ -34526,8 +34752,8 @@ window.SURVEYS_DATA = {
           ]
         },
         {
-          "id": "8cd8251ffda2",
-          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "id": "d0da0b6a2fdf",
+          "title": "تقييم الخريجين الموظفين لأدائهم الوظيفي (كما أفادوا به) — استطلاع عينة",
           "stakeholder": "alumni",
           "sectionId": "market",
           "surveyType": "sample",
@@ -34537,7 +34763,7 @@ window.SURVEYS_DATA = {
               "items": [
                 {
                   "number": "1",
-                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "label": "تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه كما أفاد به الخريج (فئة، احتُسب منتصفها)",
                   "genders": [
                     {
                       "gender": "",
@@ -36238,8 +36464,8 @@ window.SURVEYS_DATA = {
           ]
         },
         {
-          "id": "b538e43b1146",
-          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "id": "d0da2a5fe32c",
+          "title": "تقييم الخريجين الموظفين لأدائهم الوظيفي (كما أفادوا به) — استطلاع عينة",
           "stakeholder": "alumni",
           "sectionId": "market",
           "surveyType": "sample",
@@ -36249,7 +36475,7 @@ window.SURVEYS_DATA = {
               "items": [
                 {
                   "number": "1",
-                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "label": "تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه كما أفاد به الخريج (فئة، احتُسب منتصفها)",
                   "genders": [
                     {
                       "gender": "",
@@ -41619,8 +41845,8 @@ window.SURVEYS_DATA = {
           ]
         },
         {
-          "id": "ccd6be067f97",
-          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "id": "49141b17b1a2",
+          "title": "تقييم الخريجين الموظفين لأدائهم الوظيفي (كما أفادوا به) — استطلاع عينة",
           "stakeholder": "alumni",
           "sectionId": "market",
           "surveyType": "sample",
@@ -41630,7 +41856,7 @@ window.SURVEYS_DATA = {
               "items": [
                 {
                   "number": "1",
-                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "label": "تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه كما أفاد به الخريج (فئة، احتُسب منتصفها)",
                   "genders": [
                     {
                       "gender": "",
@@ -66793,8 +67019,8 @@ window.SURVEYS_DATA = {
           ]
         },
         {
-          "id": "080d2e6f42e3",
-          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "id": "559cf27df3c4",
+          "title": "تقييم الخريجين الموظفين لأدائهم الوظيفي (كما أفادوا به) — استطلاع عينة",
           "stakeholder": "alumni",
           "sectionId": "market",
           "surveyType": "sample",
@@ -66804,7 +67030,7 @@ window.SURVEYS_DATA = {
               "items": [
                 {
                   "number": "1",
-                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "label": "تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه كما أفاد به الخريج (فئة، احتُسب منتصفها)",
                   "genders": [
                     {
                       "gender": "",
@@ -71148,8 +71374,8 @@ window.SURVEYS_DATA = {
           ]
         },
         {
-          "id": "67f123e31ed4",
-          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "id": "f09952c6d70a",
+          "title": "تقييم الخريجين الموظفين لأدائهم الوظيفي (كما أفادوا به) — استطلاع عينة",
           "stakeholder": "alumni",
           "sectionId": "market",
           "surveyType": "sample",
@@ -71159,7 +71385,7 @@ window.SURVEYS_DATA = {
               "items": [
                 {
                   "number": "1",
-                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "label": "تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه كما أفاد به الخريج (فئة، احتُسب منتصفها)",
                   "genders": [
                     {
                       "gender": "",
@@ -75765,8 +75991,8 @@ window.SURVEYS_DATA = {
           ]
         },
         {
-          "id": "ada8b38c4d91",
-          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "id": "386a478770f8",
+          "title": "تقييم الخريجين الموظفين لأدائهم الوظيفي (كما أفادوا به) — استطلاع عينة",
           "stakeholder": "alumni",
           "sectionId": "market",
           "surveyType": "sample",
@@ -75776,7 +76002,7 @@ window.SURVEYS_DATA = {
               "items": [
                 {
                   "number": "1",
-                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "label": "تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه كما أفاد به الخريج (فئة، احتُسب منتصفها)",
                   "genders": [
                     {
                       "gender": "",
@@ -79569,8 +79795,8 @@ window.SURVEYS_DATA = {
           ]
         },
         {
-          "id": "b45cb88916c8",
-          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "id": "11cf2d4ec733",
+          "title": "تقييم الخريجين الموظفين لأدائهم الوظيفي (كما أفادوا به) — استطلاع عينة",
           "stakeholder": "alumni",
           "sectionId": "market",
           "surveyType": "sample",
@@ -79580,7 +79806,7 @@ window.SURVEYS_DATA = {
               "items": [
                 {
                   "number": "1",
-                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "label": "تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه كما أفاد به الخريج (فئة، احتُسب منتصفها)",
                   "genders": [
                     {
                       "gender": "",
@@ -83875,8 +84101,8 @@ window.SURVEYS_DATA = {
           ]
         },
         {
-          "id": "fc1575b7f984",
-          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "id": "78122634fcc4",
+          "title": "تقييم الخريجين الموظفين لأدائهم الوظيفي (كما أفادوا به) — استطلاع عينة",
           "stakeholder": "alumni",
           "sectionId": "market",
           "surveyType": "sample",
@@ -83886,7 +84112,7 @@ window.SURVEYS_DATA = {
               "items": [
                 {
                   "number": "1",
-                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "label": "تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه كما أفاد به الخريج (فئة، احتُسب منتصفها)",
                   "genders": [
                     {
                       "gender": "",
@@ -92400,8 +92626,8 @@ window.SURVEYS_DATA = {
           ]
         },
         {
-          "id": "72126e862ad2",
-          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "id": "e616f0d568ae",
+          "title": "تقييم الخريجين الموظفين لأدائهم الوظيفي (كما أفادوا به) — استطلاع عينة",
           "stakeholder": "alumni",
           "sectionId": "market",
           "surveyType": "sample",
@@ -92411,7 +92637,7 @@ window.SURVEYS_DATA = {
               "items": [
                 {
                   "number": "1",
-                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "label": "تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه كما أفاد به الخريج (فئة، احتُسب منتصفها)",
                   "genders": [
                     {
                       "gender": "",
@@ -100449,8 +100675,8 @@ window.SURVEYS_DATA = {
           ]
         },
         {
-          "id": "669a7c4da5a4",
-          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "id": "d6bfce5ec80b",
+          "title": "تقييم الخريجين الموظفين لأدائهم الوظيفي (كما أفادوا به) — استطلاع عينة",
           "stakeholder": "alumni",
           "sectionId": "market",
           "surveyType": "sample",
@@ -100460,7 +100686,7 @@ window.SURVEYS_DATA = {
               "items": [
                 {
                   "number": "1",
-                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "label": "تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه كما أفاد به الخريج (فئة، احتُسب منتصفها)",
                   "genders": [
                     {
                       "gender": "",
@@ -104944,8 +105170,8 @@ window.SURVEYS_DATA = {
           ]
         },
         {
-          "id": "867bae7dfe5f",
-          "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+          "id": "6053c4c135a6",
+          "title": "تقييم الخريجين الموظفين لأدائهم الوظيفي (كما أفادوا به) — استطلاع عينة",
           "stakeholder": "alumni",
           "sectionId": "market",
           "surveyType": "sample",
@@ -104955,7 +105181,7 @@ window.SURVEYS_DATA = {
               "items": [
                 {
                   "number": "1",
-                  "label": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+                  "label": "تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه كما أفاد به الخريج (فئة، احتُسب منتصفها)",
                   "genders": [
                     {
                       "gender": "",

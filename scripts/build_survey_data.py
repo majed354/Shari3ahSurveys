@@ -121,10 +121,36 @@ GRADUATE_SAMPLE_SURVEY_DEFINITIONS = {
         "itemLabel": "الرضا العام عن مستوى الخدمات المقدمة",
     },
     "eval_employers": {
-        "title": "تقويم جهات التوظيف للخريجين — استطلاع عينة",
+        # ليست استبانة جهات توظيف: سؤال للخريجين الموظفين، مسجل فئةً (تدقيق 18 أكتوبر 2026).
+        "title": "تقييم الخريجين الموظفين لأدائهم الوظيفي (كما أفادوا به) — استطلاع عينة",
         "sectionId": "market",
         "topicLabel": "الأداء الوظيفي للخريجين",
-        "itemLabel": "تقييم الرئيس المباشر أو التقييم الذاتي للأداء الوظيفي",
+        "itemLabel": "تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه كما أفاد به الخريج (فئة، احتُسب منتصفها)",
+    },
+}
+
+# أداة القياس الفعلية لكل نتيجة عينة، كما ثبتت بتدقيق المستودعات في 18 أكتوبر 2026.
+# حقول إضافية في graduateSampleKpis؛ لا تغير القيم ولا الحقول السابقة.
+GRADUATE_SAMPLE_METRIC_INSTRUMENTS = {
+    "performance_rate": {
+        "respondentType": "graduates",
+        "valueMethod": "self_reported_band_midpoint",
+        "selfReported": True,
+        "instrumentNote": "درجات أفاد بها الخريجون أنفسهم في الاختبار الوطني أو المهني فئاتٍ، واحتُسب منتصف كل فئة؛ ليست نتائج رسمية.",
+    },
+    "employment_rate": {"respondentType": "graduates", "valueMethod": "known_status_share"},
+    "eval_supervision": {"respondentType": "graduates", "valueMethod": "direct_score"},
+    "eval_services": {
+        "respondentType": "graduates",
+        "valueMethod": "direct_score",
+        "instrumentNote": "يجيب عنه خريجو الدراسات العليا، لا الطلاب المنتظمون.",
+    },
+    "eval_employers": {
+        "respondentType": "graduates",
+        "valueMethod": "self_reported_band_midpoint",
+        "selfReported": True,
+        "employerSurvey": False,
+        "instrumentNote": "ليس تقويمًا من جهات التوظيف: سؤال «للموظفين فقط» في استطلاع الخريجين عن تقييم الرئيس في العمل للخريج أو تقييم الخريج لنفسه، مسجلًا فئةً واحتُسب منتصفها.",
     },
 }
 
@@ -1109,6 +1135,7 @@ def import_graduate_sample_surveys(
                         "positiveCount": int(group["employmentPositive"]),
                         "sourceType": "sample",
                         "sourceLabel": "استطلاع عينة",
+                        **GRADUATE_SAMPLE_METRIC_INSTRUMENTS[metric_key],
                     }
                 continue
 
@@ -1120,6 +1147,7 @@ def import_graduate_sample_surveys(
                 "sampleCount": len(values),
                 "sourceType": "sample",
                 "sourceLabel": "استطلاع عينة",
+                **GRADUATE_SAMPLE_METRIC_INSTRUMENTS[metric_key],
             }
 
             survey_definition = GRADUATE_SAMPLE_SURVEY_DEFINITIONS.get(metric_key)

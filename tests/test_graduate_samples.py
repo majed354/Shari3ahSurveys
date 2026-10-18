@@ -61,6 +61,28 @@ class GraduateSampleImportTests(unittest.TestCase):
         self.assertTrue(original_surveys)
         self.assertTrue(all("استطلاع شامل" not in survey["title"] for survey in original_surveys))
 
+    def test_metric_instruments_follow_the_audit(self):
+        # تدقيق 18 أكتوبر 2026: لا استبانة لجهات التوظيف، والدرجات مبلغ عنها ذاتيًا، والخدمات من الخريجين.
+        for entry in self.samples.values():
+            for key, metric in entry["metrics"].items():
+                self.assertEqual(metric["respondentType"], "graduates")
+                if key == "eval_employers":
+                    self.assertIs(metric["employerSurvey"], False)
+                    self.assertIs(metric["selfReported"], True)
+                    self.assertIn("ليس تقويمًا من جهات التوظيف", metric["instrumentNote"])
+                if key == "performance_rate":
+                    self.assertEqual(metric["valueMethod"], "self_reported_band_midpoint")
+                    self.assertIs(metric["selfReported"], True)
+                if key == "eval_services":
+                    self.assertIn("لا الطلاب المنتظمون", metric["instrumentNote"])
+        titles = {
+            survey["title"]
+            for dataset in self.payload["extractedData"].values()
+            for survey in dataset["surveys"]
+        }
+        self.assertNotIn("تقويم جهات التوظيف للخريجين — استطلاع عينة", titles)
+        self.assertIn("تقييم الخريجين الموظفين لأدائهم الوظيفي (كما أفادوا به) — استطلاع عينة", titles)
+
     def test_known_bachelor_result(self):
         metrics = self.samples["p01::1445"]["metrics"]
         self.assertAlmostEqual(metrics["performance_rate"]["value"], 81.1667, places=4)
